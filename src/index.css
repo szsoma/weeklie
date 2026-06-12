@@ -5,3 +5,7 @@ body {
   color: #1a1a1a;
   font-family: 'Geist', system-ui, sans-serif;
 }
+
+code, pre, .font-mono {
+  font-family: 'Geist Mono', monospace;
+}
