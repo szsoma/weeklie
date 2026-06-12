@@ -7,7 +7,7 @@ type Props = {
 
 export default function NewTaskLine({ date }: Props) {
   const [title, setTitle] = useState('')
-  const [isFocused, setIsFocused] = useState(false)
+  const [_isFocused, setIsFocused] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const addTask = useStore(s => s.addTask)
 
