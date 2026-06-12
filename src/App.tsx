@@ -1,14 +1,20 @@
+import { useState } from 'react'
 import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
 import WeekHeader from './components/WeekHeader'
 import WeekGrid from './components/WeekGrid'
 import BacklogPanel from './components/BacklogPanel'
+import ReviewScreen from './components/ReviewScreen'
 import { useStore } from './store'
 import { useRollover } from './hooks/useRollover'
 
 export default function App() {
   useRollover()
   const moveTask = useStore(s => s.moveTask)
+
+  const [showReview, setShowReview] = useState(false)
+  const today = new Date()
+  const isSunday = today.getDay() === 0
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -46,6 +52,15 @@ export default function App() {
           <BacklogPanel />
         </div>
       </div>
+      {isSunday && !showReview && (
+        <button
+          onClick={() => setShowReview(true)}
+          className="fixed top-2 left-1/2 -translate-x-1/2 bg-black text-white px-4 py-2 rounded-full text-sm shadow-lg z-40"
+        >
+          Ready for your weekly review?
+        </button>
+      )}
+      {showReview && <ReviewScreen onClose={() => setShowReview(false)} />}
     </DndContext>
   )
 }
