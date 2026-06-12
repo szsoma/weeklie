@@ -4,8 +4,10 @@ import WeekHeader from './components/WeekHeader'
 import WeekGrid from './components/WeekGrid'
 import BacklogPanel from './components/BacklogPanel'
 import { useStore } from './store'
+import { useRollover } from './hooks/useRollover'
 
 export default function App() {
+  useRollover()
   const moveTask = useStore(s => s.moveTask)
 
   const sensors = useSensors(
