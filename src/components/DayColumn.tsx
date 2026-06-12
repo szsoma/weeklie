@@ -1,3 +1,4 @@
+import { useDroppable } from '@dnd-kit/core'
 import { useStore } from '../store'
 import { formatDate, isToday } from '../dates'
 import TaskRow from './TaskRow'
@@ -14,12 +15,18 @@ export default function DayColumn({ date }: Props) {
       .sort((a, b) => a.order - b.order)
   )
 
+  const { setNodeRef } = useDroppable({
+    id: `day-${formatDate(date)}`,
+    data: { date: formatDate(date) },
+  })
+
   const dayName = date.toLocaleDateString('en-US', { weekday: 'short' })
   const dayNum = date.getDate()
   const today = isToday(date)
 
   return (
     <div
+      ref={setNodeRef}
       className={`flex flex-col min-h-0 ${today ? 'bg-black/[.03]' : ''}`}
     >
       <div className="px-2 py-2 text-center">

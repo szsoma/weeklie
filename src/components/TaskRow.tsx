@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useDraggable } from '@dnd-kit/core'
 import { useStore } from '../store'
 import type { Task } from '../types'
 
@@ -44,8 +45,17 @@ export default function TaskRow({ task }: Props) {
     updateTask(task.id, { color: next > COLORS.length - 1 ? null : next })
   }
 
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: task.id,
+    data: { date: task.date, order: task.order },
+  })
+
+  const style = transform
+    ? { transform: `translate(${transform.x}px, ${transform.y}px)` }
+    : undefined
+
   return (
-    <div className="flex items-center gap-2 py-1 group">
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className="flex items-center gap-2 py-1 group">
       <button
         onClick={cycleColor}
         className="w-3 h-3 rounded-full flex-shrink-0"

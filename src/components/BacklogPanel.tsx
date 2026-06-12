@@ -1,8 +1,13 @@
+import { useDroppable } from '@dnd-kit/core'
 import { useStore } from '../store'
 import TaskRow from './TaskRow'
 import NewTaskLine from './NewTaskLine'
 
 export default function BacklogPanel() {
+  const { setNodeRef } = useDroppable({
+    id: 'backlog',
+    data: { date: null },
+  })
   const tasks = useStore(s =>
     s.tasks
       .filter(t => t.date === null)
@@ -10,7 +15,7 @@ export default function BacklogPanel() {
   )
 
   return (
-    <div className="border-t border-black/10 flex flex-col min-h-[35vh]">
+    <div ref={setNodeRef} className="border-t border-black/10 flex flex-col min-h-[35vh]">
       <div className="px-4 py-2">
         <h2 className="text-sm font-mono text-gray-500">Backlog</h2>
       </div>
