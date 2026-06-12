@@ -19,11 +19,18 @@ export default function App() {
 
     const taskId = active.id as string
     const targetDate = over.data.current?.date as string | null
-    const targetOrder = over.data.current?.order as number
+    let targetOrder = over.data.current?.order as number | undefined
 
-    if (targetDate !== undefined) {
-      moveTask(taskId, targetDate, targetOrder)
+    if (targetDate === undefined) return
+
+    if (targetOrder === undefined) {
+      const tasks = useStore.getState().tasks.filter(t => t.date === targetDate && t.id !== taskId)
+      targetOrder = tasks.length > 0
+        ? Math.max(...tasks.map(t => t.order)) + 1
+        : 1
     }
+
+    moveTask(taskId, targetDate, targetOrder)
   }
 
   return (
