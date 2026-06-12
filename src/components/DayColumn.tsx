@@ -39,6 +39,9 @@ export default function DayColumn({ date }: Props) {
         {tasks.map(task => (
           <TaskRow key={task.id} task={task} />
         ))}
+        {tasks.length === 0 && (
+          <div className="text-xs text-gray-300 italic py-2">No tasks</div>
+        )}
         <NewTaskLine date={formatDate(date)} />
       </div>
     </div>

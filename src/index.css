@@ -1,11 +1,30 @@
 @import "tailwindcss";
 
+:root {
+  --bg: #f5f0e8;
+  --text: #1a1a1a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1a1a;
+    --text: #e5e5e5;
+  }
+}
+
 body {
-  background-color: #f5f0e8;
-  color: #1a1a1a;
+  background-color: var(--bg);
+  color: var(--text);
   font-family: 'Geist', system-ui, sans-serif;
 }
 
 code, pre, .font-mono {
   font-family: 'Geist Mono', monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
