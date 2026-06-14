@@ -97,10 +97,15 @@ export default function TaskRow({ task }: Props) {
         type="checkbox"
         checked={task.done}
         onChange={() => toggleDone(task.id)}
+        onPointerDown={(e) => e.stopPropagation()}
         className="flex-shrink-0 cursor-pointer"
       />
       <button
-        onClick={() => deleteTask(task.id)}
+        onClick={(e) => {
+          e.stopPropagation()
+          deleteTask(task.id)
+        }}
+        onPointerDown={(e) => e.stopPropagation()}
         className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 flex-shrink-0"
       >
         ×
