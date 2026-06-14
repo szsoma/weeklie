@@ -19,22 +19,33 @@ export default function WeekGrid() {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:hidden flex-1 min-h-0 overflow-y-auto">
+      {/* Mobile: single scrolling column of stacked days */}
+      <div className="grid grid-cols-1 md:hidden flex-1 min-h-0 overflow-y-auto divide-y divide-rule">
         {days.map(day => (
           <div key={day.toISOString()} ref={isToday(day) ? todayRef : undefined}>
             <DayColumn date={day} />
           </div>
         ))}
       </div>
+
+      {/* Desktop: Mon-Fri across, Sat/Sun stacked on the right */}
       <div className="hidden md:flex flex-1 min-h-0">
         {weekdays.map(day => (
-          <div key={day.toISOString()} ref={isToday(day) ? todayRef : undefined} className="flex-1 min-w-0">
+          <div
+            key={day.toISOString()}
+            ref={isToday(day) ? todayRef : undefined}
+            className="flex-1 min-w-0 border-l border-rule first:border-l-0"
+          >
             <DayColumn date={day} />
           </div>
         ))}
-        <div className="flex-1 min-w-0 flex flex-col">
-          {weekend.map(day => (
-            <div key={day.toISOString()} ref={isToday(day) ? todayRef : undefined} className="flex-1 min-h-0">
+        <div className="flex-1 min-w-0 flex flex-col border-l border-rule">
+          {weekend.map((day, i) => (
+            <div
+              key={day.toISOString()}
+              ref={isToday(day) ? todayRef : undefined}
+              className={`flex-1 min-h-0 ${i > 0 ? 'border-t border-rule' : ''}`}
+            >
               <DayColumn date={day} />
             </div>
           ))}

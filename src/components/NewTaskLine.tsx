@@ -7,7 +7,7 @@ type Props = {
 
 export default function NewTaskLine({ date }: Props) {
   const [title, setTitle] = useState('')
-  const [_isFocused, setIsFocused] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const addTask = useStore(s => s.addTask)
 
@@ -28,8 +28,12 @@ export default function NewTaskLine({ date }: Props) {
   }
 
   return (
-    <div className="flex items-center gap-2 py-1 mt-1">
-      <div className="w-3 h-3 rounded-full border border-dashed border-gray-300 flex-shrink-0" />
+    <div
+      className={`flex items-center gap-2.5 py-2 pr-1 mt-0.5 rounded transition-colors ${
+        isFocused ? 'bg-ink/[0.025]' : 'hover:bg-ink/[0.025]'
+      }`}
+    >
+      <div className="w-3.5 h-3.5 rounded-full flex-shrink-0 border border-dashed border-rule-strong/70" />
       <input
         ref={inputRef}
         value={title}
@@ -40,8 +44,8 @@ export default function NewTaskLine({ date }: Props) {
           if (title.trim()) handleSave()
         }}
         onKeyDown={handleKeyDown}
-        placeholder="Add task..."
-        className="flex-1 bg-transparent outline-none text-base placeholder:text-gray-300"
+        placeholder="Add task…"
+        className="flex-1 bg-transparent outline-none text-[15px] leading-snug text-ink placeholder:text-faint"
       />
     </div>
   )

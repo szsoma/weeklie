@@ -19,7 +19,7 @@ function TaskDragOverlay() {
 
   return (
     <DragOverlay dropAnimation={null}>
-      <div className="opacity-80 bg-white border border-black/20 rounded-lg px-3 py-1.5 shadow-lg text-base cursor-grabbing">
+      <div className="opacity-90 bg-surface border border-rule-strong rounded-md px-3 py-2 shadow-lg text-[15px] cursor-grabbing">
         {activeTask.title}
       </div>
     </DragOverlay>
@@ -76,7 +76,7 @@ export default function App() {
       {isSunday && !showReview && (
         <button
           onClick={() => setShowReview(true)}
-          className="fixed top-2 left-1/2 -translate-x-1/2 bg-black text-white px-4 py-2 rounded-full text-sm shadow-lg z-40"
+          className="fixed top-2 left-1/2 -translate-x-1/2 bg-ink text-bg px-4 py-2 rounded-full font-mono text-[12px] uppercase tracking-[0.12em] shadow-lg z-40"
         >
           Ready for your weekly review?
         </button>

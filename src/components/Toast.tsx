@@ -20,9 +20,9 @@ export default function Toast({ message, onUndo, onDismiss, duration = 5000 }: P
 
   return (
     <div
-      className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-50 flex items-center gap-3 transition-opacity ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-ink text-bg px-4 py-2.5 rounded-md shadow-lg z-50 flex items-center gap-3 transition-opacity ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
-      <span className="text-sm">{message}</span>
+      <span className="text-[13px]">{message}</span>
       {onUndo && (
         <button
           onClick={onUndo}

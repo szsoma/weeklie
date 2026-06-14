@@ -70,15 +70,28 @@ export default function ReviewScreen({ onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-[#f5f0e8] z-50 overflow-y-auto">
-      <div className="max-w-lg mx-auto px-6 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-mono font-bold">Weekly Review</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-black">✕</button>
+    <div className="fixed inset-0 bg-bg z-50 overflow-y-auto">
+      <div className="max-w-lg mx-auto px-6 py-10">
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col">
+            <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-faint leading-none mb-1.5">
+              Retrospective
+            </span>
+            <h2 className="font-mono font-semibold text-xl tracking-tight leading-none">
+              Weekly Review
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="grid place-items-center w-8 h-8 rounded-md text-muted hover:text-ink hover:bg-ink/[0.06] transition"
+          >
+            ✕
+          </button>
         </div>
 
         {/* Streak */}
-        <div className="text-sm text-gray-500 mb-4">
+        <div className="text-sm text-muted mb-6 font-mono">
           🔥 {streak}-week review streak
         </div>
 
@@ -86,18 +99,18 @@ export default function ReviewScreen({ onClose }: Props) {
         <div className="flex items-center gap-6 mb-8">
           <RingChart completed={completed.length} total={weekTasks.length} />
           <div>
-            <div className="text-2xl font-mono font-bold">
+            <div className="text-2xl font-mono font-semibold tabular-nums">
               {completed.length} of {weekTasks.length}
             </div>
-            <div className="text-sm text-gray-500">tasks completed</div>
+            <div className="text-sm text-muted">tasks completed</div>
           </div>
         </div>
 
         {/* Done list */}
         <div className="mb-8">
-          <h3 className="text-sm font-mono text-gray-500 mb-2">Completed</h3>
+          <h3 className="font-mono text-[11px] uppercase tracking-[0.2em] text-faint mb-3">Completed</h3>
           {completed.map(task => (
-            <div key={task.id} className="text-sm line-through text-gray-400 py-0.5">
+            <div key={task.id} className="text-[15px] line-through text-faint py-1 border-b border-rule">
               {task.title}
             </div>
           ))}
@@ -106,28 +119,28 @@ export default function ReviewScreen({ onClose }: Props) {
         {/* Rolled over */}
         {rolledOver.length > 0 && (
           <div className="mb-8">
-            <h3 className="text-sm font-mono text-gray-500 mb-2">Slipped</h3>
+            <h3 className="font-mono text-[11px] uppercase tracking-[0.2em] text-faint mb-3">Slipped</h3>
             {rolledOver.map(task => (
-              <div key={task.id} className="flex items-center gap-2 py-1">
-                <span className="text-sm flex-1">{task.title}</span>
-                <span className="text-xs bg-black/10 px-2 py-0.5 rounded font-mono">
+              <div key={task.id} className="flex items-center gap-2 py-1.5 border-b border-rule">
+                <span className="text-[15px] flex-1">{task.title}</span>
+                <span className="text-[11px] bg-ink/[0.06] px-2 py-0.5 rounded font-mono tabular-nums text-muted">
                   moved {task.rolledOverCount}×
                 </span>
                 <button
                   onClick={() => moveTask(task.id, formatDate(weekDays[0]), task.order)}
-                  className="text-xs text-blue-500 hover:underline"
+                  className="text-[11px] font-mono uppercase tracking-wider text-ink hover:underline"
                 >
-                  → Next week
+                  Next wk
                 </button>
                 <button
                   onClick={() => moveTask(task.id, null, task.order)}
-                  className="text-xs text-gray-500 hover:underline"
+                  className="text-[11px] font-mono uppercase tracking-wider text-muted hover:text-ink hover:underline"
                 >
-                  → Backlog
+                  Backlog
                 </button>
                 <button
                   onClick={() => deleteTask(task.id)}
-                  className="text-xs text-red-400 hover:underline"
+                  className="text-[11px] font-mono uppercase tracking-wider text-muted hover:text-red-500"
                 >
                   Delete
                 </button>
@@ -138,18 +151,18 @@ export default function ReviewScreen({ onClose }: Props) {
 
         {/* Reflection */}
         <div className="mb-8">
-          <h3 className="text-sm font-mono text-gray-500 mb-2">Reflection</h3>
+          <h3 className="font-mono text-[11px] uppercase tracking-[0.2em] text-faint mb-3">Reflection</h3>
           <input
             value={reflection}
             onChange={e => setReflection(e.target.value)}
             placeholder="How was your week?"
-            className="w-full bg-transparent border-b border-black/20 outline-none py-2"
+            className="w-full bg-transparent border-b border-rule-strong outline-none py-2 text-[15px] placeholder:text-faint focus:border-ink transition-colors"
           />
         </div>
 
         <button
           onClick={handleSave}
-          className="w-full py-3 bg-black text-white rounded hover:bg-black/80"
+          className="w-full py-3 bg-ink text-bg rounded-md font-mono text-[13px] uppercase tracking-[0.12em] hover:opacity-80 active:scale-[0.99] transition"
         >
           Done
         </button>

@@ -1,25 +1,93 @@
 @import "tailwindcss";
 
+/*
+  Semantic design tokens.
+  Surfaces resolve to runtime CSS vars so light/dark switch automatically.
+  This generates utilities: bg-bg, text-ink, text-muted, text-faint,
+  border-rule, border-rule-strong, bg-today.
+*/
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-today: var(--today);
+}
+
 :root {
-  --bg: #f5f0e8;
-  --text: #1a1a1a;
+  --bg: #f5f0e8;            /* warm paper */
+  --surface: #fbf7ef;        /* lifted card */
+  --ink: #1a1a1a;            /* primary text */
+  --muted: #797264;          /* warm gray for secondary text */
+  --faint: #b1a894;          /* placeholders / day tabs */
+  --rule: rgba(26, 26, 26, 0.08);
+  --rule-strong: rgba(26, 26, 26, 0.16);
+  --today: rgba(26, 26, 26, 0.035);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #1a1a1a;
-    --text: #e5e5e5;
+    --surface: #21211f;
+    --ink: #e9e3d6;          /* warm off-white */
+    --muted: #928b7c;
+    --faint: #5e5850;
+    --rule: rgba(233, 227, 214, 0.09);
+    --rule-strong: rgba(233, 227, 214, 0.18);
+    --today: rgba(233, 227, 214, 0.045);
   }
 }
 
-body {
-  background-color: var(--bg);
-  color: var(--text);
-  font-family: 'Geist', system-ui, sans-serif;
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    /* Geist sans for body / task content — readable at length */
+    font-family: 'Geist', system-ui, -apple-system, sans-serif;
+  }
+
+  ::selection {
+    background: var(--ink);
+    color: var(--bg);
+  }
 }
 
-code, pre, .font-mono {
-  font-family: 'Geist Mono', monospace;
+/* Geist Mono handles every structural/label element: dates, counts, tabs.
+   Tabular figures keep columns of digits perfectly aligned. */
+code,
+pre,
+.font-mono {
+  font-family: 'Geist Mono', ui-monospace, 'SF Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Refined, low-contrast scrollbars that sit inside the paper aesthetic */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--rule-strong);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+  background-clip: content-box;
 }
 
 @media (prefers-reduced-motion: reduce) {

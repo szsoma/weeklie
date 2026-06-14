@@ -24,31 +24,55 @@ export default function DayColumn({ date }: Props) {
   })
 
   const dayName = date.toLocaleDateString('en-US', { weekday: 'short' })
-  const monthName = date.toLocaleDateString('en-US', { month: 'long' })
+  const monthName = date.toLocaleDateString('en-US', { month: 'short' })
   const dayNum = date.getDate()
   const today = isToday(date)
 
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col min-h-0 ${today ? 'bg-black/[.03]' : ''}`}
+      className={`relative flex flex-col min-h-0 h-full ${today ? 'bg-today' : ''}`}
     >
-      <div className="sticky top-0 z-10 px-2 py-2 flex items-baseline justify-between md:static" style={{ backgroundColor: 'var(--bg)' }}>
-        <div className={`text-base font-mono font-semibold ${today ? 'font-bold' : ''}`}>
-          {dayNum} <span className="font-normal">{monthName}</span>
+      {/* Today accent — a hairline ink cap across the column top */}
+      {today && <div className="absolute inset-x-0 top-0 h-[2px] bg-ink z-20" />}
+
+      <div
+        className="sticky top-0 z-10 md:static px-3 md:px-4 pt-3.5 pb-3 flex items-baseline justify-between gap-2 border-b border-rule"
+        style={{ backgroundColor: 'var(--bg)' }}
+      >
+        <div className="flex items-baseline gap-1.5 min-w-0">
+          <span className="font-mono font-semibold text-[17px] leading-none tabular-nums text-ink">
+            {String(dayNum).padStart(2, '0')}
+          </span>
+          <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted leading-none">
+            {monthName}
+          </span>
         </div>
-        <div className="text-base text-gray-500 font-mono">{dayName}</div>
+        <span
+          className={`font-mono text-[10px] uppercase tracking-[0.2em] leading-none ${
+            today ? 'text-ink font-semibold' : 'text-faint'
+          }`}
+        >
+          {dayName}
+        </span>
       </div>
-      <div className="flex-1 overflow-y-auto px-2 pb-2">
+
+      <div className="flex-1 overflow-y-auto px-3 md:px-4 pb-3">
         {tasks.map(task => (
           <TaskRow key={task.id} task={task} />
         ))}
+
+        {/* Empty ruled slots — fill the column like notebook lines */}
         {Array.from({ length: Math.max(0, 3 - tasks.length) }).map((_, i) => (
-          <div key={`empty-${i}`} className="flex items-center gap-2 py-1.5 border-b border-black/5">
-            <div className="w-3 h-3 rounded-full flex-shrink-0" />
-            <div className="flex-1 h-4" />
+          <div
+            key={`empty-${i}`}
+            className="flex items-center gap-2.5 py-2 border-b border-rule"
+          >
+            <div className="w-3.5 h-3.5 rounded-full flex-shrink-0 border border-dashed border-rule-strong/60" />
+            <div className="flex-1" />
           </div>
         ))}
+
         <NewTaskLine date={formatDate(date)} />
       </div>
     </div>

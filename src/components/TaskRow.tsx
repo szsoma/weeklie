@@ -7,10 +7,10 @@ const COLOR_TOKENS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'] as c
 const COLOR_MAP: Record<string, string> = {
   red: '#e74c3c',
   orange: '#e67e22',
-  yellow: '#f1c40f',
-  green: '#2ecc71',
-  blue: '#3498db',
-  purple: '#9b59b6',
+  yellow: '#eab308',
+  green: '#22c55e',
+  blue: '#3b82f6',
+  purple: '#a855f7',
 }
 
 type Props = {
@@ -67,15 +67,25 @@ export default function TaskRow({ task }: Props) {
     : undefined
 
   return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className={`flex items-center gap-2 py-1.5 group text-base cursor-grab ${isEditing ? '' : 'border-b border-black/10'} ${isDragging ? 'opacity-30 cursor-grabbing' : ''}`}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      className={`group relative flex items-center gap-2.5 py-2 pr-1 text-[15px] leading-snug cursor-grab ${
+        isEditing ? '' : 'border-b border-rule'
+      } ${isDragging ? 'opacity-40 cursor-grabbing' : 'hover:bg-ink/[0.025]'}`}
+    >
       <button
         onClick={cycleColor}
-        className="w-3 h-3 rounded-full flex-shrink-0"
+        aria-label="Cycle task color"
+        className="w-3.5 h-3.5 rounded-full flex-shrink-0 transition-transform hover:scale-110"
         style={{
           backgroundColor: task.color !== null ? COLOR_MAP[task.color] : 'transparent',
-          border: task.color !== null ? 'none' : '1px solid #ccc',
+          border: task.color !== null ? 'none' : '1px solid var(--rule-strong)',
         }}
       />
+
       {isEditing ? (
         <input
           ref={inputRef}
@@ -83,30 +93,48 @@ export default function TaskRow({ task }: Props) {
           onChange={e => setEditTitle(e.target.value)}
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent border-b border-black/20 outline-none text-base"
+          className="flex-1 bg-transparent border-b border-ink/30 outline-none text-[15px] leading-snug py-0.5"
         />
       ) : (
         <span
           onClick={() => setIsEditing(true)}
-          className={`flex-1 cursor-text text-base ${task.done ? 'line-through text-gray-400' : ''}`}
+          className={`flex-1 cursor-text ${task.done ? 'line-through text-faint' : 'text-ink'}`}
         >
           {task.title}
         </span>
       )}
-      <input
-        type="checkbox"
-        checked={task.done}
-        onChange={() => toggleDone(task.id)}
-        onPointerDown={(e) => e.stopPropagation()}
-        className="flex-shrink-0 cursor-pointer"
-      />
+
+      {/* Custom checkbox — cream check on ink fill */}
+      <label className="relative flex-shrink-0 inline-flex w-[18px] h-[18px] cursor-pointer">
+        <input
+          type="checkbox"
+          checked={task.done}
+          onChange={() => toggleDone(task.id)}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="peer sr-only"
+        />
+        <span className="absolute inset-0 rounded-[5px] border border-rule-strong bg-bg transition-colors peer-checked:border-ink peer-checked:bg-ink" />
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--bg)"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="pointer-events-none relative z-10 m-auto w-[11px] h-[11px] opacity-0 peer-checked:opacity-100 transition-opacity"
+        >
+          <path d="M5 12.5l4.5 4.5L19 7" />
+        </svg>
+      </label>
+
       <button
         onClick={(e) => {
           e.stopPropagation()
           deleteTask(task.id)
         }}
         onPointerDown={(e) => e.stopPropagation()}
-        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 flex-shrink-0"
+        aria-label="Delete task"
+        className="flex-shrink-0 w-4 text-faint hover:text-red-500 opacity-0 group-hover:opacity-100 focus:opacity-100 transition leading-none text-lg"
       >
         ×
       </button>
