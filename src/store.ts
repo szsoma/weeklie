@@ -136,14 +136,20 @@ export const useStore = create<State & Actions>((set, get) => ({
     const { tasks, updateTask } = get()
     const today = formatDate(new Date())
     const overdue = tasks.filter(
-      t => t.date !== null && t.date < today && !t.done
+      t => t.date !== null &&
+           t.date < today &&
+           !t.done &&
+           t.lastRolledOverAt !== today
     )
 
     for (const task of overdue) {
       await updateTask(task.id, {
         date: today,
         rolledOverCount: task.rolledOverCount + 1,
+        lastRolledOverAt: today,
+        plannedDate: task.plannedDate ?? task.date,
       })
+      await logEvent(task.id, 'rolled-over', task.date, today)
     }
 
     return overdue.length
