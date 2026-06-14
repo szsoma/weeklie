@@ -8,6 +8,8 @@ import {
   isToday,
   isBefore,
   startOfDay,
+  getISOWeek,
+  getISOWeekYear,
 } from 'date-fns'
 
 export function formatWeekLabel(weekStart: Date): string {
@@ -44,6 +46,19 @@ export function isTaskOverdue(dateStr: string): boolean {
   const taskDate = startOfDay(new Date(dateStr))
   const today = startOfDay(new Date())
   return isBefore(taskDate, today)
+}
+
+export function toLocalDateKey(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+export function getWeekId(date: Date): string {
+  const year = getISOWeekYear(date)
+  const week = getISOWeek(date)
+  return `${year}-W${String(week).padStart(2, '0')}`
 }
 
 export { isToday }
