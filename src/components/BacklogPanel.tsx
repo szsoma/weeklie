@@ -22,7 +22,7 @@ export default function BacklogPanel() {
       <div className="px-4 py-2">
         <h2 className="text-sm font-mono text-gray-500">Backlog</h2>
       </div>
-      <div className="flex-1 overflow-y-auto px-4 pb-2">
+      <div className="flex-1 overflow-y-auto px-5 pb-3">
         {tasks.map(task => (
           <TaskRow key={task.id} task={task} />
         ))}
