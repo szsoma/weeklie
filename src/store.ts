@@ -2,7 +2,19 @@ import { create } from 'zustand'
 import { db } from './db'
 import { createId } from './nanoid'
 import { formatDate, getWeekStart } from './dates'
-import type { Task, WeekReview } from './types'
+import type { Task, TaskEvent, TaskEventType, WeekReview } from './types'
+
+async function logEvent(taskId: string, type: TaskEventType, fromDate?: string | null, toDate?: string | null) {
+  const event: TaskEvent = {
+    id: createId(),
+    taskId,
+    type,
+    fromDate: fromDate ?? null,
+    toDate: toDate ?? null,
+    createdAt: new Date().toISOString(),
+  }
+  await db.events.add(event)
+}
 
 type State = {
   tasks: Task[]
@@ -60,6 +72,7 @@ export const useStore = create<State & Actions>((set, get) => ({
     }
 
     await db.tasks.add(task)
+    await logEvent(task.id, 'created', null, date)
     set({ tasks: [...tasks, task] })
   },
 
@@ -80,6 +93,8 @@ export const useStore = create<State & Actions>((set, get) => ({
     const now = new Date().toISOString()
     const doneAt = done ? now : null
     await db.tasks.update(id, { done, doneAt, updatedAt: now })
+    const eventType = done ? 'completed' : 'reopened'
+    await logEvent(id, eventType, task.date, task.date)
     set({
       tasks: get().tasks.map(t =>
         t.id === id ? { ...t, done, doneAt, updatedAt: now } : t
@@ -88,8 +103,12 @@ export const useStore = create<State & Actions>((set, get) => ({
   },
 
   deleteTask: async (id) => {
+    const task = get().tasks.find(t => t.id === id)
+    if (!task) return
+
     const now = new Date().toISOString()
     await db.tasks.update(id, { deletedAt: now, updatedAt: now })
+    await logEvent(id, 'deleted', task.date, null)
     set({
       tasks: get().tasks.map(t =>
         t.id === id ? { ...t, deletedAt: now, updatedAt: now } : t
@@ -98,8 +117,12 @@ export const useStore = create<State & Actions>((set, get) => ({
   },
 
   moveTask: async (id, newDate, newOrder) => {
+    const task = get().tasks.find(t => t.id === id)
+    if (!task) return
+
     const now = new Date().toISOString()
     await db.tasks.update(id, { date: newDate, order: newOrder, updatedAt: now })
+    await logEvent(id, 'moved', task.date, newDate)
     set({
       tasks: get().tasks.map(t =>
         t.id === id ? { ...t, date: newDate, order: newOrder, updatedAt: now } : t
