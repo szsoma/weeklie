@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Env
+.env
+.env.local
+.env.*.local
+
 # Playwright MCP inspection artifacts
 .playwright-mcp/
 
@@ -25,3 +30,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.playwright-mcp

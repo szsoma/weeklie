@@ -3,20 +3,11 @@ import { createRoot } from 'react-dom/client'
 import App from './App'
 import ErrorBoundary from './components/ErrorBoundary'
 import './index.css'
-import { useStore } from './store'
 
-async function bootstrap() {
-  await useStore.getState().loadTasks()
-  await useStore.getState().loadEvents()
-  await useStore.getState().loadReviews()
-
-  createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
-    </StrictMode>
-  )
-}
-
-bootstrap()
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  </StrictMode>
+)
