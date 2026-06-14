@@ -57,31 +57,20 @@ export default function TaskRow({ task }: Props) {
     }
   }
 
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: task.id,
     data: { date: task.date, order: task.order },
   })
 
   const style = transform
-    ? {
-        transform: `translate(${transform.x}px, ${transform.y}px)`,
-        zIndex: 50,
-        opacity: 0.9,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-      }
+    ? { transform: `translate(${transform.x}px, ${transform.y}px)` }
     : undefined
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
-      className={`flex items-center gap-3 py-2 px-1 group border-b border-black/10 cursor-grab active:cursor-grabbing ${isDragging ? 'bg-white rounded shadow-lg' : ''}`}
-    >
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className="flex items-center gap-2 py-1 group border-b border-black/10">
       <button
         onClick={cycleColor}
-        className="w-4 h-4 rounded-full flex-shrink-0"
+        className="w-3 h-3 rounded-full flex-shrink-0"
         style={{
           backgroundColor: task.color !== null ? COLOR_MAP[task.color] : 'transparent',
           border: task.color !== null ? 'none' : '1px solid #ccc',
@@ -94,12 +83,12 @@ export default function TaskRow({ task }: Props) {
           onChange={e => setEditTitle(e.target.value)}
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent border-b border-black/20 outline-none text-base"
+          className="flex-1 bg-transparent border-b border-black/20 outline-none"
         />
       ) : (
         <span
           onClick={() => setIsEditing(true)}
-          className={`flex-1 cursor-text text-base ${task.done ? 'line-through text-gray-400' : ''}`}
+          className={`flex-1 cursor-text ${task.done ? 'line-through text-gray-400' : ''}`}
         >
           {task.title}
         </span>
@@ -108,11 +97,11 @@ export default function TaskRow({ task }: Props) {
         type="checkbox"
         checked={task.done}
         onChange={() => toggleDone(task.id)}
-        className="flex-shrink-0 cursor-pointer w-4 h-4"
+        className="flex-shrink-0 cursor-pointer"
       />
       <button
         onClick={() => deleteTask(task.id)}
-        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 flex-shrink-0 text-lg"
+        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 flex-shrink-0"
       >
         ×
       </button>
