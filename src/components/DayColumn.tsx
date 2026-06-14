@@ -42,9 +42,12 @@ export default function DayColumn({ date }: Props) {
         {tasks.map(task => (
           <TaskRow key={task.id} task={task} />
         ))}
-        {tasks.length === 0 && (
-          <div className="text-xs text-gray-300 italic py-2">No tasks</div>
-        )}
+        {Array.from({ length: Math.max(0, 3 - tasks.length) }).map((_, i) => (
+          <div key={`empty-${i}`} className="flex items-center gap-2 py-1.5 border-b border-black/5">
+            <div className="w-3 h-3 rounded-full flex-shrink-0" />
+            <div className="flex-1 h-4" />
+          </div>
+        ))}
         <NewTaskLine date={formatDate(date)} />
       </div>
     </div>
