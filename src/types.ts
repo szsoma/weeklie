@@ -14,11 +14,34 @@ export type Task = {
   lastRolledOverAt: string | null;
 };
 
+export type TaskEventType =
+  | 'created'
+  | 'updated'
+  | 'completed'
+  | 'reopened'
+  | 'moved'
+  | 'rolled-over'
+  | 'deleted';
+
+export type TaskEvent = {
+  id: string;
+  taskId: string;
+  type: TaskEventType;
+  fromDate: string | null;
+  toDate: string | null;
+  createdAt: string;
+};
+
 export type WeekReview = {
   weekId: string;
   completedCount: number;
+  plannedCount: number;
   rolledOverCount: number;
   reflection: string;
   viewedAt: string;
   streak: number;
+  completedTaskIds: string[];
+  rolledOverTaskIds: string[];
+  createdAt: string;
+  updatedAt: string;
 };
