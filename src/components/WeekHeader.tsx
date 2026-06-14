@@ -8,7 +8,7 @@ export default function WeekHeader() {
   const goToToday = () => setCurrentWeekStart(getWeekStart(new Date()))
 
   return (
-    <header className="flex items-center justify-between px-8 py-5">
+    <header className="flex items-center justify-between px-10 py-5">
       <div className="flex items-center gap-4">
         <button
           onClick={() => setCurrentWeekStart(prevWeek(currentWeekStart))}
