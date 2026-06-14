@@ -67,7 +67,7 @@ export default function TaskRow({ task }: Props) {
     : undefined
 
   return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className={`flex items-center gap-2 py-1 group border-b border-black/10 text-base ${isDragging ? 'opacity-30' : ''}`}>
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className={`flex items-center gap-2 py-1.5 group text-base cursor-grab ${isEditing ? '' : 'border-b border-black/10'} ${isDragging ? 'opacity-30 cursor-grabbing' : ''}`}>
       <button
         onClick={cycleColor}
         className="w-3 h-3 rounded-full flex-shrink-0"

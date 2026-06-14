@@ -19,7 +19,7 @@ function TaskDragOverlay() {
 
   return (
     <DragOverlay dropAnimation={null}>
-      <div className="opacity-70 bg-white border border-black/20 rounded-lg px-3 py-1.5 shadow-md text-sm">
+      <div className="opacity-80 bg-white border border-black/20 rounded-lg px-3 py-1.5 shadow-lg text-base cursor-grabbing">
         {activeTask.title}
       </div>
     </DragOverlay>
