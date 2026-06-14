@@ -1,5 +1,6 @@
 import { useDroppable } from '@dnd-kit/core'
 import { useStore } from '../store'
+import { useShallow } from 'zustand/shallow'
 import { formatDate, isToday } from '../dates'
 import TaskRow from './TaskRow'
 import NewTaskLine from './NewTaskLine'
@@ -9,10 +10,12 @@ type Props = {
 }
 
 export default function DayColumn({ date }: Props) {
-  const tasks = useStore(s =>
-    s.tasks
-      .filter(t => t.date === formatDate(date))
-      .sort((a, b) => a.order - b.order)
+  const tasks = useStore(
+    useShallow(s =>
+      s.tasks
+        .filter(t => t.date === formatDate(date))
+        .sort((a, b) => a.order - b.order)
+    )
   )
 
   const { setNodeRef } = useDroppable({

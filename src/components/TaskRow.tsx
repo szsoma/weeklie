@@ -57,7 +57,7 @@ export default function TaskRow({ task }: Props) {
     }
   }
 
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
     data: { date: task.date, order: task.order },
   })
@@ -67,7 +67,7 @@ export default function TaskRow({ task }: Props) {
     : undefined
 
   return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className="flex items-center gap-2 py-1 group border-b border-black/10">
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className={`flex items-center gap-2 py-1 group border-b border-black/10 ${isDragging ? 'opacity-30' : ''}`}>
       <button
         onClick={cycleColor}
         className="w-3 h-3 rounded-full flex-shrink-0"

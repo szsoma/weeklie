@@ -1,5 +1,6 @@
 import { useDroppable } from '@dnd-kit/core'
 import { useStore } from '../store'
+import { useShallow } from 'zustand/shallow'
 import TaskRow from './TaskRow'
 import NewTaskLine from './NewTaskLine'
 
@@ -8,10 +9,12 @@ export default function BacklogPanel() {
     id: 'backlog',
     data: { date: null },
   })
-  const tasks = useStore(s =>
-    s.tasks
-      .filter(t => t.date === null)
-      .sort((a, b) => a.order - b.order)
+  const tasks = useStore(
+    useShallow(s =>
+      s.tasks
+        .filter(t => t.date === null)
+        .sort((a, b) => a.order - b.order)
+    )
   )
 
   return (

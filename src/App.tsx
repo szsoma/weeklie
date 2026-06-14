@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { DndContext, DragOverlay, PointerSensor, TouchSensor, useSensor, useSensors, useDndContext } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
 import WeekHeader from './components/WeekHeader'
 import WeekGrid from './components/WeekGrid'
@@ -8,6 +8,23 @@ import ReviewScreen from './components/ReviewScreen'
 import { useStore } from './store'
 import { useRollover } from './hooks/useRollover'
 import Toast from './components/Toast'
+
+function TaskDragOverlay() {
+  const { active } = useDndContext()
+  const activeTask = useStore(s =>
+    active?.id ? s.tasks.find(t => t.id === active.id) ?? null : null
+  )
+
+  if (!activeTask) return null
+
+  return (
+    <DragOverlay dropAnimation={null}>
+      <div className="opacity-70 bg-white border border-black/20 rounded-lg px-3 py-1.5 shadow-md text-sm">
+        {activeTask.title}
+      </div>
+    </DragOverlay>
+  )
+}
 
 export default function App() {
   const { toast: rolloverToast, clearToast } = useRollover()
@@ -43,7 +60,10 @@ export default function App() {
   }
 
   return (
-    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      onDragEnd={handleDragEnd}
+    >
       <div className="h-screen flex flex-col">
         <WeekHeader />
         <div className="flex-1 flex flex-col min-h-0">
@@ -68,6 +88,7 @@ export default function App() {
           onDismiss={clearToast}
         />
       )}
+      <TaskDragOverlay />
     </DndContext>
   )
 }
