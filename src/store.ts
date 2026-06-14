@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { db } from './db'
 import { createId } from './nanoid'
-import { formatDate } from './dates'
+import { formatDate, getWeekStart } from './dates'
 import type { Task, WeekReview } from './types'
 
 type State = {
@@ -27,11 +27,11 @@ type Actions = {
 export const useStore = create<State & Actions>((set, get) => ({
   tasks: [],
   reviews: [],
-  currentWeekStart: new Date(),
+  currentWeekStart: getWeekStart(new Date()),
   isLoading: true,
 
   loadTasks: async () => {
-    const tasks = await db.tasks.toArray()
+    const tasks = await db.tasks.filter(t => t.deletedAt === null).toArray()
     set({ tasks, isLoading: false })
   },
 
@@ -42,6 +42,7 @@ export const useStore = create<State & Actions>((set, get) => ({
       ? Math.max(...dayTasks.map(t => t.order))
       : 0
 
+    const now = new Date().toISOString()
     const task: Task = {
       id: createId(),
       title,
@@ -50,8 +51,12 @@ export const useStore = create<State & Actions>((set, get) => ({
       doneAt: null,
       color: null,
       order: maxOrder + 1,
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      plannedDate: date,
       rolledOverCount: 0,
+      lastRolledOverAt: null,
     }
 
     await db.tasks.add(task)
@@ -59,9 +64,11 @@ export const useStore = create<State & Actions>((set, get) => ({
   },
 
   updateTask: async (id, updates) => {
-    await db.tasks.update(id, updates)
+    const now = new Date().toISOString()
+    const updatesWithTimestamp = { ...updates, updatedAt: now }
+    await db.tasks.update(id, updatesWithTimestamp)
     set({
-      tasks: get().tasks.map(t => t.id === id ? { ...t, ...updates } : t),
+      tasks: get().tasks.map(t => t.id === id ? { ...t, ...updatesWithTimestamp } : t),
     })
   },
 
@@ -70,25 +77,32 @@ export const useStore = create<State & Actions>((set, get) => ({
     if (!task) return
 
     const done = !task.done
-    const doneAt = done ? new Date().toISOString() : null
-    await db.tasks.update(id, { done, doneAt })
+    const now = new Date().toISOString()
+    const doneAt = done ? now : null
+    await db.tasks.update(id, { done, doneAt, updatedAt: now })
     set({
       tasks: get().tasks.map(t =>
-        t.id === id ? { ...t, done, doneAt } : t
+        t.id === id ? { ...t, done, doneAt, updatedAt: now } : t
       ),
     })
   },
 
   deleteTask: async (id) => {
-    await db.tasks.delete(id)
-    set({ tasks: get().tasks.filter(t => t.id !== id) })
+    const now = new Date().toISOString()
+    await db.tasks.update(id, { deletedAt: now, updatedAt: now })
+    set({
+      tasks: get().tasks.map(t =>
+        t.id === id ? { ...t, deletedAt: now, updatedAt: now } : t
+      ),
+    })
   },
 
   moveTask: async (id, newDate, newOrder) => {
-    await db.tasks.update(id, { date: newDate, order: newOrder })
+    const now = new Date().toISOString()
+    await db.tasks.update(id, { date: newDate, order: newOrder, updatedAt: now })
     set({
       tasks: get().tasks.map(t =>
-        t.id === id ? { ...t, date: newDate, order: newOrder } : t
+        t.id === id ? { ...t, date: newDate, order: newOrder, updatedAt: now } : t
       ),
     })
   },
