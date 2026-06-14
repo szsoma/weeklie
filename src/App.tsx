@@ -3,7 +3,6 @@ import { DndContext, DragOverlay, PointerSensor, TouchSensor, useSensor, useSens
 import type { DragEndEvent } from '@dnd-kit/core'
 import WeekHeader from './components/WeekHeader'
 import WeekGrid from './components/WeekGrid'
-import BacklogPanel from './components/BacklogPanel'
 import ReviewScreen from './components/ReviewScreen'
 import { useStore } from './store'
 import { useRollover } from './hooks/useRollover'
@@ -66,12 +65,7 @@ export default function App() {
     >
       <div className="h-screen flex flex-col">
         <WeekHeader />
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex-1 min-h-0">
-            <WeekGrid />
-          </div>
-          <BacklogPanel />
-        </div>
+        <WeekGrid />
       </div>
       {isSunday && !showReview && (
         <button

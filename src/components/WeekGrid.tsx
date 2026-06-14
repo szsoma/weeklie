@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react'
 import { useStore } from '../store'
 import { getWeekDays, isToday } from '../dates'
 import DayColumn from './DayColumn'
+import BacklogPanel from './BacklogPanel'
 
 export default function WeekGrid() {
   const currentWeekStart = useStore(s => s.currentWeekStart)
@@ -15,40 +16,59 @@ export default function WeekGrid() {
   }, [])
 
   const weekdays = days.slice(0, 5) // Mon-Fri
-  const weekend = days.slice(5, 7)   // Sat-Sun
+  const saturday = days[5]
+  const sunday = days[6]
 
   return (
     <>
-      {/* Mobile: single scrolling column of stacked days */}
-      <div className="grid grid-cols-1 md:hidden flex-1 min-h-0 overflow-y-auto divide-y divide-rule">
+      {/* Mobile: single scrolling column of stacked days, then backlog */}
+      <div className="md:hidden flex-1 min-h-0 overflow-y-auto divide-y divide-rule">
         {days.map(day => (
           <div key={day.toISOString()} ref={isToday(day) ? todayRef : undefined}>
             <DayColumn date={day} />
           </div>
         ))}
+        <BacklogPanel />
       </div>
 
-      {/* Desktop: Mon-Fri across, Sat/Sun stacked on the right */}
-      <div className="hidden md:flex flex-1 min-h-0">
+      {/*
+        Desktop: a 6-column × 2-row grid.
+        Row 1: Mon Tue Wed Thu Fri | Sat
+        Row 2: Backlog (spans 5 cols) | Sun
+        Sat sits directly above Sun — each weekend day gets a full row of height.
+        gap-px + bg-rule draws hairline dividers between every cell.
+      */}
+      <div className="hidden md:grid flex-1 min-h-0 grid-cols-6 grid-rows-2 gap-px bg-rule">
+        {/* Row 1 — weekdays flow into columns 1–5 */}
         {weekdays.map(day => (
           <div
             key={day.toISOString()}
             ref={isToday(day) ? todayRef : undefined}
-            className="flex-1 min-w-0 border-l border-rule first:border-l-0"
+            className="min-w-0"
           >
             <DayColumn date={day} />
           </div>
         ))}
-        <div className="flex-1 min-w-0 flex flex-col border-l border-rule">
-          {weekend.map((day, i) => (
-            <div
-              key={day.toISOString()}
-              ref={isToday(day) ? todayRef : undefined}
-              className={`flex-1 min-h-0 ${i > 0 ? 'border-t border-rule' : ''}`}
-            >
-              <DayColumn date={day} />
-            </div>
-          ))}
+        {/* Row 1, column 6 — Saturday */}
+        <div
+          key={saturday.toISOString()}
+          ref={isToday(saturday) ? todayRef : undefined}
+          className="min-w-0"
+        >
+          <DayColumn date={saturday} />
+        </div>
+
+        {/* Row 2, columns 1–5 — Backlog */}
+        <div className="col-start-1 col-end-6 row-start-2 min-w-0">
+          <BacklogPanel />
+        </div>
+        {/* Row 2, column 6 — Sunday */}
+        <div
+          key={sunday.toISOString()}
+          ref={isToday(sunday) ? todayRef : undefined}
+          className="col-start-6 row-start-2 min-w-0"
+        >
+          <DayColumn date={sunday} />
         </div>
       </div>
     </>

@@ -31,7 +31,7 @@ export default function DayColumn({ date }: Props) {
   return (
     <div
       ref={setNodeRef}
-      className={`relative flex flex-col min-h-0 h-full ${today ? 'bg-today' : ''}`}
+      className={`relative flex flex-col min-h-0 h-full ${today ? 'bg-today' : 'bg-bg'}`}
     >
       {/* Today accent — a hairline ink cap across the column top */}
       {today && <div className="absolute inset-x-0 top-0 h-[2px] bg-ink z-20" />}
@@ -57,7 +57,7 @@ export default function DayColumn({ date }: Props) {
         </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 md:px-4 pb-3">
+      <div className="flex-1 min-h-0 overflow-y-auto px-3 md:px-4 pb-3">
         {tasks.map(task => (
           <TaskRow key={task.id} task={task} />
         ))}
