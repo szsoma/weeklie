@@ -27,7 +27,7 @@ export default function ReviewScreen({ onClose }: Props) {
   );
 
   const weekEvents = events.filter((e) => {
-    const eventDate = e.createdAt.slice(0, 10);
+    const eventDate = e.created_at.slice(0, 10);
     return (
       eventDate >= formatDate(weekStart) && eventDate <= formatDate(weekEnd)
     );
@@ -35,13 +35,13 @@ export default function ReviewScreen({ onClose }: Props) {
 
   const completedTaskIds = [
     ...new Set(
-      weekEvents.filter((e) => e.type === "completed").map((e) => e.taskId),
+      weekEvents.filter((e) => e.type === "completed").map((e) => e.task_id),
     ),
   ];
 
   const rolledOverTaskIds = [
     ...new Set(
-      weekEvents.filter((e) => e.type === "rolled-over").map((e) => e.taskId),
+      weekEvents.filter((e) => e.type === "rolled-over").map((e) => e.task_id),
     ),
   ];
 
@@ -56,17 +56,17 @@ export default function ReviewScreen({ onClose }: Props) {
   const handleSave = () => {
     const now = new Date().toISOString();
     const review: WeekReview = {
-      weekId,
-      completedCount: completed.length,
-      plannedCount: weekTasks.length,
-      rolledOverCount: rolledOver.length,
+      week_id: weekId,
+      completed_count: completed.length,
+      planned_count: weekTasks.length,
+      rolled_over_count: rolledOver.length,
       reflection,
-      viewedAt: now,
+      viewed_at: now,
       streak,
-      completedTaskIds,
-      rolledOverTaskIds,
-      createdAt: now,
-      updatedAt: now,
+      completed_task_ids: completedTaskIds,
+      rolled_over_task_ids: rolledOverTaskIds,
+      created_at: now,
+      updated_at: now,
     };
     saveReview(review);
     onClose();
@@ -137,7 +137,7 @@ export default function ReviewScreen({ onClose }: Props) {
               >
                 <span className="text-[17px] flex-1">{task.title}</span>
                 <span className="text-[11px] bg-ink/[0.06] px-2 py-0.5 rounded font-mono tabular-nums text-muted">
-                  moved {task.rolledOverCount}×
+                  moved {task.rolled_over_count}×
                 </span>
                 <button
                   onClick={() =>

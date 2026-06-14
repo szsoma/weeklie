@@ -7,6 +7,6 @@ export function findOverdueTasks(tasks: Task[]): Task[] {
     t => t.date !== null &&
          t.date < today &&
          !t.done &&
-         t.lastRolledOverAt !== today
+         t.last_rolled_over_at !== today
   )
 }

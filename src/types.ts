@@ -3,15 +3,15 @@ export type Task = {
   title: string;
   date: string | null; // "2026-06-12", null = Backlog
   done: boolean;
-  doneAt: string | null;
+  done_at: string | null;
   color: string | null; // "red" | "orange" | "yellow" | "green" | "blue" | "purple"
   order: number;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
-  plannedDate: string | null; // original scheduled date before rollover
-  rolledOverCount: number;
-  lastRolledOverAt: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  planned_date: string | null; // original scheduled date before rollover
+  rolled_over_count: number;
+  last_rolled_over_at: string | null; // date-only string "2026-06-14"
 };
 
 export type TaskEventType =
@@ -25,23 +25,23 @@ export type TaskEventType =
 
 export type TaskEvent = {
   id: string;
-  taskId: string;
+  task_id: string;
   type: TaskEventType;
-  fromDate: string | null;
-  toDate: string | null;
-  createdAt: string;
+  from_date: string | null;
+  to_date: string | null;
+  created_at: string;
 };
 
 export type WeekReview = {
-  weekId: string;
-  completedCount: number;
-  plannedCount: number;
-  rolledOverCount: number;
+  week_id: string;
+  completed_count: number;
+  planned_count: number;
+  rolled_over_count: number;
   reflection: string;
-  viewedAt: string;
+  viewed_at: string;
   streak: number;
-  completedTaskIds: string[];
-  rolledOverTaskIds: string[];
-  createdAt: string;
-  updatedAt: string;
+  completed_task_ids: string[];
+  rolled_over_task_ids: string[];
+  created_at: string;
+  updated_at: string;
 };
