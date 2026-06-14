@@ -3,7 +3,15 @@ import { useDraggable } from '@dnd-kit/core'
 import { useStore } from '../store'
 import type { Task } from '../types'
 
-const COLORS = ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6']
+const COLOR_TOKENS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'] as const
+const COLOR_MAP: Record<string, string> = {
+  red: '#e74c3c',
+  orange: '#e67e22',
+  yellow: '#f1c40f',
+  green: '#2ecc71',
+  blue: '#3498db',
+  purple: '#9b59b6',
+}
 
 type Props = {
   task: Task
@@ -40,9 +48,13 @@ export default function TaskRow({ task }: Props) {
   }
 
   const cycleColor = () => {
-    const current = task.color ?? -1
-    const next = (current + 1) % (COLORS.length + 1)
-    updateTask(task.id, { color: next > COLORS.length - 1 ? null : next })
+    if (task.color === null) {
+      updateTask(task.id, { color: COLOR_TOKENS[0] })
+    } else {
+      const currentIndex = COLOR_TOKENS.indexOf(task.color as typeof COLOR_TOKENS[number])
+      const nextIndex = currentIndex + 1
+      updateTask(task.id, { color: nextIndex >= COLOR_TOKENS.length ? null : COLOR_TOKENS[nextIndex] })
+    }
   }
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -55,12 +67,12 @@ export default function TaskRow({ task }: Props) {
     : undefined
 
   return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className="flex items-center gap-2 py-1 group">
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className="flex items-center gap-2 py-1 group border-b border-black/10">
       <button
         onClick={cycleColor}
         className="w-3 h-3 rounded-full flex-shrink-0"
         style={{
-          backgroundColor: task.color !== null ? COLORS[task.color] : 'transparent',
+          backgroundColor: task.color !== null ? COLOR_MAP[task.color] : 'transparent',
           border: task.color !== null ? 'none' : '1px solid #ccc',
         }}
       />
