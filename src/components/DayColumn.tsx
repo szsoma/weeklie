@@ -13,7 +13,7 @@ export default function DayColumn({ date }: Props) {
   const tasks = useStore(
     useShallow(s =>
       s.tasks
-        .filter(t => t.date === formatDate(date))
+        .filter(t => t.date === formatDate(date) && !(s.hideDone && t.done))
         .sort((a, b) => a.order - b.order)
     )
   )
@@ -37,19 +37,19 @@ export default function DayColumn({ date }: Props) {
       {today && <div className="absolute inset-x-0 top-0 h-[2px] bg-ink z-20" />}
 
       <div
-        className="sticky top-0 z-10 md:static px-3 md:px-4 pt-3.5 pb-3 flex items-baseline justify-between gap-2 border-b border-rule"
+        className="sticky top-0 z-10 md:static px-4 md:px-5 pt-4 pb-3.5 flex items-baseline justify-between gap-2 border-b border-rule"
         style={{ backgroundColor: 'var(--bg)' }}
       >
         <div className="flex items-baseline gap-1.5 min-w-0">
-          <span className="font-mono font-semibold text-[17px] leading-none tabular-nums text-ink">
+          <span className="font-mono font-semibold text-[19px] leading-none tabular-nums text-ink">
             {String(dayNum).padStart(2, '0')}
           </span>
-          <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted leading-none">
+          <span className="font-mono text-xs uppercase tracking-[0.12em] text-muted leading-none">
             {monthName}
           </span>
         </div>
         <span
-          className={`font-mono text-[10px] uppercase tracking-[0.2em] leading-none ${
+          className={`font-mono text-[11px] uppercase tracking-[0.2em] leading-none ${
             today ? 'text-ink font-semibold' : 'text-faint'
           }`}
         >
@@ -57,7 +57,7 @@ export default function DayColumn({ date }: Props) {
         </span>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-3 md:px-4 pb-3">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-5 pb-4">
         {tasks.map(task => (
           <TaskRow key={task.id} task={task} />
         ))}
@@ -66,10 +66,12 @@ export default function DayColumn({ date }: Props) {
         {Array.from({ length: Math.max(0, 3 - tasks.length) }).map((_, i) => (
           <div
             key={`empty-${i}`}
-            className="flex items-center gap-2.5 py-2 border-b border-rule"
+            className="flex items-start gap-3 py-2.5 pr-1.5 border-b border-rule"
           >
-            <div className="w-3.5 h-3.5 rounded-full flex-shrink-0 border border-dashed border-rule-strong/60" />
+            <div className="w-4 h-4 mt-[3px] rounded-full flex-shrink-0 border border-dashed border-rule-strong/60" />
             <div className="flex-1" />
+            <div className="w-5 h-5 mt-[1px] flex-shrink-0" aria-hidden="true" />
+            <div className="w-5 h-5 mt-[1px] flex-shrink-0" aria-hidden="true" />
           </div>
         ))}
 

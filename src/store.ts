@@ -16,12 +16,22 @@ async function logEvent(taskId: string, type: TaskEventType, fromDate?: string |
   await db.events.add(event)
 }
 
+const HIDE_DONE_KEY = 'weeklie.hideDone'
+function readHideDone(): boolean {
+  try {
+    return globalThis.localStorage?.getItem(HIDE_DONE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
 type State = {
   tasks: Task[]
   events: TaskEvent[]
   reviews: WeekReview[]
   currentWeekStart: Date
   isLoading: boolean
+  hideDone: boolean
 }
 
 type Actions = {
@@ -37,6 +47,7 @@ type Actions = {
   saveReview: (review: WeekReview) => Promise<void>
   loadReviews: () => Promise<void>
   normalizeOrders: (date: string) => void
+  setHideDone: (value: boolean) => void
 }
 
 export const useStore = create<State & Actions>((set, get) => ({
@@ -45,6 +56,7 @@ export const useStore = create<State & Actions>((set, get) => ({
   reviews: [],
   currentWeekStart: getWeekStart(new Date()),
   isLoading: true,
+  hideDone: readHideDone(),
 
   loadTasks: async () => {
     const tasks = await db.tasks.filter(t => t.deletedAt === null).toArray()
@@ -118,11 +130,9 @@ export const useStore = create<State & Actions>((set, get) => ({
     const now = new Date().toISOString()
     await db.tasks.update(id, { deletedAt: now, updatedAt: now })
     await logEvent(id, 'deleted', task.date, null)
-    set({
-      tasks: get().tasks.map(t =>
-        t.id === id ? { ...t, deletedAt: now, updatedAt: now } : t
-      ),
-    })
+    // Remove from live state so the row disappears immediately.
+    // The DB keeps a soft-delete (deletedAt) for history; loadTasks filters it.
+    set({ tasks: get().tasks.filter(t => t.id !== id) })
   },
 
   moveTask: async (id, newDate, newOrder) => {
@@ -201,5 +211,14 @@ export const useStore = create<State & Actions>((set, get) => ({
         updateTask(task.id, { order: newOrder })
       }
     })
+  },
+
+  setHideDone: (value) => {
+    try {
+      globalThis.localStorage?.setItem(HIDE_DONE_KEY, value ? '1' : '0')
+    } catch {
+      // ignore storage failures (private mode, etc.)
+    }
+    set({ hideDone: value })
   },
 }))

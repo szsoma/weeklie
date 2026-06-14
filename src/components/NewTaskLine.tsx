@@ -29,11 +29,11 @@ export default function NewTaskLine({ date }: Props) {
 
   return (
     <div
-      className={`flex items-center gap-2.5 py-2 pr-1 mt-0.5 rounded transition-colors ${
+      className={`flex items-start gap-3 py-2.5 pr-1.5 mt-0.5 rounded transition-colors ${
         isFocused ? 'bg-ink/[0.025]' : 'hover:bg-ink/[0.025]'
       }`}
     >
-      <div className="w-3.5 h-3.5 rounded-full flex-shrink-0 border border-dashed border-rule-strong/70" />
+      <div className="w-4 h-4 mt-[3px] rounded-full flex-shrink-0 border border-dashed border-rule-strong/70" />
       <input
         ref={inputRef}
         value={title}
@@ -45,8 +45,11 @@ export default function NewTaskLine({ date }: Props) {
         }}
         onKeyDown={handleKeyDown}
         placeholder="Add task…"
-        className="flex-1 bg-transparent outline-none text-[15px] leading-snug text-ink placeholder:text-faint"
+        className="flex-1 bg-transparent outline-none text-base leading-snug text-ink placeholder:text-faint"
       />
+      {/* Reserve the checkbox + delete slots so this input ends where task titles do */}
+      <div className="w-5 h-5 mt-[1px] flex-shrink-0" aria-hidden="true" />
+      <div className="w-5 h-5 mt-[1px] flex-shrink-0" aria-hidden="true" />
     </div>
   )
 }
