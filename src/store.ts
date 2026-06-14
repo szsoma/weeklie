@@ -34,6 +34,7 @@ type Actions = {
   rolloverTasks: () => Promise<number>
   saveReview: (review: WeekReview) => Promise<void>
   loadReviews: () => Promise<void>
+  normalizeOrders: (date: string) => void
 }
 
 export const useStore = create<State & Actions>((set, get) => ({
@@ -128,6 +129,19 @@ export const useStore = create<State & Actions>((set, get) => ({
         t.id === id ? { ...t, date: newDate, order: newOrder, updatedAt: now } : t
       ),
     })
+
+    const dayTasks = get().tasks
+      .filter(t => t.date === newDate && t.id !== id)
+      .map(t => t.order)
+
+    const needsNormalization = dayTasks.some(o => {
+      const diff = Math.abs(o - newOrder)
+      return diff < 0.001 && diff > 0
+    })
+
+    if (needsNormalization) {
+      setTimeout(() => get().normalizeOrders(newDate!), 0)
+    }
   },
 
   setCurrentWeekStart: (date) => set({ currentWeekStart: date }),
@@ -165,5 +179,19 @@ export const useStore = create<State & Actions>((set, get) => ({
   loadReviews: async () => {
     const reviews = await db.reviews.toArray()
     set({ reviews })
+  },
+
+  normalizeOrders: (date) => {
+    const { tasks, updateTask } = get()
+    const dayTasks = tasks
+      .filter(t => t.date === date)
+      .sort((a, b) => a.order - b.order)
+
+    dayTasks.forEach((task, index) => {
+      const newOrder = (index + 1) * 1000
+      if (task.order !== newOrder) {
+        updateTask(task.id, { order: newOrder })
+      }
+    })
   },
 }))
