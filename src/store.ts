@@ -136,7 +136,7 @@ export const useStore = create<State & Actions>((set, get) => ({
 
     const needsNormalization = dayTasks.some(o => {
       const diff = Math.abs(o - newOrder)
-      return diff < 0.001 && diff > 0
+      return diff < 0.001
     })
 
     if (needsNormalization) {
