@@ -18,6 +18,7 @@ async function logEvent(taskId: string, type: TaskEventType, fromDate?: string |
 
 type State = {
   tasks: Task[]
+  events: TaskEvent[]
   reviews: WeekReview[]
   currentWeekStart: Date
   isLoading: boolean
@@ -25,6 +26,7 @@ type State = {
 
 type Actions = {
   loadTasks: () => Promise<void>
+  loadEvents: () => Promise<void>
   addTask: (title: string, date: string | null) => Promise<void>
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>
   toggleDone: (id: string) => Promise<void>
@@ -39,6 +41,7 @@ type Actions = {
 
 export const useStore = create<State & Actions>((set, get) => ({
   tasks: [],
+  events: [],
   reviews: [],
   currentWeekStart: getWeekStart(new Date()),
   isLoading: true,
@@ -46,6 +49,11 @@ export const useStore = create<State & Actions>((set, get) => ({
   loadTasks: async () => {
     const tasks = await db.tasks.filter(t => t.deletedAt === null).toArray()
     set({ tasks, isLoading: false })
+  },
+
+  loadEvents: async () => {
+    const events = await db.events.toArray()
+    set({ events })
   },
 
   addTask: async (title, date) => {

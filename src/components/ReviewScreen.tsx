@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useStore } from '../store'
-import { formatDate, getWeekDays, getWeekStart } from '../dates'
+import { formatDate, getWeekDays, getWeekStart, getWeekId } from '../dates'
+import { endOfISOWeek } from 'date-fns'
 import RingChart from './RingChart'
 import type { WeekReview } from '../types'
 
@@ -10,33 +11,59 @@ type Props = {
 
 export default function ReviewScreen({ onClose }: Props) {
   const tasks = useStore(s => s.tasks)
+  const events = useStore(s => s.events)
   const reviews = useStore(s => s.reviews)
   const saveReview = useStore(s => s.saveReview)
   const deleteTask = useStore(s => s.deleteTask)
   const moveTask = useStore(s => s.moveTask)
 
   const weekStart = getWeekStart(new Date())
+  const weekEnd = endOfISOWeek(weekStart)
   const weekDays = getWeekDays(weekStart)
-  const weekId = `${weekStart.getFullYear()}-W${String(Math.ceil((weekStart.getDate()) / 7)).padStart(2, '0')}`
+  const weekId = getWeekId(weekStart)
 
   const weekTasks = tasks.filter(t =>
     t.date !== null && weekDays.some(d => formatDate(d) === t.date)
   )
-  const completed = weekTasks.filter(t => t.done)
-  const rolledOver = tasks.filter(t => t.rolledOverCount > 0 && !t.done)
+
+  const weekEvents = events.filter(e => {
+    const eventDate = e.createdAt.slice(0, 10)
+    return eventDate >= formatDate(weekStart) && eventDate <= formatDate(weekEnd)
+  })
+
+  const completedTaskIds = [...new Set(
+    weekEvents
+      .filter(e => e.type === 'completed')
+      .map(e => e.taskId)
+  )]
+
+  const rolledOverTaskIds = [...new Set(
+    weekEvents
+      .filter(e => e.type === 'rolled-over')
+      .map(e => e.taskId)
+  )]
+
+  const completed = tasks.filter(t => completedTaskIds.includes(t.id))
+  const rolledOver = tasks.filter(t => rolledOverTaskIds.includes(t.id))
 
   const [reflection, setReflection] = useState('')
 
   const streak = reviews.length > 0 ? reviews[reviews.length - 1].streak + 1 : 1
 
   const handleSave = () => {
+    const now = new Date().toISOString()
     const review: WeekReview = {
       weekId,
       completedCount: completed.length,
+      plannedCount: weekTasks.length,
       rolledOverCount: rolledOver.length,
       reflection,
-      viewedAt: new Date().toISOString(),
+      viewedAt: now,
       streak,
+      completedTaskIds,
+      rolledOverTaskIds,
+      createdAt: now,
+      updatedAt: now,
     }
     saveReview(review)
     onClose()
