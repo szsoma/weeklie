@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { DndContext, DragOverlay, PointerSensor, TouchSensor, useSensor, useSensors, useDndContext } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
+import type { Session } from '@supabase/supabase-js'
 import SiteHeader from './components/SiteHeader'
 import WeekHeader from './components/WeekHeader'
 import WeekGrid from './components/WeekGrid'
 import ReviewScreen from './components/ReviewScreen'
+import AuthScreen from './components/AuthScreen'
+import { supabase } from './lib/supabase'
 import { useStore } from './store'
 import { useRollover } from './hooks/useRollover'
 import Toast from './components/Toast'
@@ -29,6 +32,32 @@ function TaskDragOverlay() {
 export default function App() {
   const { toast: rolloverToast, clearToast } = useRollover()
   const moveTask = useStore(s => s.moveTask)
+  const loadTasks = useStore(s => s.loadTasks)
+  const loadEvents = useStore(s => s.loadEvents)
+  const loadReviews = useStore(s => s.loadReviews)
+  const isLoading = useStore(s => s.isLoading)
+
+  const [session, setSession] = useState<Session | null>(null)
+  const [authReady, setAuthReady] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session)
+      setAuthReady(true)
+    })
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s)
+      setAuthReady(true)
+    })
+    return () => sub.subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    if (!session) return
+    loadTasks()
+    loadEvents()
+    loadReviews()
+  }, [session, loadTasks, loadEvents, loadReviews])
 
   const [showReview, setShowReview] = useState(false)
 
@@ -57,15 +86,35 @@ export default function App() {
     moveTask(taskId, targetDate, targetOrder)
   }
 
+  if (!authReady) {
+    return (
+      <div className="h-screen grid place-items-center">
+        <span className="font-mono text-sm text-muted">Loading…</span>
+      </div>
+    )
+  }
+
+  if (!session) {
+    return <AuthScreen />
+  }
+
   return (
     <DndContext
       sensors={sensors}
       onDragEnd={handleDragEnd}
     >
       <div className="h-screen flex flex-col">
-        <SiteHeader />
-        <WeekHeader onShowReview={() => setShowReview(true)} />
-        <WeekGrid />
+        {isLoading ? (
+          <div className="h-screen grid place-items-center">
+            <span className="font-mono text-sm text-muted">Loading your week…</span>
+          </div>
+        ) : (
+          <>
+            <SiteHeader />
+            <WeekHeader onShowReview={() => setShowReview(true)} />
+            <WeekGrid />
+          </>
+        )}
       </div>
       {showReview && <ReviewScreen onClose={() => setShowReview(false)} />}
       {rolloverToast && (
