@@ -16,7 +16,7 @@ export default function WeekHeader() {
         >
           ←
         </button>
-        <h1 className="text-lg font-mono font-semibold">
+        <h1 className="text-xl font-mono font-semibold">
           {formatWeekLabel(currentWeekStart)}
         </h1>
         <button

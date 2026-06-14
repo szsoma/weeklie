@@ -33,8 +33,8 @@ export default function DayColumn({ date }: Props) {
       className={`flex flex-col min-h-0 ${today ? 'bg-black/[.03]' : ''}`}
     >
       <div className="sticky top-0 z-10 px-2 py-2 text-center md:static" style={{ backgroundColor: 'var(--bg)' }}>
-        <div className="text-xs text-gray-500 font-mono">{dayName}</div>
-        <div className={`text-sm font-mono ${today ? 'font-bold' : ''}`}>
+        <div className="text-sm text-gray-500 font-mono">{dayName}</div>
+        <div className={`text-base font-mono ${today ? 'font-bold' : ''}`}>
           {dayNum}
         </div>
       </div>

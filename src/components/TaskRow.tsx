@@ -67,7 +67,7 @@ export default function TaskRow({ task }: Props) {
     : undefined
 
   return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className={`flex items-center gap-2 py-1 group border-b border-black/10 ${isDragging ? 'opacity-30' : ''}`}>
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className={`flex items-center gap-2 py-1 group border-b border-black/10 text-base ${isDragging ? 'opacity-30' : ''}`}>
       <button
         onClick={cycleColor}
         className="w-3 h-3 rounded-full flex-shrink-0"
@@ -83,12 +83,12 @@ export default function TaskRow({ task }: Props) {
           onChange={e => setEditTitle(e.target.value)}
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent border-b border-black/20 outline-none"
+          className="flex-1 bg-transparent border-b border-black/20 outline-none text-base"
         />
       ) : (
         <span
           onClick={() => setIsEditing(true)}
-          className={`flex-1 cursor-text ${task.done ? 'line-through text-gray-400' : ''}`}
+          className={`flex-1 cursor-text text-base ${task.done ? 'line-through text-gray-400' : ''}`}
         >
           {task.title}
         </span>

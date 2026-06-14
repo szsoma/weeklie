@@ -41,7 +41,7 @@ export default function NewTaskLine({ date }: Props) {
         }}
         onKeyDown={handleKeyDown}
         placeholder="Add task..."
-        className="flex-1 bg-transparent outline-none text-sm placeholder:text-gray-300"
+        className="flex-1 bg-transparent outline-none text-base placeholder:text-gray-300"
       />
     </div>
   )
