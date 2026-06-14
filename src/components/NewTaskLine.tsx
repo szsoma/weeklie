@@ -28,8 +28,8 @@ export default function NewTaskLine({ date }: Props) {
   }
 
   return (
-    <div className="flex items-center gap-2 py-1 mt-1">
-      <div className="w-3 h-3 rounded-full border border-dashed border-gray-300 flex-shrink-0" />
+    <div className="flex items-center gap-3 py-2 mt-1">
+      <div className="w-4 h-4 rounded-full border border-dashed border-gray-300 flex-shrink-0" />
       <input
         ref={inputRef}
         value={title}
@@ -41,7 +41,7 @@ export default function NewTaskLine({ date }: Props) {
         }}
         onKeyDown={handleKeyDown}
         placeholder="Add task..."
-        className="flex-1 bg-transparent outline-none text-sm placeholder:text-gray-300"
+        className="flex-1 bg-transparent outline-none text-base placeholder:text-gray-300"
       />
     </div>
   )

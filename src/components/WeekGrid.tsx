@@ -14,13 +14,23 @@ export default function WeekGrid() {
     }
   }, [])
 
+  const weekdays = days.slice(0, 6) // Mon-Sat
+  const sunday = days[6] // Sunday
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-7 flex-1 min-h-0">
-      {days.map(day => (
-        <div key={day.toISOString()} ref={isToday(day) ? todayRef : undefined}>
-          <DayColumn date={day} />
+    <div className="flex-1 min-h-0 flex flex-col">
+      <div className="grid grid-cols-2 md:grid-cols-6 flex-1 min-h-0">
+        {weekdays.map(day => (
+          <div key={day.toISOString()} ref={isToday(day) ? todayRef : undefined}>
+            <DayColumn date={day} />
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-6 min-h-0">
+        <div className="md:col-start-6" ref={isToday(sunday) ? todayRef : undefined}>
+          <DayColumn date={sunday} />
         </div>
-      ))}
+      </div>
     </div>
   )
 }
