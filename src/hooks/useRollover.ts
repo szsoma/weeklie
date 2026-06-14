@@ -1,28 +1,18 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from '../store'
 
 export function useRollover() {
-  const rolloverTasks = useStore(s => s.rolloverTasks)
-  const hasRun = useRef(false)
+  const [toast, setToast] = useState<{ message: string; count: number } | null>(null)
 
   useEffect(() => {
-    if (hasRun.current) return
-    hasRun.current = true
-
-    rolloverTasks().then(count => {
+    const run = async () => {
+      const count = await useStore.getState().rolloverTasks()
       if (count > 0) {
-        // Toast will be handled by Toast component
-        console.log(`${count} tasks moved to today`)
-      }
-    })
-
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        rolloverTasks()
+        setToast({ message: `${count} task${count > 1 ? 's' : ''} moved to today`, count })
       }
     }
+    run()
+  }, [])
 
-    document.addEventListener('visibilitychange', handleVisibility)
-    return () => document.removeEventListener('visibilitychange', handleVisibility)
-  }, [rolloverTasks])
+  return { toast, clearToast: () => setToast(null) }
 }

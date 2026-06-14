@@ -7,9 +7,10 @@ import BacklogPanel from './components/BacklogPanel'
 import ReviewScreen from './components/ReviewScreen'
 import { useStore } from './store'
 import { useRollover } from './hooks/useRollover'
+import Toast from './components/Toast'
 
 export default function App() {
-  useRollover()
+  const { toast: rolloverToast, clearToast } = useRollover()
   const moveTask = useStore(s => s.moveTask)
 
   const [showReview, setShowReview] = useState(false)
@@ -61,6 +62,12 @@ export default function App() {
         </button>
       )}
       {showReview && <ReviewScreen onClose={() => setShowReview(false)} />}
+      {rolloverToast && (
+        <Toast
+          message={rolloverToast.message}
+          onDismiss={clearToast}
+        />
+      )}
     </DndContext>
   )
 }
