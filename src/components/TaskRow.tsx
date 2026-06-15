@@ -88,7 +88,7 @@ export default function TaskRow({ task }: Props) {
       style={style}
       {...listeners}
       {...attributes}
-      className={`group relative flex items-start gap-2 py-3.5 text-lg leading-snug cursor-grab ${
+      className={`group relative flex items-start gap-2 py-3 text-lg leading-snug cursor-grab ${
         isEditing ? "" : "border-b border-rule"
       } ${isDragging ? "opacity-40 cursor-grabbing" : "hover:bg-ink/[0.025]"}`}
     >

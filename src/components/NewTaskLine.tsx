@@ -29,7 +29,7 @@ export default function NewTaskLine({ date }: Props) {
 
   return (
     <div
-      className={`flex items-start gap-3.5 py-3.5 pr-1.5 mt-0.5 rounded transition-colors ${
+      className={`flex items-start gap-3 py-3 pr-1.5 mt-0.5 rounded transition-colors ${
         isFocused ? "bg-ink/[0.025]" : "hover:bg-ink/[0.025]"
       }`}
     >
