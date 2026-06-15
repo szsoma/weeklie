@@ -20,7 +20,7 @@ export default function Toast({ message, onUndo, onDismiss, duration = 5000 }: P
 
   return (
     <div
-      className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-ink text-bg px-5 py-3 rounded-md shadow-lg z-50 flex items-center gap-3 transition-opacity ${visible ? 'opacity-100' : 'opacity-0'}`}
+      className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-ink text-bg px-4 py-2 rounded-md shadow-lg z-50 flex items-center gap-3 transition-opacity ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       <span className="text-[14px]">{message}</span>
       {onUndo && (

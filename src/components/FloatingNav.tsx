@@ -91,7 +91,7 @@ export default function FloatingNav() {
       <div
         className="fixed z-50 bottom-[calc(env(safe-area-inset-bottom,0px)+16px)] left-1/2 -translate-x-1/2 w-[min(24rem,calc(100%-2rem))] bg-ink text-bg rounded-full shadow-xl border border-ink/5"
       >
-        <div className="flex items-center justify-between px-5 py-3">
+        <div className="flex items-center justify-between px-4 py-3">
           {/* Wordmark */}
           <a
             href="#"
