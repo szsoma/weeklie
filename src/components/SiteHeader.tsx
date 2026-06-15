@@ -24,11 +24,11 @@ export default function SiteHeader() {
 
   return (
     <header className="bg-ink text-bg">
-      <div className="flex items-center justify-between px-7 md:px-10 py-4">
+      <div className="flex items-center justify-between px-4 md:px-10 py-4">
         {/* Wordmark — checkmark glyph + terminal-style underscore cursor */}
         <a
           href="#"
-          className="inline-flex items-center gap-1 font-mono font-semibold text-[18px] tracking-tight text-bg whitespace-nowrap shrink-0 hover:opacity-80 transition"
+          className="inline-flex items-center gap-1 font-mono font-semibold text-[16px] md:text-[18px] tracking-tight text-bg whitespace-nowrap shrink-0 hover:opacity-80 transition"
         >
           <svg
             viewBox="0 0 24 24"
@@ -37,7 +37,7 @@ export default function SiteHeader() {
             strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="w-[18px] h-[18px]"
+            className="w-[16px] h-[16px] md:w-[18px] md:h-[18px]"
             aria-hidden
           >
             <path d="M5 12.5l4.5 4.5L19 7" />
@@ -71,7 +71,7 @@ export default function SiteHeader() {
           aria-expanded={open}
           aria-controls="mobile-nav"
           aria-label="Toggle menu"
-          className="md:hidden grid place-items-center w-10 h-10 -mr-2 rounded-md text-bg hover:bg-bg/10 active:scale-95 transition"
+          className="md:hidden grid place-items-center w-10 h-10 -mr-1 rounded-md text-bg hover:bg-bg/10 active:scale-95 transition"
         >
           <Hamburger />
         </button>
