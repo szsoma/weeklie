@@ -39,7 +39,7 @@ export default function DayColumn({ date }: Props) {
       )}
 
       <div
-        className="sticky top-0 z-10 font-bold md:static px-5 md:px-6 pt-5 pb-4 flex items-baseline justify-between gap-2 border-b border-rule"
+        className="sticky top-0 z-10 font-bold md:static px-6 md:px-10 py-3 flex items-baseline justify-between gap-2 border-b border-rule"
         style={{ backgroundColor: "var(--bg)" }}
       >
         <div className="flex items-baseline gap-1.5 min-w-0">
@@ -59,7 +59,7 @@ export default function DayColumn({ date }: Props) {
         </span>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-5 md:px-6 pb-5">
+      <div className="flex-1 min-h-0 overflow-y-auto px-6 md:px-10 pb-5">
         {tasks.map((task) => (
           <TaskRow key={task.id} task={task} />
         ))}
@@ -68,7 +68,7 @@ export default function DayColumn({ date }: Props) {
         {Array.from({ length: Math.max(0, 3 - tasks.length) }).map((_, i) => (
           <div
             key={`empty-${i}`}
-            className="flex items-start gap-3.5 py-3.5 pr-1.5 border-b border-rule"
+            className="flex items-start gap-3 py-3 pr-1.5 border-b border-rule"
           >
             <div className="w-[18px] h-[18px] mt-[3px] rounded-full flex-shrink-0 border border-dashed border-rule-strong/60" />
             <div className="flex-1" />
