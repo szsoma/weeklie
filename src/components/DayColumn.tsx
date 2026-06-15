@@ -39,7 +39,7 @@ export default function DayColumn({ date }: Props) {
       )}
 
       <div
-        className="sticky top-0 z-10 font-bold md:static px-6 md:px-10 py-3 flex items-baseline justify-between gap-2 border-b border-rule"
+        className="sticky top-0 z-10 font-bold md:static px-2 py-3 flex items-baseline justify-between gap-2 border-b border-rule"
         style={{ backgroundColor: "var(--bg)" }}
       >
         <div className="flex items-baseline gap-1.5 min-w-0">
@@ -59,7 +59,7 @@ export default function DayColumn({ date }: Props) {
         </span>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-6 md:px-10 pb-5">
+      <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-5">
         {tasks.map((task) => (
           <TaskRow key={task.id} task={task} />
         ))}
