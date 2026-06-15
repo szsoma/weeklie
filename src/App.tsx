@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { DndContext, DragOverlay, PointerSensor, TouchSensor, useSensor, useSensors, useDndContext } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
 import type { Session } from '@supabase/supabase-js'
-import SiteHeader from './components/SiteHeader'
+import FloatingNav from './components/FloatingNav'
 import WeekHeader from './components/WeekHeader'
 import WeekGrid from './components/WeekGrid'
 import ReviewScreen from './components/ReviewScreen'
@@ -110,9 +110,9 @@ export default function App() {
           </div>
         ) : (
           <>
-            <SiteHeader />
             <WeekHeader onShowReview={() => setShowReview(true)} />
             <WeekGrid />
+            <FloatingNav />
           </>
         )}
       </div>
