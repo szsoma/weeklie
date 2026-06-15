@@ -108,9 +108,9 @@ export default function WeekHeader({ onShowReview }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="flex items-center justify-between px-7 md:px-10 py-6 border-b-2 border-rule">
+    <header className="flex items-center justify-between px-6 md:px-10 py-4 border-b-2 border-rule">
       <div className="flex flex-col min-w-0 items-center text-center md:items-start md:text-left md:w-[280px]">
-        <span className="font-mono text-[12px] uppercase text-faint leading-none mb-1.5">
+        <span className="font-mono text-[12px] uppercase text-faint leading-none mb-1">
           Week
         </span>
         <h1 className="font-mono font-semibold text-[22px] md:text-[20px] tracking-tight leading-none whitespace-nowrap">
@@ -118,7 +118,7 @@ export default function WeekHeader({ onShowReview }: Props) {
         </h1>
       </div>
 
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2">
         {/* Previous week */}
         <button
           onClick={() => setCurrentWeekStart(prevWeek(currentWeekStart))}
@@ -138,7 +138,7 @@ export default function WeekHeader({ onShowReview }: Props) {
         </button>
 
         {/* Desktop action buttons — visible md and up */}
-        <div className="hidden md:flex items-center gap-2.5">
+        <div className="hidden md:flex items-center gap-2">
           {/* Hide done */}
           <button
             onClick={() => setHideDone(!hideDone)}
