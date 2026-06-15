@@ -1,23 +1,15 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useDraggable } from "@dnd-kit/core";
 import { useStore } from "../store";
 import type { Task } from "../types";
 
-const COLOR_TOKENS = [
-  "red",
-  "orange",
-  "yellow",
-  "green",
-  "blue",
-  "purple",
-] as const;
+const COLOR_TOKENS = ["red", "orange", "yellow", "green"] as const;
 const COLOR_MAP: Record<string, string> = {
   red: "#e74c3c",
   orange: "#e67e22",
   yellow: "#eab308",
   green: "#22c55e",
-  blue: "#3b82f6",
-  purple: "#a855f7",
 };
 
 type Props = {
@@ -27,7 +19,11 @@ type Props = {
 export default function TaskRow({ task }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
   const inputRef = useRef<HTMLInputElement>(null);
+  const kebabRef = useRef<HTMLButtonElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const toggleDone = useStore((s) => s.toggleDone);
   const updateTask = useStore((s) => s.updateTask);
   const deleteTask = useStore((s) => s.deleteTask);
@@ -54,20 +50,54 @@ export default function TaskRow({ task }: Props) {
     }
   };
 
-  const cycleColor = () => {
-    if (task.color === null) {
-      updateTask(task.id, { color: COLOR_TOKENS[0] });
-    } else {
-      const currentIndex = COLOR_TOKENS.indexOf(
-        task.color as (typeof COLOR_TOKENS)[number],
-      );
-      const nextIndex = currentIndex + 1;
-      updateTask(task.id, {
-        color:
-          nextIndex >= COLOR_TOKENS.length ? null : COLOR_TOKENS[nextIndex],
-      });
+  const openTooltip = useCallback(() => {
+    if (kebabRef.current) {
+      const rect = kebabRef.current.getBoundingClientRect();
+      setTooltipPos({ top: rect.bottom + 4, left: rect.right - 140 });
     }
-  };
+    setTooltipOpen(true);
+  }, []);
+
+  const selectColor = useCallback(
+    (color: string) => {
+      if (task.color === color) {
+        updateTask(task.id, { color: null });
+      } else {
+        updateTask(task.id, { color });
+      }
+      setTooltipOpen(false);
+    },
+    [task.color, task.id, updateTask],
+  );
+
+  const handleDelete = useCallback(() => {
+    deleteTask(task.id);
+    setTooltipOpen(false);
+  }, [deleteTask, task.id]);
+
+  // Close tooltip on outside click / Escape
+  useEffect(() => {
+    if (!tooltipOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (
+        tooltipRef.current &&
+        !tooltipRef.current.contains(e.target as Node) &&
+        kebabRef.current &&
+        !kebabRef.current.contains(e.target as Node)
+      ) {
+        setTooltipOpen(false);
+      }
+    };
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setTooltipOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleEsc);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, [tooltipOpen]);
 
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
@@ -75,54 +105,37 @@ export default function TaskRow({ task }: Props) {
       data: { date: task.date, order: task.order },
     });
 
-  const style = transform
+  const rowStyle = transform
     ? { transform: `translate(${transform.x}px, ${transform.y}px)` }
     : undefined;
 
-  // items-start + first-line offsets (mt-[3px]/mt-[1px]) keep the dot, checkbox
-  // and delete pinned to the FIRST line of the title, so every row's checkbox
-  // sits on the same horizontal line even when a long title wraps.
+  const hasColor = task.color !== null && task.color in COLOR_MAP;
+  const colorBg = hasColor
+    ? { backgroundColor: `${COLOR_MAP[task.color!]}18` }
+    : undefined;
+
   return (
     <div
       ref={setNodeRef}
-      style={style}
+      style={rowStyle}
       {...listeners}
       {...attributes}
-      className={`group relative flex items-start gap-2 py-3 text-lg leading-snug cursor-grab ${
-        isEditing ? "" : "border-b border-rule"
-      } ${isDragging ? "opacity-40 cursor-grabbing" : "hover:bg-ink/[0.025]"}`}
+      className={`group relative flex items-center m-1 gap-2 px-2 py-2 text-sm leading-snug cursor-grab transition-colors ${
+        hasColor ? "rounded-full" : ""
+      } ${isEditing ? "" : "border-rule"} ${
+        isDragging ? "opacity-40 cursor-grabbing" : "hover:bg-ink/[0.025]"
+      }`}
     >
-      <button
-        onClick={cycleColor}
-        aria-label="Cycle task color"
-        className="w-[18px] h-[18px] mt-[3px] rounded-full flex-shrink-0 transition-transform hover:scale-110"
-        style={{
-          backgroundColor:
-            task.color !== null ? COLOR_MAP[task.color] : "transparent",
-          border: task.color !== null ? "none" : "1px solid var(--rule-strong)",
-        }}
-      />
-
-      {isEditing ? (
-        <input
-          ref={inputRef}
-          value={editTitle}
-          onChange={(e) => setEditTitle(e.target.value)}
-          onBlur={handleSave}
-          onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent border-b border-ink/30 outline-none text-lg leading-snug py-0.5"
+      {/* Color background overlay */}
+      {hasColor && (
+        <div
+          className="absolute inset-0 rounded-full pointer-events-none"
+          style={colorBg}
         />
-      ) : (
-        <span
-          onClick={() => setIsEditing(true)}
-          className={`flex-1 cursor-text ${task.done ? "line-through text-faint" : "text-ink"}`}
-        >
-          {task.title}
-        </span>
       )}
 
-      {/* Trailing controls: checkbox then delete, pinned to the end of the row */}
-      <label className="relative flex-shrink-0 inline-flex w-5 h-5 mt-[1px] cursor-pointer">
+      {/* Checkbox */}
+      <label className="relative flex-shrink-0 inline-flex w-5 h-5 cursor-pointer z-[1]">
         <input
           type="checkbox"
           checked={task.done}
@@ -144,21 +157,109 @@ export default function TaskRow({ task }: Props) {
         </svg>
       </label>
 
-      {/*
-        Delete: always visible on touch (no hover), hover-revealed on desktop
-        to keep rows clean. Either way it's tappable and keyboard-focusable.
-      */}
+      {/* Title */}
+      {isEditing ? (
+        <input
+          ref={inputRef}
+          value={editTitle}
+          onChange={(e) => setEditTitle(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={handleKeyDown}
+          className="flex-1 bg-transparent border-b border-ink/30 outline-none text-sm leading-snug py-0.5 z-[1]"
+        />
+      ) : (
+        <span
+          onClick={() => setIsEditing(true)}
+          className={`flex-1 cursor-text truncate z-[1] ${
+            task.done ? "line-through text-faint" : "text-ink"
+          }`}
+        >
+          {task.title}
+        </span>
+      )}
+
+      {/* Kebab trigger */}
       <button
+        ref={kebabRef}
         onClick={(e) => {
           e.stopPropagation();
-          deleteTask(task.id);
+          if (!tooltipOpen) openTooltip();
+          else setTooltipOpen(false);
         }}
         onPointerDown={(e) => e.stopPropagation()}
-        aria-label="Delete task"
-        className="flex-shrink-0 w-6 mt-[1px] grid place-items-center text-faint hover:text-red-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 transition leading-none text-xl"
+        aria-label="Task options"
+        className="flex-shrink-0 w-4 h-5 grid place-items-center text-faint hover:text-ink transition-colors rounded z-[1]"
       >
-        ×
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+          <circle cx="12" cy="5" r="2" />
+          <circle cx="12" cy="12" r="2" />
+          <circle cx="12" cy="19" r="2" />
+        </svg>
       </button>
+
+      {/* Glass morphism tooltip — portalled to body to avoid overflow clipping */}
+      {tooltipOpen &&
+        createPortal(
+          <div
+            ref={tooltipRef}
+            className="fixed z-50 flex flex-col gap-3 p-3 min-w-[140px] rounded-xl shadow-xl"
+            style={{
+              top: tooltipPos.top,
+              left: tooltipPos.left,
+              backdropFilter: "blur(16px)",
+              WebkitBackdropFilter: "blur(16px)",
+              backgroundColor:
+                "color-mix(in srgb, var(--surface) 75%, transparent)",
+              border: "1px solid var(--rule-strong)",
+            }}
+          >
+            {/* Color dots */}
+            <div className="flex items-center justify-center gap-2">
+              {COLOR_TOKENS.map((color) => (
+                <button
+                  key={color}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    selectColor(color);
+                  }}
+                  className={`w-6 h-6 rounded-full transition-transform hover:scale-110 ${
+                    task.color === color
+                      ? "ring-2 ring-white/80 ring-offset-1 ring-offset-transparent"
+                      : ""
+                  }`}
+                  style={{ backgroundColor: COLOR_MAP[color] }}
+                  aria-label={`Set color ${color}`}
+                />
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-rule" />
+
+            {/* Delete */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete();
+              }}
+              className="flex items-center gap-2 text-xs text-faint hover:text-red-400 transition-colors px-1 py-0.5"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4"
+              >
+                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6" />
+              </svg>
+              Delete
+            </button>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
