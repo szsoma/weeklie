@@ -1,30 +1,33 @@
-import { useRef, useEffect } from 'react'
-import { useStore } from '../store'
-import { getWeekDays, isToday } from '../dates'
-import DayColumn from './DayColumn'
-import BacklogPanel from './BacklogPanel'
+import { useRef, useEffect } from "react";
+import { useStore } from "../store";
+import { getWeekDays, isToday } from "../dates";
+import DayColumn from "./DayColumn";
+import BacklogPanel from "./BacklogPanel";
 
 export default function WeekGrid() {
-  const currentWeekStart = useStore(s => s.currentWeekStart)
-  const days = getWeekDays(currentWeekStart)
-  const todayRef = useRef<HTMLDivElement>(null)
+  const currentWeekStart = useStore((s) => s.currentWeekStart);
+  const days = getWeekDays(currentWeekStart);
+  const todayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (window.innerWidth < 768 && todayRef.current) {
-      todayRef.current.scrollIntoView({ behavior: 'smooth' })
+      todayRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [])
+  }, []);
 
-  const weekdays = days.slice(0, 5) // Mon-Fri
-  const saturday = days[5]
-  const sunday = days[6]
+  const weekdays = days.slice(0, 5); // Mon-Fri
+  const saturday = days[5];
+  const sunday = days[6];
 
   return (
     <>
       {/* Mobile: single scrolling column of stacked days, then backlog */}
-      <div className="md:hidden flex-1 min-h-0 overflow-y-auto divide-y divide-rule">
-        {days.map(day => (
-          <div key={day.toISOString()} ref={isToday(day) ? todayRef : undefined}>
+      <div className="weekgrid md:hidden flex-1 min-h-0 overflow-y-auto divide-y divide-rule">
+        {days.map((day) => (
+          <div
+            key={day.toISOString()}
+            ref={isToday(day) ? todayRef : undefined}
+          >
             <DayColumn date={day} />
           </div>
         ))}
@@ -40,7 +43,7 @@ export default function WeekGrid() {
       */}
       <div className="hidden md:grid flex-1 min-h-0 grid-cols-6 grid-rows-2 gap-px bg-rule">
         {/* Row 1 — weekdays flow into columns 1–5 */}
-        {weekdays.map(day => (
+        {weekdays.map((day) => (
           <div
             key={day.toISOString()}
             ref={isToday(day) ? todayRef : undefined}
@@ -72,5 +75,5 @@ export default function WeekGrid() {
         </div>
       </div>
     </>
-  )
+  );
 }
