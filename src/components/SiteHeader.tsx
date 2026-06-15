@@ -85,7 +85,7 @@ export default function SiteHeader() {
         }`}
         aria-hidden={!open}
       >
-        <div className="px-7 py-4 flex flex-col gap-1">
+        <div className="px-4 py-4 flex flex-col gap-1">
           <a
             href="#about"
             onClick={() => setOpen(false)}
