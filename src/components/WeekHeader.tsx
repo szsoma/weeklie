@@ -108,7 +108,7 @@ export default function WeekHeader({ onShowReview }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="flex items-center justify-between px-6 md:px-10 py-4 border-b-2 border-rule">
+    <header className="flex items-center justify-between px-2 md:px-2 py-4 border-b-2 border-rule">
       <div className="flex flex-col min-w-0 items-center text-center md:items-start md:text-left md:w-[280px]">
         <span className="font-mono text-[12px] uppercase text-faint leading-none mb-1">
           Week
