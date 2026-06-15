@@ -204,7 +204,7 @@ export default function WeekHeader({ onShowReview }: Props) {
 
           {/* Popover menu */}
           {menuOpen && (
-            <div className="absolute right-0 top-full mt-1 z-40 w-48 bg-surface border border-rule-strong rounded-xl shadow-lg overflow-hidden">
+            <div className="absolute right-0 top-full mt-1 z-[45] w-48 bg-surface border border-rule-strong rounded-xl shadow-lg overflow-hidden">
               {/* Hide Done / Show Done */}
               <button
                 onClick={() => {
