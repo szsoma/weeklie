@@ -90,34 +90,34 @@ export default function WeekHeader({ onShowReview }: Props) {
 
   return (
     <header className="flex items-center justify-between px-7 md:px-10 py-6 border-b-2 border-rule">
-      <div className="flex items-center gap-4 md:gap-6">
+      <div className="flex flex-col min-w-0 items-center text-center md:items-start md:text-left md:w-[280px]">
+        <span className="font-mono text-[12px] uppercase text-faint leading-none mb-1.5">
+          Week
+        </span>
+        <h1 className="font-mono font-semibold text-[22px] md:text-[20px] tracking-tight leading-none whitespace-nowrap">
+          {formatWeekLabel(currentWeekStart)}
+        </h1>
+      </div>
+
+      <div className="flex items-center gap-2.5">
+        {/* Previous week */}
         <button
           onClick={() => setCurrentWeekStart(prevWeek(currentWeekStart))}
           aria-label="Previous week"
-          className="grid place-items-center w-10 h-10 -ml-2 rounded-md text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition"
+          className="grid place-items-center w-10 h-10 rounded-md text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition"
         >
           <Chevron direction="left" />
         </button>
 
-        <div className="flex flex-col min-w-0 items-center text-center md:w-[280px]">
-          <span className="font-mono text-[12px] uppercase text-faint leading-none mb-1.5">
-            Week
-          </span>
-          <h1 className="font-mono font-semibold text-[26px] md:text-[30px] tracking-tight leading-none whitespace-nowrap">
-            {formatWeekLabel(currentWeekStart)}
-          </h1>
-        </div>
-
+        {/* Next week */}
         <button
           onClick={() => setCurrentWeekStart(nextWeek(currentWeekStart))}
           aria-label="Next week"
-          className="grid place-items-center w-10 h-10 -mr-2 rounded-md text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition"
+          className="grid place-items-center w-10 h-10 rounded-md text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition"
         >
           <Chevron direction="right" />
         </button>
-      </div>
 
-      <div className="flex items-center gap-2.5">
         {/* Hide done — icon on mobile, text on desktop; done-count badge when hidden */}
         <button
           onClick={() => setHideDone(!hideDone)}
