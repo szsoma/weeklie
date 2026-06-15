@@ -73,8 +73,8 @@ export default function ReviewScreen({ onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 bg-bg z-50 overflow-y-auto p-8">
-      <div className="bg-amber-50 max-w-lg mx-auto px-8 py-12">
+    <div className="fixed inset-0 bg-bg z-50 overflow-y-auto p-6 md:p-8">
+      <div className="bg-amber-50 max-w-lg mx-auto px-6 py-8">
         <div className="flex justify-between items-center mb-8">
           <div className="flex flex-col">
             <span className="font-mono text-[11px] uppercase text-faint leading-none mb-1.5">
@@ -94,12 +94,12 @@ export default function ReviewScreen({ onClose }: Props) {
         </div>
 
         {/* Streak */}
-        <div className="text-sm text-muted mb-6 font-mono">
+        <div className="text-sm text-muted mb-4 font-mono">
           🔥 {streak}-week review streak
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-6 mb-8">
+        <div className="flex items-center gap-6 mb-6">
           <RingChart completed={completed.length} total={weekTasks.length} />
           <div>
             <div className="text-2xl font-mono font-semibold tabular-nums">
@@ -110,7 +110,7 @@ export default function ReviewScreen({ onClose }: Props) {
         </div>
 
         {/* Done list */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h3 className="font-mono text-[12px] uppercase text-faint mb-3">
             Completed
           </h3>
@@ -126,7 +126,7 @@ export default function ReviewScreen({ onClose }: Props) {
 
         {/* Rolled over */}
         {rolledOver.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-6">
             <h3 className="font-mono text-[12px] uppercase text-faint mb-3">
               Slipped
             </h3>
@@ -165,7 +165,7 @@ export default function ReviewScreen({ onClose }: Props) {
         )}
 
         {/* Reflection */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h3 className="font-mono text-[12px] uppercase text-faint mb-3">
             Reflection
           </h3>
