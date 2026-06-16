@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { supabase } from './lib/supabase'
 import { createId } from './nanoid'
 import { formatDate, getWeekStart } from './dates'
+import { playChime } from './lib/sound'
 import type { Task, TaskEvent, TaskEventType, WeekReview } from './types'
 
 async function logEvent(
@@ -124,6 +125,7 @@ export const useStore = create<State & Actions>((set, get) => ({
       set({ tasks: get().tasks.filter(t => t.id !== task.id) })
       return
     }
+    playChime('add')
     await logEvent(task.id, 'created', null, date)
   },
 
@@ -145,6 +147,7 @@ export const useStore = create<State & Actions>((set, get) => ({
     const done = !task.done
     const now = new Date().toISOString()
     await get().updateTask(id, { done, done_at: done ? now : null })
+    if (done) playChime('complete')
     await logEvent(id, done ? 'completed' : 'reopened', task.date, task.date)
   },
 
