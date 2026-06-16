@@ -22,7 +22,7 @@ export default function BacklogPanel() {
       ref={setNodeRef}
       className="bg-bg flex flex-col min-h-[18rem] md:min-h-0 md:h-full"
     >
-      <div className="flex items-baseline gap-2 px-4 sm:px-6 md:px-8 py-3 border-b border-rule">
+      <div className="flex items-center gap-2 px-4 sm:px-6 md:px-8 min-h-[44px] border-b border-rule">
         <h2 className="font-mono font-semibold text-[18px] uppercase tracking-[-0.02em] text-muted">
           Backlog
         </h2>
