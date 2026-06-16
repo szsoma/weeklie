@@ -29,11 +29,11 @@ export default function NewTaskLine({ date }: Props) {
 
   return (
     <div
-      className={`flex items-center gap-2 px-2 py-2 mt-0.5 rounded border-b border-rule transition-colors ${
+      className={`flex items-center gap-2 px-2 py-2 mt-0.5 rounded border-rule transition-colors ${
         isFocused ? "bg-ink/[0.03]" : "hover:bg-ink/[0.025]"
       }`}
     >
-      <div className="w-5 h-5 rounded-[7px] flex-shrink-0 border border-dashed border-rule-strong/70" />
+      <div className="w-4 h-4 rounded-[5px] flex-shrink-0 border border-dashed border-rule-strong/70" />
       <input
         ref={inputRef}
         value={title}
