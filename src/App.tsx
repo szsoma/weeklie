@@ -22,8 +22,8 @@ function TaskDragOverlay() {
 
   return (
     <DragOverlay dropAnimation={null}>
-      <div className="opacity-90 bg-surface border border-rule-strong rounded-md px-4 py-3 shadow-lg text-[17px] cursor-grabbing">
-        {activeTask.title}
+      <div className="opacity-95 bg-ink text-bg rounded-full px-5 h-12 inline-flex items-center gap-2 shadow-[0_24px_50px_-14px_rgba(0,0,0,0.5)] text-[15px] font-medium cursor-grabbing max-w-[80vw]">
+        <span className="truncate">{activeTask.title}</span>
       </div>
     </DragOverlay>
   )
