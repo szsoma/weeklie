@@ -120,9 +120,7 @@ export default function TaskRow({ task }: Props) {
       style={rowStyle}
       {...listeners}
       {...attributes}
-      className={`group relative flex items-center m-1 gap-2 px-2 py-2 text-sm leading-snug transition-colors ${
-        hasColor ? "rounded-full" : ""
-      } ${
+      className={`group relative flex items-center m-1 gap-2 px-2 h-10 text-sm leading-snug rounded-full transition-colors ${
         isDragging
           ? "opacity-40 cursor-grabbing"
           : isEditing
