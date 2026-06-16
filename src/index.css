@@ -21,10 +21,10 @@
   --bg: #fbfad2; /* light yellowish paper */
   --surface: #fbf8de; /* lifted card */
   --ink: #1a1a1a; /* primary text */
-  --muted: #6e6657; /* readable secondary text */
-  --faint: #8e8572; /* subtle labels / placeholders */
-  --rule: rgba(26, 26, 26, 0.08);
-  --rule-strong: rgba(26, 26, 26, 0.16);
+  --muted: #514b3f; /* readable secondary text */
+  --faint: #6f6657; /* subtle labels / placeholders */
+  --rule: rgba(26, 26, 26, 0.14);
+  --rule-strong: rgba(26, 26, 26, 0.24);
   --today: #f6f0c8;
 }
 
@@ -33,10 +33,10 @@
     --bg: #1a1a1a;
     --surface: #21211f;
     --ink: #e9e3d6; /* warm off-white */
-    --muted: #a39b8b;
-    --faint: #857c6f;
-    --rule: rgba(233, 227, 214, 0.09);
-    --rule-strong: rgba(233, 227, 214, 0.18);
+    --muted: #bcb4a4;
+    --faint: #a39a8a;
+    --rule: rgba(233, 227, 214, 0.16);
+    --rule-strong: rgba(233, 227, 214, 0.26);
     --today: #27241e;
   }
 }
