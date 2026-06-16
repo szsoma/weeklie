@@ -20,7 +20,10 @@ export default function NewTaskLine({ date }: Props) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSave();
+    if (e.key === "Enter") {
+      handleSave();
+      inputRef.current?.focus();
+    }
     if (e.key === "Escape") {
       setTitle("");
       inputRef.current?.blur();
@@ -29,7 +32,7 @@ export default function NewTaskLine({ date }: Props) {
 
   return (
     <div
-      className={`flex items-center gap-2 px-2 py-2 mt-0.5 rounded border-rule transition-colors ${
+      className={`flex items-center gap-2 px-2 m-1 h-10 rounded-full transition-colors ${
         isFocused ? "bg-ink/[0.03]" : "hover:bg-ink/[0.025]"
       }`}
     >
