@@ -1,73 +1,50 @@
-# React + TypeScript + Vite
+# Weeklie
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A minimalist weekly task planner. Plan your week across Monday–Sunday columns plus a backlog, drag to reorder, roll over unfinished tasks, and reflect with a weekly review — wrapped in a warm, paper-quiet interface.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **React 19** + **Vite** + **TypeScript**
+- **Tailwind CSS v4** (semantic tokens, light/dark via `prefers-color-scheme`)
+- **Zustand** for state
+- **@dnd-kit** for drag-and-drop reordering
+- **Supabase** for auth and persistence
+- **vite-plugin-pwa** for installable PWA support
+- Web Audio API for subtle interaction chimes
 
-## React Compiler
+## Getting started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open the printed local URL in your browser.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Scripts
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Command           | Description                          |
+| ----------------- | ------------------------------------ |
+| `npm run dev`     | Start the Vite dev server with HMR   |
+| `npm run build`   | Type-check (`tsc -b`) and build      |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint`    | Run ESLint                           |
+
+## Project structure
+
 ```
+src/
+├── components/      # UI: WeekGrid, DayColumn, TaskRow, BacklogPanel, nav, dialogs
+├── hooks/           # React hooks (e.g. useRollover, useHideOnScroll)
+├── lib/             # Pure helpers (supabase client, sound, fractional-index)
+├── store.ts         # Zustand store: tasks, events, reviews, actions
+├── dates.ts         # Date/week helpers
+├── types.ts         # Shared TypeScript types
+└── index.css        # Theme tokens + base styles
+```
+
+## Notes
+
+- Auth-gated: sign in via Supabase before tasks load.
+- Unfinished past tasks roll over to today automatically.
+- Designed mobile-first; the bottom nav hides while scrolling on mobile.
