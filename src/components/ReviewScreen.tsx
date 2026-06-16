@@ -73,21 +73,21 @@ export default function ReviewScreen({ onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 bg-bg z-50 overflow-y-auto p-6 md:p-8">
-      <div className="bg-amber-50 max-w-lg mx-auto px-6 py-8">
-        <div className="flex justify-between items-center mb-8">
+    <div className="fixed inset-0 bg-bg z-50 overflow-y-auto p-4 sm:p-6 md:p-8">
+      <div className="bg-surface max-w-lg mx-auto px-5 sm:px-6 py-6 sm:py-8 border border-rule-strong rounded-2xl shadow-sm">
+        <div className="flex justify-between items-center mb-6">
           <div className="flex flex-col">
-            <span className="font-mono text-[11px] uppercase text-faint leading-none mb-1.5">
+            <span className="font-mono text-[11px] uppercase text-faint tracking-[0.08em] leading-none mb-1.5">
               Retrospective
             </span>
-            <h2 className="font-mono font-semibold text-2xl tracking-tight leading-none">
+            <h2 className="font-mono font-semibold text-[22px] tracking-tight leading-none">
               Weekly Review
             </h2>
           </div>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="grid place-items-center w-9 h-9 rounded-md text-muted hover:text-ink hover:bg-ink/[0.06] transition"
+            className="grid place-items-center w-9 h-9 rounded-md text-muted hover:text-ink hover:bg-ink/[0.06] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
           >
             ✕
           </button>
@@ -99,7 +99,7 @@ export default function ReviewScreen({ onClose }: Props) {
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-6 mb-6">
+        <div className="flex items-center gap-5 mb-6">
           <RingChart completed={completed.length} total={weekTasks.length} />
           <div>
             <div className="text-2xl font-mono font-semibold tabular-nums">
@@ -133,9 +133,9 @@ export default function ReviewScreen({ onClose }: Props) {
             {rolledOver.map((task) => (
               <div
                 key={task.id}
-                className="flex items-center gap-2 py-1.5 border-b2 border-rule"
+                className="flex flex-wrap items-center gap-x-2 gap-y-2 py-1.5 border-b border-rule"
               >
-                <span className="text-[17px] flex-1">{task.title}</span>
+                <span className="text-[16px] flex-1 min-w-[10rem]">{task.title}</span>
                 <span className="text-[11px] bg-ink/[0.06] px-2 py-0.5 rounded font-mono tabular-nums text-muted">
                   moved {task.rolled_over_count}×
                 </span>
@@ -143,19 +143,19 @@ export default function ReviewScreen({ onClose }: Props) {
                   onClick={() =>
                     moveTask(task.id, formatDate(weekDays[0]), task.order)
                   }
-                  className="text-[11px] font-mono uppercase text-ink hover:underline"
+                  className="text-[11px] font-mono uppercase text-ink hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 >
                   Next wk
                 </button>
                 <button
                   onClick={() => moveTask(task.id, null, task.order)}
-                  className="text-[11px] font-mono uppercase text-muted hover:text-ink hover:underline"
+                  className="text-[11px] font-mono uppercase text-muted hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 >
                   Backlog
                 </button>
                 <button
                   onClick={() => deleteTask(task.id)}
-                  className="text-[11px] font-mono uppercase text-muted hover:text-red-500"
+                  className="text-[11px] font-mono uppercase text-muted hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 >
                   Delete
                 </button>
@@ -173,13 +173,15 @@ export default function ReviewScreen({ onClose }: Props) {
             value={reflection}
             onChange={(e) => setReflection(e.target.value)}
             placeholder="How was your week?"
-            className="w-full bg-transparent border-b border-rule-strong outline-none py-2.5 text-[17px] placeholder:text-faint focus:border-ink transition-colors"
+            name="reflection"
+            aria-label="Weekly reflection"
+            className="w-full bg-transparent border-b border-rule-strong outline-none py-2.5 text-[17px] placeholder:text-faint focus:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:bg-ink/[0.03] transition-colors"
           />
         </div>
 
         <button
           onClick={handleSave}
-          className="w-full py-3.5 bg-ink text-bg rounded-md font-mono text-[14px] uppercase hover:opacity-80 active:scale-[0.99] transition"
+          className="w-full py-3.5 bg-ink text-bg rounded-md font-mono text-[14px] uppercase hover:opacity-80 active:scale-[0.99] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
         >
           Done
         </button>

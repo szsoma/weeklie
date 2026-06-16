@@ -22,7 +22,7 @@ function TaskDragOverlay() {
 
   return (
     <DragOverlay dropAnimation={null}>
-      <div className="opacity-90 bg-surface border border-rule-strong rounded-md px-4 py-3 shadow-lg text-[19px] cursor-grabbing">
+      <div className="opacity-90 bg-surface border border-rule-strong rounded-md px-4 py-3 shadow-lg text-[17px] cursor-grabbing">
         {activeTask.title}
       </div>
     </DragOverlay>
@@ -88,7 +88,7 @@ export default function App() {
 
   if (!authReady) {
     return (
-      <div className="h-screen grid place-items-center">
+      <div className="h-[100dvh] grid place-items-center">
         <span className="font-mono text-sm text-muted">Loading…</span>
       </div>
     )
@@ -103,9 +103,9 @@ export default function App() {
       sensors={sensors}
       onDragEnd={handleDragEnd}
     >
-      <div className="h-screen flex flex-col">
+      <div className="h-[100dvh] flex flex-col overflow-hidden">
         {isLoading ? (
-          <div className="h-screen grid place-items-center">
+          <div className="h-[100dvh] grid place-items-center">
             <span className="font-mono text-sm text-muted">Loading your week…</span>
           </div>
         ) : (

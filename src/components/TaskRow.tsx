@@ -120,10 +120,14 @@ export default function TaskRow({ task }: Props) {
       style={rowStyle}
       {...listeners}
       {...attributes}
-      className={`group relative flex items-center m-1 gap-2 px-2 py-2 text-sm leading-snug cursor-grab transition-colors ${
+      className={`group relative flex items-center m-1 gap-2 px-2 py-2 text-sm leading-snug border-b border-rule transition-colors ${
         hasColor ? "rounded-full" : ""
-      } ${isEditing ? "" : "border-rule"} ${
-        isDragging ? "opacity-40 cursor-grabbing" : "hover:bg-ink/[0.025]"
+      } ${
+        isDragging
+          ? "opacity-40 cursor-grabbing"
+          : isEditing
+            ? "cursor-text bg-ink/[0.03]"
+            : "cursor-grab hover:bg-ink/[0.025]"
       }`}
     >
       {/* Color background overlay */}
@@ -165,7 +169,11 @@ export default function TaskRow({ task }: Props) {
           onChange={(e) => setEditTitle(e.target.value)}
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent border-b border-ink/30 outline-none text-sm leading-snug py-0.5 z-[1]"
+          onPointerDown={(e) => e.stopPropagation()}
+          aria-label="Edit task title"
+          name="task-title"
+          autoComplete="off"
+          className="flex-1 min-w-0 bg-transparent border-b border-rule-strong focus:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-bg text-sm leading-snug py-1 z-[1]"
         />
       ) : (
         <span
@@ -188,7 +196,7 @@ export default function TaskRow({ task }: Props) {
         }}
         onPointerDown={(e) => e.stopPropagation()}
         aria-label="Task options"
-        className="flex-shrink-0 w-4 h-5 grid place-items-center text-faint hover:text-ink transition-colors rounded z-[1]"
+        className="flex-shrink-0 w-5 h-5 grid place-items-center text-faint hover:text-ink transition-colors rounded-md z-[1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
       >
         <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
           <circle cx="12" cy="5" r="2" />

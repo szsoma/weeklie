@@ -48,7 +48,7 @@ export default function FloatingNav() {
   const [open, setOpen] = useState(false);
 
   const linkClass =
-    "block font-mono text-[13px] uppercase opacity-70 hover:opacity-100 py-3 transition";
+    "block font-mono text-[13px] uppercase opacity-70 hover:opacity-100 py-3 transition focus-visible:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
 
   return (
     <>
@@ -107,7 +107,7 @@ export default function FloatingNav() {
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-label={open ? "Close menu" : "Open menu"}
-            className="grid place-items-center w-10 h-10 -mr-1 rounded-full text-bg hover:bg-bg/10 active:scale-90 transition"
+            className="grid place-items-center w-10 h-10 -mr-1 rounded-full text-bg hover:bg-bg/10 active:scale-90 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bg/20 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
           >
             <Hamburger open={open} />
           </button>

@@ -22,7 +22,7 @@ export default function WeekGrid() {
   return (
     <>
       {/* Mobile: single scrolling column of stacked days, then backlog */}
-      <div className="weekgrid md:hidden flex-1 min-h-0 overflow-y-auto divide-y divide-rule">
+      <div className="weekgrid md:hidden flex-1 min-h-0 overflow-y-auto divide-y divide-rule pb-24">
         {days.map((day) => (
           <div
             key={day.toISOString()}
