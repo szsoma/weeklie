@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useHideOnScroll } from "../hooks/useHideOnScroll";
 
 function Hamburger({ open }: { open: boolean }) {
   return (
@@ -50,6 +51,7 @@ type Props = {
 
 export default function FloatingNav({ onShowAbout }: Props) {
   const [open, setOpen] = useState(false);
+  const hidden = useHideOnScroll(".weekgrid");
 
   const linkClass =
     "block font-mono text-[13px] uppercase opacity-70 hover:opacity-100 py-3 transition focus-visible:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
@@ -100,7 +102,11 @@ export default function FloatingNav({ onShowAbout }: Props) {
 
       {/* Floating pill bar */}
       <div
-        className="fixed z-50 bottom-[calc(env(safe-area-inset-bottom,0px)+16px)] left-1/2 -translate-x-1/2 w-[min(24rem,calc(100%-2rem))] bg-ink text-bg rounded-full shadow-xl border border-ink/5"
+        className={`fixed z-50 bottom-[calc(env(safe-area-inset-bottom,0px)+16px)] left-1/2 -translate-x-1/2 w-[min(24rem,calc(100%-2rem))] bg-ink text-bg rounded-full shadow-xl border border-ink/5 transition-all duration-300 ${
+          hidden
+            ? "translate-y-[150%] opacity-0 pointer-events-none"
+            : "opacity-100"
+        }`}
       >
         <div className="flex items-center justify-between px-4 py-3">
           {/* Wordmark */}
