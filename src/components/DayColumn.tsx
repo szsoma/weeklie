@@ -41,7 +41,7 @@ export default function DayColumn({ date }: Props) {
           <span className="font-mono font-semibold text-[18px] leading-none tabular-nums text-ink">
             {String(dayNum).padStart(2, "0")}
           </span>
-          <span className="font-mono font-semibold text-[18px] text-ink leading-none">
+          <span className="font-mono font-semibold text-[18px] uppercase text-ink leading-none">
             {monthName}
           </span>
         </div>
