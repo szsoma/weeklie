@@ -44,7 +44,11 @@ function Checkmark() {
   );
 }
 
-export default function FloatingNav() {
+type Props = {
+  onShowAbout?: () => void;
+};
+
+export default function FloatingNav({ onShowAbout }: Props) {
   const [open, setOpen] = useState(false);
 
   const linkClass =
@@ -71,9 +75,16 @@ export default function FloatingNav() {
         aria-hidden={!open}
       >
         <div className="flex flex-col px-6 py-2">
-          <a href="#about" onClick={() => setOpen(false)} className={linkClass}>
+          <button
+            type="button"
+            onClick={() => {
+              onShowAbout?.();
+              setOpen(false);
+            }}
+            className="block w-full text-left font-mono text-[13px] uppercase opacity-70 hover:opacity-100 py-3 transition focus-visible:outline-none focus-visible:opacity-100"
+          >
             About
-          </a>
+          </button>
           <a href="#features" onClick={() => setOpen(false)} className={linkClass}>
             Features
           </a>

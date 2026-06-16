@@ -11,6 +11,7 @@ import { supabase } from './lib/supabase'
 import { useStore } from './store'
 import { useRollover } from './hooks/useRollover'
 import Toast from './components/Toast'
+import AboutScreen from './components/AboutScreen'
 
 function TaskDragOverlay() {
   const { active } = useDndContext()
@@ -60,6 +61,7 @@ export default function App() {
   }, [session, loadTasks, loadEvents, loadReviews])
 
   const [showReview, setShowReview] = useState(false)
+  const [showAbout, setShowAbout] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -112,11 +114,12 @@ export default function App() {
           <>
             <WeekHeader onShowReview={() => setShowReview(true)} />
             <WeekGrid />
-            <FloatingNav />
+            <FloatingNav onShowAbout={() => setShowAbout(true)} />
           </>
         )}
       </div>
       {showReview && <ReviewScreen onClose={() => setShowReview(false)} />}
+      {showAbout && <AboutScreen onClose={() => setShowAbout(false)} />}
       {rolloverToast && (
         <Toast
           message={rolloverToast.message}
