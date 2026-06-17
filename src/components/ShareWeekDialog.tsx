@@ -26,11 +26,22 @@ export default function ShareWeekDialog({ weekStart, onClose }: Props) {
   const shareUrl = share ? buildShareUrl(share.token) : "";
 
   useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function loadShare() {
       setLoading(true);
       setError(null);
+      setShare(null);
+      setCopyState("idle");
       try {
         const nextShare = await getOrCreateWeekShare({
           weekId,
@@ -89,14 +100,12 @@ export default function ShareWeekDialog({ weekStart, onClose }: Props) {
       role="dialog"
       aria-modal="true"
       aria-label={`Share week ${formatWeekLabel(weekStart)}`}
+      onClick={onClose}
     >
-      <button
-        type="button"
-        className="absolute inset-0 cursor-default"
-        aria-label="Close share dialog"
-        onClick={onClose}
-      />
-      <section className="relative w-full max-w-md rounded-2xl border border-rule-strong bg-surface p-5 shadow-[0_24px_70px_-24px_rgba(0,0,0,0.45)]">
+      <section
+        className="relative w-full max-w-md rounded-2xl border border-rule-strong bg-surface p-5 shadow-[0_24px_70px_-24px_rgba(0,0,0,0.45)]"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
