@@ -76,6 +76,25 @@ function ReviewIcon() {
   );
 }
 
+function ShareIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="w-[20px] h-[20px]"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+      <path d="M12 16V4" />
+      <path d="M8 8l4-4 4 4" />
+    </svg>
+  );
+}
+
 function MoreIcon() {
   return (
     <svg
@@ -94,9 +113,10 @@ function MoreIcon() {
 
 type Props = {
   onShowReview?: () => void;
+  onShowShare?: () => void;
 };
 
-export default function WeekHeader({ onShowReview }: Props) {
+export default function WeekHeader({ onShowReview, onShowShare }: Props) {
   const currentWeekStart = useStore((s) => s.currentWeekStart);
   const setCurrentWeekStart = useStore((s) => s.setCurrentWeekStart);
   const hideDone = useStore((s) => s.hideDone);
@@ -172,6 +192,14 @@ export default function WeekHeader({ onShowReview }: Props) {
             <span className="hidden md:inline px-4">Today</span>
           </button>
 
+          <button
+            onClick={onShowShare}
+            aria-label="Share this week"
+            className="h-10 w-auto font-mono text-[14px] uppercase rounded-md border border-rule-strong text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-[0.98] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+          >
+            <span className="hidden md:inline px-4">Share</span>
+          </button>
+
           {/* Review */}
           <button
             onClick={onShowReview}
@@ -231,6 +259,17 @@ export default function WeekHeader({ onShowReview }: Props) {
               >
                 <CalendarIcon />
                 <span>Today</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  onShowShare?.();
+                  setMenuOpen(false);
+                }}
+                className="flex items-center gap-3 w-full px-4 py-3 font-mono text-[14px] text-ink hover:bg-ink/[0.06] transition"
+              >
+                <ShareIcon />
+                <span>Share</span>
               </button>
 
               {/* Review */}
