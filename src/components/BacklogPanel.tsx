@@ -22,7 +22,7 @@ export default function BacklogPanel() {
       ref={setNodeRef}
       className="bg-bg flex flex-col min-h-[18rem] md:min-h-0 md:h-full"
     >
-      <div className="flex items-center gap-2 px-4 sm:px-6 md:px-8 min-h-[44px] border-b border-rule">
+      <div className="flex items-center gap-2 px-4 sm:px-6 md:px-2 min-h-[44px] border-b border-rule">
         <h2 className="font-mono font-semibold text-[18px] uppercase tracking-[-0.02em] text-muted">
           Backlog
         </h2>
@@ -30,7 +30,7 @@ export default function BacklogPanel() {
           {tasks.length}
         </span>
       </div>
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 md:px-8 py-3 md:pb-24">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 md:px-2 py-3 md:pb-24">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8">
           {tasks.map((task) => (
             <TaskRow key={task.id} task={task} />
