@@ -49,7 +49,9 @@ export default function SharedWeekPage({ token }: Props) {
         setState({
           status: 'error',
           message:
-            error instanceof Error ? error.message : 'Unexpected error',
+            error instanceof Error
+              ? error.message
+              : 'Could not load this shared week.',
         })
       })
 
