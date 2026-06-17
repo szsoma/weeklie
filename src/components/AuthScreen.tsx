@@ -4,9 +4,9 @@ import { supabase } from "../lib/supabase";
 type Mode = "password" | "code";
 
 const inputClass =
-  "w-full bg-transparent border-b border-rule-strong outline-none py-2.5 text-[17px] placeholder:text-faint focus:border-ink transition-colors";
+  "w-full bg-transparent border-b border-rule-strong outline-none py-2.5 text-[17px] placeholder:text-faint focus:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-bg focus-visible:bg-ink/[0.03] transition-colors";
 const buttonClass =
-  "w-full py-3.5 bg-ink text-bg rounded-md font-mono text-[14px] uppercase hover:opacity-80 active:scale-[0.99] transition disabled:opacity-50";
+  "w-full py-3.5 bg-ink text-bg rounded-md font-mono text-[14px] uppercase hover:opacity-80 active:scale-[0.99] transition disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg";
 
 export default function AuthScreen() {
   const [mode, setMode] = useState<Mode>("password");
@@ -61,7 +61,7 @@ export default function AuthScreen() {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center px-6">
+    <div className="h-[100dvh] flex items-center justify-center px-4 sm:px-6">
       <div className="w-full max-w-sm">
         <h1 className="font-mono font-semibold text-2xl tracking-tight mb-1">
           weeklie
@@ -74,9 +74,11 @@ export default function AuthScreen() {
             onClick={() => switchMode("password")}
             className={
               mode === "password"
-                ? "text-ink border-b border-ink pb-1"
-                : "text-faint pb-1 hover:text-muted"
+                ? "text-ink border-b border-ink pb-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                : "text-faint pb-1 hover:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
             }
+            aria-pressed={mode === "password"}
+            aria-label="Password sign in"
           >
             Password
           </button>
@@ -85,9 +87,11 @@ export default function AuthScreen() {
             onClick={() => switchMode("code")}
             className={
               mode === "code"
-                ? "text-ink border-b border-ink pb-1"
-                : "text-faint pb-1 hover:text-muted"
+                ? "text-ink border-b border-ink pb-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                : "text-faint pb-1 hover:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
             }
+            aria-pressed={mode === "code"}
+            aria-label="Email code sign in"
           >
             Email code
           </button>
@@ -102,6 +106,9 @@ export default function AuthScreen() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
+              name="email"
+              autoComplete="email"
+              aria-label="Email address"
               className={inputClass}
             />
             <input
@@ -110,6 +117,9 @@ export default function AuthScreen() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="password"
+              name="password"
+              autoComplete="current-password"
+              aria-label="Password"
               className={inputClass}
             />
             <button type="submit" disabled={busy} className={buttonClass}>
@@ -128,6 +138,9 @@ export default function AuthScreen() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
+              name="email"
+              autoComplete="email"
+              aria-label="Email address"
               className={inputClass}
             />
             <button type="submit" disabled={busy} className={buttonClass}>
@@ -149,6 +162,8 @@ export default function AuthScreen() {
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
               placeholder="123456"
+              name="one-time-code"
+              aria-label="Email verification code"
               className={`${inputClass} tracking-[0.4em] placeholder:tracking-normal`}
             />
             <button
@@ -164,7 +179,7 @@ export default function AuthScreen() {
                 setSent(false);
                 setCode("");
               }}
-              className="w-full text-[12px] font-mono uppercase text-muted hover:text-ink"
+              className="w-full text-[12px] font-mono uppercase text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
             >
               ← use a different email
             </button>

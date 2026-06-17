@@ -31,52 +31,28 @@ export default function DayColumn({ date }: Props) {
   return (
     <div
       ref={setNodeRef}
-      className={`relative flex flex-col min-h-0 h-full ${today ? "bg-today" : "bg-bg"}`}
+      className={`relative flex flex-col min-h-0 md:h-full ${today ? "bg-today" : "bg-bg"}`}
     >
-      {/* Today accent — a hairline ink cap across the column top */}
-      {today && (
-        <div className="absolute inset-x-0 top-0 h-[2px] bg-ink z-20" />
-      )}
-
       <div
-        className="sticky top-0 z-10 font-bold md:static px-6 md:px-2 py-3 flex items-baseline justify-between gap-2 border-b border-rule"
+        className="sticky top-0 z-10 md:static px-2 min-h-[44px] flex items-center justify-between gap-2 border-b border-rule"
         style={{ backgroundColor: "var(--bg)" }}
       >
         <div className="flex items-baseline gap-1.5 min-w-0">
-          <span className="font-mono font-semibold text-[20px] leading-none tabular-nums text-ink">
+          <span className="font-mono font-semibold text-[18px] leading-none tabular-nums text-ink">
             {String(dayNum).padStart(2, "0")}
           </span>
-          <span className="font-mono text-[20px] uppercase text-muted leading-none">
+          <span className="font-mono font-semibold text-[18px] uppercase text-ink leading-none">
             {monthName}
           </span>
         </div>
-        <span
-          className={`font-mono text-[20px] uppercase leading-none ${
-            today ? "text-ink font-semibold" : "text-faint"
-          }`}
-        >
+        <span className="font-mono text-[18px] leading-none text-muted">
           {dayName}
         </span>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-6 md:px-0 pb-5">
+      <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-5 md:pb-24">
         {tasks.map((task) => (
           <TaskRow key={task.id} task={task} />
-        ))}
-
-        {/* Empty ruled slots — mirror TaskRow layout (checkbox + spacer + kebab) */}
-        {Array.from({ length: Math.max(0, 3 - tasks.length) }).map((_, i) => (
-          <div
-            key={`empty-${i}`}
-            className="flex items-center gap-2 px-2 py-2 border-b border-rule"
-          >
-            <div className="w-5 h-5 rounded-[7px] flex-shrink-0 border border-dashed border-rule-strong/60" />
-            <div className="flex-1" />
-            <div
-              className="w-5 h-5 flex-shrink-0"
-              aria-hidden="true"
-            />
-          </div>
         ))}
 
         <NewTaskLine date={formatDate(date)} />

@@ -76,6 +76,25 @@ function ReviewIcon() {
   );
 }
 
+function ShareIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="w-[20px] h-[20px]"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+      <path d="M12 16V4" />
+      <path d="M8 8l4-4 4 4" />
+    </svg>
+  );
+}
+
 function MoreIcon() {
   return (
     <svg
@@ -94,9 +113,10 @@ function MoreIcon() {
 
 type Props = {
   onShowReview?: () => void;
+  onShowShare?: () => void;
 };
 
-export default function WeekHeader({ onShowReview }: Props) {
+export default function WeekHeader({ onShowReview, onShowShare }: Props) {
   const currentWeekStart = useStore((s) => s.currentWeekStart);
   const setCurrentWeekStart = useStore((s) => s.setCurrentWeekStart);
   const hideDone = useStore((s) => s.hideDone);
@@ -108,12 +128,12 @@ export default function WeekHeader({ onShowReview }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="flex items-center justify-between px-2 md:px-2 py-4 border-b-2 border-rule">
-      <div className="flex flex-col min-w-0 items-center text-center md:items-start md:text-left md:w-[280px]">
-        <span className="font-mono text-[12px] uppercase text-faint leading-none mb-1">
+    <header className="flex items-center justify-between px-4 sm:px-6 md:px-8 py-4 border-b-2 border-rule">
+      <div className="flex flex-col min-w-0 items-start text-left md:w-[280px]">
+        <span className="font-mono text-[11px] uppercase text-muted tracking-[0.08em] leading-none mb-1">
           Week
         </span>
-        <h1 className="font-mono font-semibold text-[22px] md:text-[20px] tracking-tight leading-none whitespace-nowrap">
+        <h1 className="font-mono font-semibold text-[24px] md:text-[22px] tracking-tight leading-none whitespace-nowrap">
           {formatWeekLabel(currentWeekStart)}
         </h1>
       </div>
@@ -123,7 +143,7 @@ export default function WeekHeader({ onShowReview }: Props) {
         <button
           onClick={() => setCurrentWeekStart(prevWeek(currentWeekStart))}
           aria-label="Previous week"
-          className="grid place-items-center w-10 h-10 rounded-md text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition"
+          className="grid place-items-center w-10 h-10 rounded-lg text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
         >
           <Chevron direction="left" />
         </button>
@@ -132,7 +152,7 @@ export default function WeekHeader({ onShowReview }: Props) {
         <button
           onClick={() => setCurrentWeekStart(nextWeek(currentWeekStart))}
           aria-label="Next week"
-          className="grid place-items-center w-10 h-10 rounded-md text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition"
+          className="grid place-items-center w-10 h-10 rounded-lg text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
         >
           <Chevron direction="right" />
         </button>
@@ -154,7 +174,7 @@ export default function WeekHeader({ onShowReview }: Props) {
               hideDone
                 ? "bg-ink text-bg border-ink"
                 : "border-rule-strong text-muted hover:text-ink hover:bg-ink/[0.06]"
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg`}
           >
             <span className="hidden md:inline px-4">
               {hideDone
@@ -167,16 +187,26 @@ export default function WeekHeader({ onShowReview }: Props) {
           <button
             onClick={goToToday}
             aria-label="Jump to today"
-            className="h-10 w-auto font-mono text-[14px] uppercase rounded-md border border-rule-strong text-ink hover:bg-ink/[0.06] active:scale-[0.98] transition"
+            className="h-10 w-auto font-mono text-[14px] uppercase rounded-md border border-rule-strong text-ink hover:bg-ink/[0.06] active:scale-[0.98] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >
             <span className="hidden md:inline px-4">Today</span>
           </button>
+
+          {onShowShare && (
+            <button
+              onClick={onShowShare}
+              aria-label="Share this week"
+              className="h-10 w-auto font-mono text-[14px] uppercase rounded-md border border-rule-strong text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-[0.98] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+            >
+              <span className="hidden md:inline px-4">Share</span>
+            </button>
+          )}
 
           {/* Review */}
           <button
             onClick={onShowReview}
             aria-label="Open weekly review"
-            className="h-10 w-auto font-mono text-[14px] uppercase rounded-md border border-rule-strong text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-[0.98] transition"
+            className="h-10 w-auto font-mono text-[14px] uppercase rounded-md border border-rule-strong text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-[0.98] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >
             <span className="hidden md:inline px-4">Review</span>
           </button>
@@ -188,7 +218,7 @@ export default function WeekHeader({ onShowReview }: Props) {
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
             aria-label="More actions"
-            className="grid place-items-center w-10 h-10 rounded-md text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition"
+            className="grid place-items-center w-10 h-10 rounded-lg text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >
             <MoreIcon />
           </button>
@@ -232,6 +262,19 @@ export default function WeekHeader({ onShowReview }: Props) {
                 <CalendarIcon />
                 <span>Today</span>
               </button>
+
+              {onShowShare && (
+                <button
+                  onClick={() => {
+                    onShowShare();
+                    setMenuOpen(false);
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-3 font-mono text-[14px] text-ink hover:bg-ink/[0.06] transition"
+                >
+                  <ShareIcon />
+                  <span>Share</span>
+                </button>
+              )}
 
               {/* Review */}
               <button

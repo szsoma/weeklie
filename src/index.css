@@ -21,11 +21,11 @@
   --bg: #fbfad2; /* light yellowish paper */
   --surface: #fbf8de; /* lifted card */
   --ink: #1a1a1a; /* primary text */
-  --muted: #797264; /* warm gray for secondary text */
-  --faint: #b1a894; /* placeholders / day tabs */
-  --rule: rgba(26, 26, 26, 0.08);
-  --rule-strong: rgba(26, 26, 26, 0.16);
-  --today: rgba(26, 26, 26, 0.035);
+  --muted: #514b3f; /* readable secondary text */
+  --faint: #6f6657; /* subtle labels / placeholders */
+  --rule: rgba(26, 26, 26, 0.14);
+  --rule-strong: rgba(26, 26, 26, 0.24);
+  --today: #f6f0c8;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -33,11 +33,11 @@
     --bg: #1a1a1a;
     --surface: #21211f;
     --ink: #e9e3d6; /* warm off-white */
-    --muted: #928b7c;
-    --faint: #5e5850;
-    --rule: rgba(233, 227, 214, 0.09);
-    --rule-strong: rgba(233, 227, 214, 0.18);
-    --today: rgba(233, 227, 214, 0.045);
+    --muted: #bcb4a4;
+    --faint: #a39a8a;
+    --rule: rgba(233, 227, 214, 0.16);
+    --rule-strong: rgba(233, 227, 214, 0.26);
+    --today: #27241e;
   }
 }
 
@@ -46,7 +46,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
   }
 
   body {
@@ -92,10 +92,14 @@ code,
 pre,
 .font-mono {
   font-family:
-    "Geist",
-    system-ui,
-    -apple-system,
-    sans-serif;
+    "Geist Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    monospace;
   font-variant-numeric: tabular-nums;
 }
 

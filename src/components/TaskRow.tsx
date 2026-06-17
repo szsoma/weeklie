@@ -120,10 +120,12 @@ export default function TaskRow({ task }: Props) {
       style={rowStyle}
       {...listeners}
       {...attributes}
-      className={`group relative flex items-center m-1 gap-2 px-2 py-2 text-sm leading-snug cursor-grab transition-colors ${
-        hasColor ? "rounded-full" : ""
-      } ${isEditing ? "" : "border-rule"} ${
-        isDragging ? "opacity-40 cursor-grabbing" : "hover:bg-ink/[0.025]"
+      className={`group relative flex items-center m-1 gap-2 px-2 h-10 text-sm leading-snug rounded-full transition-colors ${
+        isDragging
+          ? "opacity-40 cursor-grabbing"
+          : isEditing
+            ? "cursor-text"
+            : "cursor-grab hover:bg-ink/[0.025]"
       }`}
     >
       {/* Color background overlay */}
@@ -135,7 +137,7 @@ export default function TaskRow({ task }: Props) {
       )}
 
       {/* Checkbox */}
-      <label className="relative flex-shrink-0 inline-flex w-5 h-5 cursor-pointer z-[1]">
+      <label className="relative flex-shrink-0 inline-flex w-4 h-4 cursor-pointer z-[1]">
         <input
           type="checkbox"
           checked={task.done}
@@ -143,7 +145,7 @@ export default function TaskRow({ task }: Props) {
           onPointerDown={(e) => e.stopPropagation()}
           className="peer sr-only"
         />
-        <span className="absolute inset-0 rounded-[7px] border border-rule-strong bg-bg transition-colors peer-checked:border-ink peer-checked:bg-ink" />
+        <span className="absolute inset-0 rounded-[5px] bg-ink/[0.04] transition-colors peer-checked:bg-ink" />
         <svg
           viewBox="0 0 24 24"
           fill="none"
@@ -165,7 +167,11 @@ export default function TaskRow({ task }: Props) {
           onChange={(e) => setEditTitle(e.target.value)}
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent border-b border-ink/30 outline-none text-sm leading-snug py-0.5 z-[1]"
+          onPointerDown={(e) => e.stopPropagation()}
+          aria-label="Edit task title"
+          name="task-title"
+          autoComplete="off"
+          className="flex-1 min-w-0 bg-transparent text-sm leading-snug z-[1] focus:outline-none"
         />
       ) : (
         <span
@@ -188,7 +194,7 @@ export default function TaskRow({ task }: Props) {
         }}
         onPointerDown={(e) => e.stopPropagation()}
         aria-label="Task options"
-        className="flex-shrink-0 w-4 h-5 grid place-items-center text-faint hover:text-ink transition-colors rounded z-[1]"
+        className="flex-shrink-0 w-4 h-4 grid place-items-center text-faint hover:text-ink transition-colors rounded-md z-[1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
       >
         <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
           <circle cx="12" cy="5" r="2" />
@@ -210,7 +216,6 @@ export default function TaskRow({ task }: Props) {
               WebkitBackdropFilter: "blur(16px)",
               backgroundColor:
                 "color-mix(in srgb, var(--surface) 75%, transparent)",
-              border: "1px solid var(--rule-strong)",
             }}
           >
             {/* Color dots */}
@@ -222,7 +227,7 @@ export default function TaskRow({ task }: Props) {
                     e.stopPropagation();
                     selectColor(color);
                   }}
-                  className={`w-6 h-6 rounded-full transition-transform hover:scale-110 ${
+                  className={`w-4 h-4 rounded-full transition-transform hover:scale-110 ${
                     task.color === color
                       ? "ring-2 ring-white/80 ring-offset-1 ring-offset-transparent"
                       : ""
@@ -232,9 +237,6 @@ export default function TaskRow({ task }: Props) {
                 />
               ))}
             </div>
-
-            {/* Divider */}
-            <div className="border-t border-rule" />
 
             {/* Delete */}
             <button

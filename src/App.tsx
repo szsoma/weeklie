@@ -7,10 +7,21 @@ import WeekHeader from './components/WeekHeader'
 import WeekGrid from './components/WeekGrid'
 import ReviewScreen from './components/ReviewScreen'
 import AuthScreen from './components/AuthScreen'
+import ShareWeekDialog from './components/ShareWeekDialog'
+import SharedWeekPage from './components/SharedWeekPage'
 import { supabase } from './lib/supabase'
 import { useStore } from './store'
 import { useRollover } from './hooks/useRollover'
 import Toast from './components/Toast'
+import AboutScreen from './components/AboutScreen'
+
+function decodeShareToken(token: string) {
+  try {
+    return decodeURIComponent(token)
+  } catch {
+    return token
+  }
+}
 
 function TaskDragOverlay() {
   const { active } = useDndContext()
@@ -22,20 +33,30 @@ function TaskDragOverlay() {
 
   return (
     <DragOverlay dropAnimation={null}>
-      <div className="opacity-90 bg-surface border border-rule-strong rounded-md px-4 py-3 shadow-lg text-[19px] cursor-grabbing">
-        {activeTask.title}
+      <div className="opacity-95 bg-ink text-bg rounded-full px-5 h-12 inline-flex items-center gap-2 shadow-[0_24px_50px_-14px_rgba(0,0,0,0.5)] text-[15px] font-medium cursor-grabbing max-w-[80vw]">
+        <span className="truncate">{activeTask.title}</span>
       </div>
     </DragOverlay>
   )
 }
 
 export default function App() {
+  const shareMatch = window.location.pathname.match(/^\/share\/([^/]+)$/)
+  if (shareMatch) {
+    return <SharedWeekPage token={decodeShareToken(shareMatch[1])} />
+  }
+
+  return <AuthenticatedApp />
+}
+
+function AuthenticatedApp() {
   const { toast: rolloverToast, clearToast } = useRollover()
   const moveTask = useStore(s => s.moveTask)
   const loadTasks = useStore(s => s.loadTasks)
   const loadEvents = useStore(s => s.loadEvents)
   const loadReviews = useStore(s => s.loadReviews)
   const isLoading = useStore(s => s.isLoading)
+  const currentWeekStart = useStore(s => s.currentWeekStart)
 
   const [session, setSession] = useState<Session | null>(null)
   const [authReady, setAuthReady] = useState(false)
@@ -60,6 +81,8 @@ export default function App() {
   }, [session, loadTasks, loadEvents, loadReviews])
 
   const [showReview, setShowReview] = useState(false)
+  const [showAbout, setShowAbout] = useState(false)
+  const [showShare, setShowShare] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -88,7 +111,7 @@ export default function App() {
 
   if (!authReady) {
     return (
-      <div className="h-screen grid place-items-center">
+      <div className="h-[100dvh] grid place-items-center">
         <span className="font-mono text-sm text-muted">Loading…</span>
       </div>
     )
@@ -103,20 +126,30 @@ export default function App() {
       sensors={sensors}
       onDragEnd={handleDragEnd}
     >
-      <div className="h-screen flex flex-col">
+      <div className="h-[100dvh] flex flex-col overflow-hidden">
         {isLoading ? (
-          <div className="h-screen grid place-items-center">
+          <div className="h-[100dvh] grid place-items-center">
             <span className="font-mono text-sm text-muted">Loading your week…</span>
           </div>
         ) : (
           <>
-            <WeekHeader onShowReview={() => setShowReview(true)} />
+            <WeekHeader
+              onShowReview={() => setShowReview(true)}
+              onShowShare={() => setShowShare(true)}
+            />
             <WeekGrid />
-            <FloatingNav />
+            <FloatingNav onShowAbout={() => setShowAbout(true)} />
           </>
         )}
       </div>
       {showReview && <ReviewScreen onClose={() => setShowReview(false)} />}
+      {showShare && (
+        <ShareWeekDialog
+          weekStart={currentWeekStart}
+          onClose={() => setShowShare(false)}
+        />
+      )}
+      {showAbout && <AboutScreen onClose={() => setShowAbout(false)} />}
       {rolloverToast && (
         <Toast
           message={rolloverToast.message}

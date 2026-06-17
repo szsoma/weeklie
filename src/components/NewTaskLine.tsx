@@ -20,7 +20,10 @@ export default function NewTaskLine({ date }: Props) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSave();
+    if (e.key === "Enter") {
+      handleSave();
+      inputRef.current?.focus();
+    }
     if (e.key === "Escape") {
       setTitle("");
       inputRef.current?.blur();
@@ -29,11 +32,11 @@ export default function NewTaskLine({ date }: Props) {
 
   return (
     <div
-      className={`flex items-center gap-2 px-2 py-2 mt-0.5 rounded transition-colors ${
-        isFocused ? "bg-ink/[0.025]" : "hover:bg-ink/[0.025]"
+      className={`flex items-center gap-2 px-2 m-1 h-10 rounded-full transition-colors ${
+        isFocused ? "bg-ink/[0.03]" : "hover:bg-ink/[0.025]"
       }`}
     >
-      <div className="w-5 h-5 rounded-[7px] flex-shrink-0 border border-dashed border-rule-strong/70" />
+      <div className="w-4 h-4 rounded-[5px] flex-shrink-0 border border-dashed border-rule-strong/70" />
       <input
         ref={inputRef}
         value={title}
@@ -45,7 +48,11 @@ export default function NewTaskLine({ date }: Props) {
         }}
         onKeyDown={handleKeyDown}
         placeholder="Add task…"
-        className="flex-1 bg-transparent outline-none text-sm leading-snug text-ink placeholder:text-faint"
+        onPointerDown={(e) => e.stopPropagation()}
+        aria-label="Add task title"
+        name="new-task-title"
+        autoComplete="off"
+        className="flex-1 min-w-0 bg-transparent outline-none text-sm leading-snug text-ink placeholder:text-faint focus-visible:outline-none focus-visible:ring-0"
       />
       {/* Reserve kebab slot so input ends where task titles do */}
       <div className="w-5 h-5 flex-shrink-0" aria-hidden="true" />

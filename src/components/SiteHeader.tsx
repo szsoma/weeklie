@@ -28,7 +28,7 @@ export default function SiteHeader() {
         {/* Wordmark — checkmark glyph + terminal-style underscore cursor */}
         <a
           href="#"
-          className="inline-flex items-center gap-1 font-mono font-semibold text-[16px] md:text-[18px] tracking-tight text-bg whitespace-nowrap shrink-0 hover:opacity-80 transition"
+          className="inline-flex items-center gap-1 font-mono font-semibold text-[16px] md:text-[16px] tracking-tight text-bg whitespace-nowrap shrink-0 hover:opacity-80 transition"
         >
           <svg
             viewBox="0 0 24 24"
@@ -53,7 +53,10 @@ export default function SiteHeader() {
           <a href="#features" className={linkClass}>
             Features
           </a>
-          <a href="#login" className="font-mono text-[13px] uppercase hover:opacity-80 transition">
+          <a
+            href="#login"
+            className="font-mono text-[13px] uppercase hover:opacity-80 transition"
+          >
             Login
           </a>
           <a

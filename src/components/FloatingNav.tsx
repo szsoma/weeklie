@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useHideOnScroll } from "../hooks/useHideOnScroll";
 
 function Hamburger({ open }: { open: boolean }) {
   return (
@@ -44,11 +45,16 @@ function Checkmark() {
   );
 }
 
-export default function FloatingNav() {
+type Props = {
+  onShowAbout?: () => void;
+};
+
+export default function FloatingNav({ onShowAbout }: Props) {
   const [open, setOpen] = useState(false);
+  const hidden = useHideOnScroll(".weekgrid");
 
   const linkClass =
-    "block font-mono text-[13px] uppercase opacity-70 hover:opacity-100 py-3 transition";
+    "block font-mono text-[13px] uppercase opacity-70 hover:opacity-100 py-3 transition focus-visible:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
 
   return (
     <>
@@ -71,9 +77,16 @@ export default function FloatingNav() {
         aria-hidden={!open}
       >
         <div className="flex flex-col px-6 py-2">
-          <a href="#about" onClick={() => setOpen(false)} className={linkClass}>
+          <button
+            type="button"
+            onClick={() => {
+              onShowAbout?.();
+              setOpen(false);
+            }}
+            className="block w-full text-left font-mono text-[13px] uppercase opacity-70 hover:opacity-100 py-3 transition focus-visible:outline-none focus-visible:opacity-100"
+          >
             About
-          </a>
+          </button>
           <a href="#features" onClick={() => setOpen(false)} className={linkClass}>
             Features
           </a>
@@ -89,7 +102,11 @@ export default function FloatingNav() {
 
       {/* Floating pill bar */}
       <div
-        className="fixed z-50 bottom-[calc(env(safe-area-inset-bottom,0px)+16px)] left-1/2 -translate-x-1/2 w-[min(24rem,calc(100%-2rem))] bg-ink text-bg rounded-full shadow-xl border border-ink/5"
+        className={`fixed z-50 bottom-[calc(env(safe-area-inset-bottom,0px)+16px)] left-1/2 -translate-x-1/2 w-[min(24rem,calc(100%-2rem))] bg-ink text-bg rounded-full shadow-xl border border-ink/5 transition-all duration-300 ${
+          hidden
+            ? "translate-y-[150%] opacity-0 pointer-events-none"
+            : "opacity-100"
+        }`}
       >
         <div className="flex items-center justify-between px-4 py-3">
           {/* Wordmark */}
@@ -107,7 +124,7 @@ export default function FloatingNav() {
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-label={open ? "Close menu" : "Open menu"}
-            className="grid place-items-center w-10 h-10 -mr-1 rounded-full text-bg hover:bg-bg/10 active:scale-90 transition"
+            className="grid place-items-center w-10 h-10 -mr-1 rounded-full text-bg hover:bg-bg/10 active:scale-90 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bg/20 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
           >
             <Hamburger open={open} />
           </button>
