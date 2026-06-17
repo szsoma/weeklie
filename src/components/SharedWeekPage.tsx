@@ -77,11 +77,14 @@ export default function SharedWeekPage({ token }: Props) {
         <div className="grid min-h-[100dvh] place-items-center px-6">
           <div className="max-w-md space-y-3 text-center">
             <p className="font-mono text-[12px] uppercase tracking-[0.08em] text-faint">
-              Shared week plan
+              Shared week
             </p>
             <h1 className="font-mono text-[28px] font-semibold tracking-tight">
               This link is unavailable
             </h1>
+            <p className="text-sm leading-relaxed text-muted">
+              The share link may have been revoked or mistyped.
+            </p>
           </div>
         </div>
       )}
@@ -90,12 +93,14 @@ export default function SharedWeekPage({ token }: Props) {
         <div className="grid min-h-[100dvh] place-items-center px-6">
           <div className="max-w-md space-y-3 text-center">
             <p className="font-mono text-[12px] uppercase tracking-[0.08em] text-faint">
-              Shared week plan
+              Shared week
             </p>
             <h1 className="font-mono text-[28px] font-semibold tracking-tight">
               Could not load this week
             </h1>
-            <p className="text-sm leading-relaxed text-muted">{state.message}</p>
+            <p className="text-sm leading-relaxed text-muted">
+              Could not load this shared week.
+            </p>
           </div>
         </div>
       )}
@@ -115,9 +120,14 @@ export default function SharedWeekPage({ token }: Props) {
 
           {state.week.tasks.length === 0 ? (
             <div className="grid flex-1 place-items-center px-6 py-10 text-center">
-              <p className="max-w-md font-mono text-sm uppercase tracking-[0.08em] text-muted">
-                No scheduled tasks shared
-              </p>
+              <div className="max-w-md space-y-3">
+                <h2 className="font-mono text-[28px] font-semibold tracking-tight text-ink">
+                  No scheduled tasks shared
+                </h2>
+                <p className="text-sm leading-relaxed text-muted">
+                  This week has no scheduled tasks in the shared view.
+                </p>
+              </div>
             </div>
           ) : (
             <SharedWeekGrid
