@@ -52,7 +52,7 @@ export default function NewTaskLine({ date }: Props) {
         aria-label="Add task title"
         name="new-task-title"
         autoComplete="off"
-        className="flex-1 min-w-0 bg-transparent outline-none text-sm leading-snug text-ink placeholder:text-faint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+        className="flex-1 min-w-0 bg-transparent outline-none text-sm leading-snug text-ink placeholder:text-faint focus-visible:outline-none focus-visible:ring-0"
       />
       {/* Reserve kebab slot so input ends where task titles do */}
       <div className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
