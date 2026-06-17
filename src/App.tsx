@@ -7,6 +7,8 @@ import WeekHeader from './components/WeekHeader'
 import WeekGrid from './components/WeekGrid'
 import ReviewScreen from './components/ReviewScreen'
 import AuthScreen from './components/AuthScreen'
+import ShareWeekDialog from './components/ShareWeekDialog'
+import SharedWeekPage from './components/SharedWeekPage'
 import { supabase } from './lib/supabase'
 import { useStore } from './store'
 import { useRollover } from './hooks/useRollover'
@@ -37,6 +39,7 @@ export default function App() {
   const loadEvents = useStore(s => s.loadEvents)
   const loadReviews = useStore(s => s.loadReviews)
   const isLoading = useStore(s => s.isLoading)
+  const currentWeekStart = useStore(s => s.currentWeekStart)
 
   const [session, setSession] = useState<Session | null>(null)
   const [authReady, setAuthReady] = useState(false)
@@ -62,6 +65,7 @@ export default function App() {
 
   const [showReview, setShowReview] = useState(false)
   const [showAbout, setShowAbout] = useState(false)
+  const [showShare, setShowShare] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -88,6 +92,11 @@ export default function App() {
     moveTask(taskId, targetDate, targetOrder)
   }
 
+  const shareMatch = window.location.pathname.match(/^\/share\/([^/]+)$/)
+  if (shareMatch) {
+    return <SharedWeekPage token={decodeURIComponent(shareMatch[1])} />
+  }
+
   if (!authReady) {
     return (
       <div className="h-[100dvh] grid place-items-center">
@@ -112,13 +121,22 @@ export default function App() {
           </div>
         ) : (
           <>
-            <WeekHeader onShowReview={() => setShowReview(true)} />
+            <WeekHeader
+              onShowReview={() => setShowReview(true)}
+              onShowShare={() => setShowShare(true)}
+            />
             <WeekGrid />
             <FloatingNav onShowAbout={() => setShowAbout(true)} />
           </>
         )}
       </div>
       {showReview && <ReviewScreen onClose={() => setShowReview(false)} />}
+      {showShare && (
+        <ShareWeekDialog
+          weekStart={currentWeekStart}
+          onClose={() => setShowShare(false)}
+        />
+      )}
       {showAbout && <AboutScreen onClose={() => setShowAbout(false)} />}
       {rolloverToast && (
         <Toast
