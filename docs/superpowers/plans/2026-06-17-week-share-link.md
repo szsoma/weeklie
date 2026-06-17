@@ -1206,9 +1206,20 @@ Expected:
 - The new URL loads the shared week.
 - The old URL remains unavailable.
 
-- [ ] **Step 7: Commit verification fixes**
+- [ ] **Step 7: Direct Supabase staging verification**
 
-If Tasks 8.1-8.6 required code changes, commit them:
+After applying `supabase/schema.sql` to the target Supabase project, verify the database access boundaries in staging or the Supabase SQL/API console:
+
+- Anonymous `get_shared_week` succeeds for an active token and returns `ok: true`.
+- Revoked or missing tokens return `{ "ok": false, "reason": "unavailable" }`.
+- Anonymous direct access to `week_shares` is denied.
+- Authenticated owner CRUD on `week_shares` works.
+- Authenticated non-owner access to another user's `week_shares` row is denied.
+- An active shared week with no scheduled tasks returns `ok: true` and `tasks: []`.
+
+- [ ] **Step 8: Commit verification fixes**
+
+If Tasks 8.1-8.7 required code changes, commit them:
 
 ```bash
 rtk git status --short
