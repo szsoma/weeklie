@@ -8,6 +8,12 @@ type Props = {
   token: string
 }
 
+type LoadState =
+  | { status: 'loading' }
+  | { status: 'ready'; week: SharedWeekAvailable }
+  | { status: 'unavailable' }
+  | { status: 'error'; message: string }
+
 function parseDateKey(dateKey: string): Date {
   return new Date(`${dateKey}T00:00:00`)
 }
@@ -19,12 +25,7 @@ function isSharedWeekAvailable(
 }
 
 export default function SharedWeekPage({ token }: Props) {
-  const [state, setState] = useState<
-    | { status: 'loading' }
-    | { status: 'ready'; week: SharedWeekAvailable }
-    | { status: 'unavailable' }
-    | { status: 'error'; message: string }
-  >({ status: 'loading' })
+  const [state, setState] = useState<LoadState>({ status: 'loading' })
 
   useEffect(() => {
     let alive = true
