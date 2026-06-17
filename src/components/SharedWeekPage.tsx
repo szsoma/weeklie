@@ -98,9 +98,7 @@ export default function SharedWeekPage({ token }: Props) {
             <h1 className="font-mono text-[28px] font-semibold tracking-tight">
               Could not load this week
             </h1>
-            <p className="text-sm leading-relaxed text-muted">
-              Could not load this shared week.
-            </p>
+            <p className="text-sm leading-relaxed text-muted">{state.message}</p>
           </div>
         </div>
       )}
