@@ -23,7 +23,11 @@ function SharedDayColumn({ date, tasks }: SharedDayColumnProps) {
   const today = isToday(date)
 
   return (
-    <div className={`relative flex min-h-[220px] flex-col ${today ? 'bg-today' : 'bg-bg'}`}>
+    <div
+      className={`relative flex min-h-[220px] flex-col md:h-full md:min-h-0 ${
+        today ? 'bg-today' : 'bg-bg'
+      }`}
+    >
       <div
         className="sticky top-0 z-10 flex min-h-[44px] items-center justify-between gap-2 border-b border-rule px-2 md:static"
         style={{ backgroundColor: 'var(--bg)' }}
@@ -41,7 +45,7 @@ function SharedDayColumn({ date, tasks }: SharedDayColumnProps) {
         </span>
       </div>
 
-      <div className="flex-1 px-2 pb-5 pt-1">
+      <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-5 pt-1 md:pb-24">
         {dayTasks.length === 0 ? (
           <p className="px-2 py-3 font-mono text-xs uppercase tracking-[0.08em] text-faint">
             Open
@@ -64,7 +68,7 @@ export default function SharedWeekGrid({ weekStart, tasks }: Props) {
 
   return (
     <>
-      <div className="weekgrid flex-1 divide-y divide-rule overflow-y-auto pb-10 md:hidden">
+      <div className="weekgrid flex-1 min-h-0 divide-y divide-rule overflow-y-auto pb-10 md:hidden">
         {days.map((day) => (
           <SharedDayColumn
             key={day.toISOString()}

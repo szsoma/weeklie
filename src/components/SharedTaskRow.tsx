@@ -12,13 +12,14 @@ type Props = {
 }
 
 export default function SharedTaskRow({ task }: Props) {
+  const statusLabel = task.done ? 'Completed' : 'Incomplete'
   const hasColor = task.color !== null && task.color in COLOR_MAP
   const colorBg = hasColor
     ? { backgroundColor: `${COLOR_MAP[task.color!]}18` }
     : undefined
 
   return (
-    <div className="group relative flex h-10 items-center gap-2 rounded-full px-2 text-sm leading-snug">
+    <div className="relative flex h-10 items-center gap-2 rounded-full px-2 text-sm leading-snug">
       {hasColor && (
         <div
           className="pointer-events-none absolute inset-0 rounded-full"
@@ -51,6 +52,7 @@ export default function SharedTaskRow({ task }: Props) {
         }`}
       >
         {task.title}
+        <span className="sr-only">. {statusLabel}.</span>
       </span>
     </div>
   )
