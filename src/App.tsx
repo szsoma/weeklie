@@ -15,6 +15,14 @@ import { useRollover } from './hooks/useRollover'
 import Toast from './components/Toast'
 import AboutScreen from './components/AboutScreen'
 
+function decodeShareToken(token: string) {
+  try {
+    return decodeURIComponent(token)
+  } catch {
+    return token
+  }
+}
+
 function TaskDragOverlay() {
   const { active } = useDndContext()
   const activeTask = useStore(s =>
@@ -33,6 +41,15 @@ function TaskDragOverlay() {
 }
 
 export default function App() {
+  const shareMatch = window.location.pathname.match(/^\/share\/([^/]+)$/)
+  if (shareMatch) {
+    return <SharedWeekPage token={decodeShareToken(shareMatch[1])} />
+  }
+
+  return <AuthenticatedApp />
+}
+
+function AuthenticatedApp() {
   const { toast: rolloverToast, clearToast } = useRollover()
   const moveTask = useStore(s => s.moveTask)
   const loadTasks = useStore(s => s.loadTasks)
@@ -90,11 +107,6 @@ export default function App() {
     }
 
     moveTask(taskId, targetDate, targetOrder)
-  }
-
-  const shareMatch = window.location.pathname.match(/^\/share\/([^/]+)$/)
-  if (shareMatch) {
-    return <SharedWeekPage token={decodeURIComponent(shareMatch[1])} />
   }
 
   if (!authReady) {
