@@ -45,3 +45,32 @@ export type WeekReview = {
   created_at: string;
   updated_at: string;
 };
+
+export type WeekShare = {
+  id: string;
+  week_id: string;
+  week_start: string;
+  token: string;
+  revoked_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SharedWeekTask = Pick<
+  Task,
+  'id' | 'title' | 'date' | 'done' | 'color' | 'order'
+>;
+
+export type SharedWeekAvailable = {
+  ok: true;
+  week_id: string;
+  week_start: string;
+  tasks: SharedWeekTask[];
+};
+
+export type SharedWeekUnavailable = {
+  ok: false;
+  reason: 'unavailable';
+};
+
+export type SharedWeekResponse = SharedWeekAvailable | SharedWeekUnavailable;
