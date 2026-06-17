@@ -2,13 +2,33 @@ import { createId, createShareToken } from '../nanoid'
 import type { SharedWeekResponse, WeekShare } from '../types'
 import { supabase } from './supabase'
 
-type WeekShareRow = WeekShare & {
-  user_id: string;
+type NewWeekShareRow = Pick<WeekShare, 'id' | 'week_id' | 'week_start' | 'token'>
+type SupabaseError = {
+  code?: string;
+  message: string;
 }
 
 type WeekShareInput = {
   weekId: string;
   weekStart: string;
+}
+
+async function selectWeekShare(weekStart: string): Promise<WeekShare | null> {
+  const { data, error } = await supabase
+    .from('week_shares')
+    .select('id, week_id, week_start, token, revoked_at, created_at, updated_at')
+    .eq('week_start', weekStart)
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  return data as WeekShare | null
+}
+
+function isUniqueViolation(error: SupabaseError): boolean {
+  return error.code === '23505'
 }
 
 export function buildShareUrl(token: string): string {
@@ -19,18 +39,10 @@ export async function getOrCreateWeekShare({
   weekId,
   weekStart,
 }: WeekShareInput): Promise<WeekShare> {
-  const { data: existing, error: selectError } = await supabase
-    .from('week_shares')
-    .select('id, week_id, week_start, token, revoked_at, created_at, updated_at')
-    .eq('week_start', weekStart)
-    .maybeSingle()
-
-  if (selectError) {
-    throw new Error(selectError.message)
-  }
+  const existing = await selectWeekShare(weekStart)
 
   if (existing && !existing.revoked_at) {
-    return existing as WeekShare
+    return existing
   }
 
   if (existing) {
@@ -57,15 +69,11 @@ export async function getOrCreateWeekShare({
     throw new Error(userError?.message ?? 'You must be signed in to share a week.')
   }
 
-  const insertRow: WeekShareRow = {
+  const insertRow: NewWeekShareRow = {
     id: createId(),
-    user_id: userData.user.id,
     week_id: weekId,
     week_start: weekStart,
     token: createShareToken(),
-    revoked_at: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
   }
 
   const { data, error } = await supabase
@@ -75,6 +83,13 @@ export async function getOrCreateWeekShare({
     .single()
 
   if (error) {
+    if (isUniqueViolation(error)) {
+      const concurrent = await selectWeekShare(weekStart)
+      if (concurrent) {
+        return concurrent
+      }
+    }
+
     throw new Error(error.message)
   }
 
