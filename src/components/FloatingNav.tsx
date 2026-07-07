@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useHideOnScroll } from "../hooks/useHideOnScroll";
+import { useTheme, type ThemeMode } from "../hooks/useTheme";
 import TodayFocusButton from "./TodayFocusButton";
 
 function Hamburger({ open }: { open: boolean }) {
@@ -46,6 +47,12 @@ function Checkmark() {
   );
 }
 
+const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
+  { value: "system", label: "System" },
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
+];
+
 type Props = {
   onShowAbout?: () => void;
   todayFocus: boolean;
@@ -61,6 +68,7 @@ export default function FloatingNav({
 }: Props) {
   const [open, setOpen] = useState(false);
   const hidden = useHideOnScroll(".weekgrid");
+  const { theme, setTheme } = useTheme();
 
   const linkClass =
     "block font-mono text-[13px] uppercase opacity-70 hover:opacity-100 py-3 transition focus-visible:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
@@ -96,6 +104,35 @@ export default function FloatingNav({
           >
             About
           </button>
+          <div className="flex items-center justify-between gap-3 py-3">
+            <span className="font-mono text-[13px] uppercase opacity-70">
+              Theme
+            </span>
+            <div
+              className="grid grid-cols-3 rounded-full bg-ink/[0.055] p-1"
+              aria-label="Theme mode"
+            >
+              {THEME_OPTIONS.map((option) => {
+                const active = theme === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setTheme(option.value)}
+                    aria-pressed={active}
+                    aria-label={`Set theme to ${option.label}`}
+                    className={`rounded-full px-2.5 py-1.5 font-mono text-[11px] uppercase transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 ${
+                      active
+                        ? "bg-ink text-bg shadow-sm"
+                        : "text-muted hover:bg-ink/[0.06] hover:text-ink"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <a href="#features" onClick={() => setOpen(false)} className={linkClass}>
             Features
           </a>
