@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { useStore } from "../store";
 import { useShallow } from "zustand/shallow";
@@ -16,6 +17,15 @@ export default function BacklogPanel() {
         .sort((a, b) => a.order - b.order),
     ),
   );
+  const [query, setQuery] = useState("");
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredTasks = useMemo(
+    () =>
+      normalizedQuery
+        ? tasks.filter((task) => task.title.toLowerCase().includes(normalizedQuery))
+        : tasks,
+    [normalizedQuery, tasks],
+  );
 
   return (
     <div
@@ -27,14 +37,39 @@ export default function BacklogPanel() {
           Backlog
         </h2>
         <span className="font-mono font-semibold text-[18px] text-faint tabular-nums">
-          {tasks.length}
+          {filteredTasks.length}
         </span>
+        <div className="ml-auto flex items-center min-w-0 max-w-[12rem] h-8 rounded-full bg-ink/[0.035] px-3">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Filter..."
+            aria-label="Filter backlog tasks"
+            name="backlog-filter"
+            className="w-full min-w-0 bg-transparent font-mono text-[12px] text-ink placeholder:text-faint outline-none"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              aria-label="Clear backlog filter"
+              className="ml-2 text-faint hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+            >
+              x
+            </button>
+          )}
+        </div>
       </div>
       <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 md:px-2 py-3 md:pb-24">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8">
-          {tasks.map((task) => (
+          {filteredTasks.map((task) => (
             <TaskRow key={task.id} task={task} />
           ))}
+          {normalizedQuery && filteredTasks.length === 0 && (
+            <div className="col-span-full px-2 py-3 font-mono text-[12px] text-faint">
+              No backlog tasks matching "{query.trim()}".
+            </div>
+          )}
         </div>
         <NewTaskLine date={null} />
       </div>

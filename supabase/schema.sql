@@ -18,6 +18,11 @@ create table if not exists public.tasks (
   last_rolled_over_at text
 );
 
+alter table public.tasks
+  add column if not exists recurrence text,
+  add column if not exists note text,
+  add column if not exists due_time text;
+
 create index if not exists tasks_user_date_idx on public.tasks (user_id, date);
 
 create table if not exists public.task_events (
@@ -47,6 +52,9 @@ create table if not exists public.week_reviews (
   updated_at timestamptz not null default now(),
   primary key (user_id, week_id)
 );
+
+alter table public.week_reviews
+  add column if not exists intention text;
 
 -- updated_at maintenance
 create or replace function public.set_updated_at()

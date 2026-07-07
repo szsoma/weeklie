@@ -1,3 +1,5 @@
+export type TaskRecurrence = 'daily' | 'weekly';
+
 export type Task = {
   id: string;
   title: string;
@@ -5,6 +7,9 @@ export type Task = {
   done: boolean;
   done_at: string | null;
   color: string | null; // "red" | "orange" | "yellow" | "green" | "blue" | "purple"
+  recurrence: TaskRecurrence | null;
+  note: string | null;
+  due_time: string | null;
   order: number;
   created_at: string;
   updated_at: string;
@@ -38,6 +43,7 @@ export type WeekReview = {
   planned_count: number;
   rolled_over_count: number;
   reflection: string;
+  intention: string | null;
   viewed_at: string;
   streak: number;
   completed_task_ids: string[];

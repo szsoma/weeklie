@@ -1,7 +1,9 @@
 import { create } from 'zustand'
+import { subWeeks } from 'date-fns'
 import { supabase } from './lib/supabase'
 import { createId } from './nanoid'
-import { formatDate, getWeekStart } from './dates'
+import { formatDate, getWeekDays, getWeekId, getWeekStart } from './dates'
+import { getNextAvailableRecurringDate, getRecurringSeedsForWeek } from './lib/recurrence'
 import { playChime } from './lib/sound'
 import type { Task, TaskEvent, TaskEventType, WeekReview } from './types'
 
@@ -32,6 +34,18 @@ function readHideDone(): boolean {
   }
 }
 
+type AddTaskOptions = Partial<Pick<
+  Task,
+  'color' | 'recurrence' | 'note' | 'due_time' | 'planned_date' | 'order'
+>> & {
+  silent?: boolean;
+};
+
+type SaveIntentionInput = {
+  weekStart: Date;
+  intention: string;
+};
+
 type State = {
   tasks: Task[]
   events: TaskEvent[]
@@ -45,14 +59,17 @@ type Actions = {
   loadTasks: () => Promise<void>
   loadEvents: () => Promise<void>
   loadReviews: () => Promise<void>
-  addTask: (title: string, date: string | null) => Promise<void>
+  addTask: (title: string, date: string | null, options?: AddTaskOptions) => Promise<Task | null>
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>
   toggleDone: (id: string) => Promise<void>
   deleteTask: (id: string) => Promise<void>
   moveTask: (id: string, newDate: string | null, newOrder: number) => Promise<void>
-  setCurrentWeekStart: (date: Date) => void
+  copyLastWeekTasks: () => Promise<number>
+  generateRecurringTasksForWeek: (weekStart: Date) => Promise<void>
+  setCurrentWeekStart: (date: Date) => Promise<void>
   rolloverTasks: () => Promise<number>
   saveReview: (review: WeekReview) => Promise<void>
+  saveIntention: (input: SaveIntentionInput) => Promise<void>
   normalizeOrders: (date: string) => void
   setHideDone: (value: boolean) => void
 }
@@ -77,6 +94,7 @@ export const useStore = create<State & Actions>((set, get) => ({
     }
     const tasks = ((data as Task[]) ?? []).slice().sort((a, b) => a.order - b.order)
     set({ tasks, isLoading: false })
+    await get().generateRecurringTasksForWeek(get().currentWeekStart)
   },
 
   loadEvents: async () => {
@@ -97,7 +115,7 @@ export const useStore = create<State & Actions>((set, get) => ({
     set({ reviews: (data as WeekReview[]) ?? [] })
   },
 
-  addTask: async (title, date) => {
+  addTask: async (title, date, options = {}) => {
     const tasks = get().tasks
     const dayTasks = tasks.filter(t => t.date === date)
     const maxOrder = dayTasks.length > 0 ? Math.max(...dayTasks.map(t => t.order)) : 0
@@ -108,12 +126,15 @@ export const useStore = create<State & Actions>((set, get) => ({
       date,
       done: false,
       done_at: null,
-      color: null,
-      order: maxOrder + 1,
+      color: options.color ?? null,
+      recurrence: options.recurrence ?? null,
+      note: options.note ?? null,
+      due_time: options.due_time ?? null,
+      order: options.order ?? maxOrder + 1,
       created_at: now,
       updated_at: now,
       deleted_at: null,
-      planned_date: date,
+      planned_date: options.planned_date ?? date,
       rolled_over_count: 0,
       last_rolled_over_at: null,
     }
@@ -123,10 +144,11 @@ export const useStore = create<State & Actions>((set, get) => ({
     if (error) {
       console.error('addTask failed', error)
       set({ tasks: get().tasks.filter(t => t.id !== task.id) })
-      return
+      return null
     }
-    playChime('add')
+    if (!options.silent) playChime('add')
     await logEvent(task.id, 'created', null, date)
+    return task
   },
 
   updateTask: async (id, updates) => {
@@ -149,6 +171,20 @@ export const useStore = create<State & Actions>((set, get) => ({
     await get().updateTask(id, { done, done_at: done ? now : null })
     if (done) playChime('complete')
     await logEvent(id, done ? 'completed' : 'reopened', task.date, task.date)
+
+    if (!done || !task.recurrence) return
+
+    const nextDate = getNextAvailableRecurringDate(get().tasks, task)
+    if (!nextDate) return
+
+    await get().addTask(task.title, nextDate, {
+      color: task.color,
+      recurrence: task.recurrence,
+      note: task.note,
+      due_time: task.due_time,
+      planned_date: nextDate,
+      silent: true,
+    })
   },
 
   deleteTask: async (id) => {
@@ -186,7 +222,52 @@ export const useStore = create<State & Actions>((set, get) => ({
     }
   },
 
-  setCurrentWeekStart: (date) => set({ currentWeekStart: date }),
+  copyLastWeekTasks: async () => {
+    const { currentWeekStart, tasks } = get()
+    const previousWeekStart = subWeeks(currentWeekStart, 1)
+    const previousDays = getWeekDays(previousWeekStart).map(formatDate)
+    const currentDays = getWeekDays(currentWeekStart).map(formatDate)
+    const copied = tasks
+      .filter(task => task.date !== null && previousDays.includes(task.date) && !task.done)
+      .sort((a, b) => {
+        if (a.date === b.date) return a.order - b.order
+        return (a.date ?? '').localeCompare(b.date ?? '')
+      })
+
+    for (const task of copied) {
+      const previousDayIndex = previousDays.indexOf(task.date!)
+      const targetDate = currentDays[previousDayIndex]
+      if (!targetDate) continue
+      await get().addTask(task.title, targetDate, {
+        color: task.color,
+        note: task.note,
+        recurrence: null,
+        due_time: null,
+        silent: true,
+      })
+    }
+
+    return copied.length
+  },
+
+  generateRecurringTasksForWeek: async (weekStart) => {
+    const seeds = getRecurringSeedsForWeek(get().tasks, weekStart)
+    for (const seed of seeds) {
+      await get().addTask(seed.sourceTask.title, seed.date, {
+        color: seed.sourceTask.color,
+        recurrence: seed.sourceTask.recurrence,
+        note: seed.sourceTask.note,
+        due_time: seed.sourceTask.due_time,
+        planned_date: seed.date,
+        silent: true,
+      })
+    }
+  },
+
+  setCurrentWeekStart: async (date) => {
+    set({ currentWeekStart: date })
+    await get().generateRecurringTasksForWeek(date)
+  },
 
   rolloverTasks: async () => {
     const tasks = get().tasks
@@ -244,6 +325,62 @@ export const useStore = create<State & Actions>((set, get) => ({
         .insert({ ...review, created_at: now, updated_at: now })
       if (error) {
         console.error('saveReview insert failed', error)
+        set({ reviews: prev })
+      }
+    }
+  },
+
+  saveIntention: async ({ weekStart, intention }) => {
+    const prev = get().reviews
+    const weekId = getWeekId(weekStart)
+    const now = new Date().toISOString()
+    const existing = prev.find(review => review.week_id === weekId)
+    const nextReview: WeekReview = existing
+      ? { ...existing, intention, updated_at: now }
+      : {
+          week_id: weekId,
+          completed_count: 0,
+          planned_count: 0,
+          rolled_over_count: 0,
+          reflection: '',
+          intention,
+          viewed_at: now,
+          streak: 0,
+          completed_task_ids: [],
+          rolled_over_task_ids: [],
+          created_at: now,
+          updated_at: now,
+        }
+
+    set({ reviews: prev.filter(r => r.week_id !== weekId).concat(nextReview) })
+
+    const { data: existingRow, error: selErr } = await supabase
+      .from('week_reviews')
+      .select('week_id')
+      .eq('week_id', weekId)
+      .maybeSingle()
+
+    if (selErr) {
+      console.error('saveIntention select failed', selErr)
+      set({ reviews: prev })
+      return
+    }
+
+    if (existingRow) {
+      const { error } = await supabase
+        .from('week_reviews')
+        .update({ intention, updated_at: now })
+        .eq('week_id', weekId)
+      if (error) {
+        console.error('saveIntention update failed', error)
+        set({ reviews: prev })
+      }
+    } else {
+      const { error } = await supabase
+        .from('week_reviews')
+        .insert({ week_id: weekId, intention, viewed_at: now, updated_at: now })
+      if (error) {
+        console.error('saveIntention insert failed', error)
         set({ reviews: prev })
       }
     }

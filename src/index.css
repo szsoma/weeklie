@@ -18,14 +18,14 @@
 }
 
 :root {
-  --bg: #fbfad2; /* light yellowish paper */
-  --surface: #fbf8de; /* lifted card */
+  --bg: #fffdf3; /* near-white paper */
+  --surface: #fffaf0; /* lifted paper */
   --ink: #1a1a1a; /* primary text */
   --muted: #514b3f; /* readable secondary text */
   --faint: #6f6657; /* subtle labels / placeholders */
-  --rule: rgba(26, 26, 26, 0.14);
-  --rule-strong: rgba(26, 26, 26, 0.24);
-  --today: #f6f0c8;
+  --rule: rgba(26, 26, 26, 0.12);
+  --rule-strong: rgba(26, 26, 26, 0.22);
+  --today: #f8f2d8;
 }
 
 @media (prefers-color-scheme: dark) {

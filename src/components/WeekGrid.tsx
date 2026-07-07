@@ -4,9 +4,14 @@ import { getWeekDays, isToday } from "../dates";
 import DayColumn from "./DayColumn";
 import BacklogPanel from "./BacklogPanel";
 
-export default function WeekGrid() {
+type Props = {
+  todayFocus: boolean;
+};
+
+export default function WeekGrid({ todayFocus }: Props) {
   const currentWeekStart = useStore((s) => s.currentWeekStart);
   const days = getWeekDays(currentWeekStart);
+  const today = days.find((day) => isToday(day));
   const todayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -18,6 +23,16 @@ export default function WeekGrid() {
   const weekdays = days.slice(0, 5); // Mon-Fri
   const saturday = days[5];
   const sunday = days[6];
+
+  if (todayFocus && today) {
+    return (
+      <div className="weekgrid flex-1 min-h-0 overflow-y-auto pb-24 md:grid md:place-items-start md:overflow-hidden">
+        <div className="w-full md:max-w-[28rem] md:mx-auto md:h-full md:border-x md:border-rule">
+          <DayColumn date={today} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

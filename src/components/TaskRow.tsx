@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useDraggable } from "@dnd-kit/core";
+import { REMINDER_PRESET_TIMES, requestReminderPermission } from "../lib/reminders";
 import { useStore } from "../store";
 import type { Task } from "../types";
 
@@ -12,16 +13,84 @@ const COLOR_MAP: Record<string, string> = {
   green: "#22c55e",
 };
 
+const RECURRENCE_OPTIONS = [
+  { value: null, label: "None" },
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+] as const;
+
 type Props = {
   task: Task;
 };
 
+function NoteIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-3.5 w-3.5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 4h16v16H4z" />
+      <path d="M8 8h8M8 12h8M8 16h5" />
+    </svg>
+  );
+}
+
+function RepeatIcon({ color }: { color?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke={color ?? "currentColor"}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M17 1l4 4-4 4" />
+      <path d="M3 11V9a4 4 0 014-4h14" />
+      <path d="M7 23l-4-4 4-4" />
+      <path d="M21 13v2a4 4 0 01-4 4H3" />
+    </svg>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+  );
+}
+
 export default function TaskRow({ task }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
+  const [isEditingNote, setIsEditingNote] = useState(false);
+  const [editNote, setEditNote] = useState(task.note ?? "");
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(() =>
+    "Notification" in window ? Notification.permission : "denied",
+  );
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
   const inputRef = useRef<HTMLInputElement>(null);
+  const noteInputRef = useRef<HTMLInputElement>(null);
   const kebabRef = useRef<HTMLButtonElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const toggleDone = useStore((s) => s.toggleDone);
@@ -31,6 +100,10 @@ export default function TaskRow({ task }: Props) {
   useEffect(() => {
     if (isEditing) inputRef.current?.focus();
   }, [isEditing]);
+
+  useEffect(() => {
+    if (isEditingNote) noteInputRef.current?.focus();
+  }, [isEditingNote]);
 
   const handleSave = () => {
     const trimmed = editTitle.trim();
@@ -50,10 +123,24 @@ export default function TaskRow({ task }: Props) {
     }
   };
 
+  const handleNoteSave = () => {
+    const trimmed = editNote.trim().slice(0, 300);
+    updateTask(task.id, { note: trimmed ? trimmed : null });
+    setIsEditingNote(false);
+  };
+
+  const handleNoteKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleNoteSave();
+    if (e.key === "Escape") {
+      setEditNote(task.note ?? "");
+      setIsEditingNote(false);
+    }
+  };
+
   const openTooltip = useCallback(() => {
     if (kebabRef.current) {
       const rect = kebabRef.current.getBoundingClientRect();
-      setTooltipPos({ top: rect.bottom + 4, left: rect.right - 140 });
+      setTooltipPos({ top: rect.bottom + 4, left: rect.right - 180 });
     }
     setTooltipOpen(true);
   }, []);
@@ -70,12 +157,31 @@ export default function TaskRow({ task }: Props) {
     [task.color, task.id, updateTask],
   );
 
+  const selectRecurrence = useCallback(
+    (recurrence: Task["recurrence"]) => {
+      updateTask(task.id, { recurrence });
+      setTooltipOpen(false);
+    },
+    [task.id, updateTask],
+  );
+
+  const selectDueTime = useCallback(
+    async (dueTime: string | null) => {
+      if (dueTime) {
+        const permission = await requestReminderPermission();
+        setNotificationPermission(permission);
+      }
+      updateTask(task.id, { due_time: dueTime });
+      setTooltipOpen(false);
+    },
+    [task.id, updateTask],
+  );
+
   const handleDelete = useCallback(() => {
     deleteTask(task.id);
     setTooltipOpen(false);
   }, [deleteTask, task.id]);
 
-  // Close tooltip on outside click / Escape
   useEffect(() => {
     if (!tooltipOpen) return;
     const handleClick = (e: MouseEvent) => {
@@ -120,15 +226,14 @@ export default function TaskRow({ task }: Props) {
       style={rowStyle}
       {...listeners}
       {...attributes}
-      className={`group relative flex items-center m-1 gap-2 px-2 h-10 text-sm leading-snug rounded-full transition-colors ${
+      className={`group relative grid grid-cols-[1rem_minmax(0,1fr)_auto_auto_auto] items-center m-1 gap-x-2 px-2 min-h-10 text-sm leading-snug rounded-full transition-colors ${
         isDragging
           ? "opacity-40 cursor-grabbing"
-          : isEditing
+          : isEditing || isEditingNote
             ? "cursor-text"
             : "cursor-grab hover:bg-ink/[0.025]"
       }`}
     >
-      {/* Color background overlay */}
       {hasColor && (
         <div
           className="absolute inset-0 rounded-full pointer-events-none"
@@ -136,7 +241,6 @@ export default function TaskRow({ task }: Props) {
         />
       )}
 
-      {/* Checkbox */}
       <label className="relative flex-shrink-0 inline-flex w-4 h-4 cursor-pointer z-[1]">
         <input
           type="checkbox"
@@ -159,32 +263,100 @@ export default function TaskRow({ task }: Props) {
         </svg>
       </label>
 
-      {/* Title */}
-      {isEditing ? (
-        <input
-          ref={inputRef}
-          value={editTitle}
-          onChange={(e) => setEditTitle(e.target.value)}
-          onBlur={handleSave}
-          onKeyDown={handleKeyDown}
-          onPointerDown={(e) => e.stopPropagation()}
-          aria-label="Edit task title"
-          name="task-title"
-          autoComplete="off"
-          className="flex-1 min-w-0 bg-transparent text-sm leading-snug z-[1] focus:outline-none"
-        />
-      ) : (
+      <div className="min-w-0 z-[1] py-1">
+        {isEditing ? (
+          <input
+            ref={inputRef}
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            onBlur={handleSave}
+            onKeyDown={handleKeyDown}
+            onPointerDown={(e) => e.stopPropagation()}
+            aria-label="Edit task title"
+            name="task-title"
+            autoComplete="off"
+            className="w-full min-w-0 bg-transparent text-sm leading-snug focus:outline-none"
+          />
+        ) : (
+          <span
+            onClick={() => {
+              setEditTitle(task.title);
+              setIsEditing(true);
+            }}
+            className={`block cursor-text truncate ${
+              task.done ? "line-through text-faint" : "text-ink"
+            }`}
+          >
+            {task.title}
+          </span>
+        )}
+
+        {isEditingNote ? (
+          <input
+            ref={noteInputRef}
+            value={editNote}
+            maxLength={300}
+            onChange={(e) => setEditNote(e.target.value)}
+            onBlur={handleNoteSave}
+            onKeyDown={handleNoteKeyDown}
+            onPointerDown={(e) => e.stopPropagation()}
+            aria-label="Edit task note"
+            name="task-note"
+            autoComplete="off"
+            className="block w-full min-w-0 bg-transparent text-[13px] leading-snug text-muted placeholder:text-faint focus:outline-none"
+            placeholder="Note"
+          />
+        ) : task.note ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditNote(task.note ?? "");
+              setIsEditingNote(true);
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            title={task.note}
+            className="block w-full truncate text-left text-[13px] leading-snug text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+          >
+            {task.note}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditNote("");
+              setIsEditingNote(true);
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            aria-label="Add task note"
+            className="hidden group-hover:inline-flex text-faint hover:text-muted focus-visible:inline-flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+          >
+            <NoteIcon />
+          </button>
+        )}
+      </div>
+
+      {task.due_time && (
         <span
-          onClick={() => setIsEditing(true)}
-          className={`flex-1 cursor-text truncate z-[1] ${
-            task.done ? "line-through text-faint" : "text-ink"
-          }`}
+          className="z-[1] inline-flex items-center gap-1 flex-shrink-0 font-mono text-[11px] text-faint"
+          title={`Reminder at ${task.due_time}`}
         >
-          {task.title}
+          <ClockIcon />
+          {task.due_time}
         </span>
       )}
 
-      {/* Kebab trigger */}
+      {task.recurrence && (
+        <span
+          className="z-[1] flex-shrink-0 text-faint"
+          title={`Repeats ${task.recurrence}`}
+          aria-label={`Repeats ${task.recurrence}`}
+        >
+          <RepeatIcon color={hasColor ? COLOR_MAP[task.color!] : undefined} />
+        </span>
+      )}
+
       <button
         ref={kebabRef}
         onClick={(e) => {
@@ -203,12 +375,11 @@ export default function TaskRow({ task }: Props) {
         </svg>
       </button>
 
-      {/* Glass morphism tooltip — portalled to body to avoid overflow clipping */}
       {tooltipOpen &&
         createPortal(
           <div
             ref={tooltipRef}
-            className="fixed z-50 flex flex-col gap-3 p-3 min-w-[140px] rounded-xl shadow-xl"
+            className="fixed z-50 flex flex-col gap-3 p-3 min-w-[180px] rounded-xl shadow-xl"
             style={{
               top: tooltipPos.top,
               left: tooltipPos.left,
@@ -218,7 +389,6 @@ export default function TaskRow({ task }: Props) {
                 "color-mix(in srgb, var(--surface) 75%, transparent)",
             }}
           >
-            {/* Color dots */}
             <div className="flex items-center justify-center gap-2">
               {COLOR_TOKENS.map((color) => (
                 <button
@@ -238,7 +408,72 @@ export default function TaskRow({ task }: Props) {
               ))}
             </div>
 
-            {/* Delete */}
+            <div className="h-px bg-rule" />
+            <div className="flex flex-col gap-1">
+              <div className="px-1 font-mono text-[10px] uppercase text-faint">
+                Repeat
+              </div>
+              {RECURRENCE_OPTIONS.map((option) => (
+                <button
+                  key={option.label}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    selectRecurrence(option.value);
+                  }}
+                  className="flex items-center justify-between gap-4 rounded-md px-1 py-1 text-xs text-muted hover:bg-ink/[0.06] hover:text-ink"
+                >
+                  <span>{option.label}</span>
+                  {task.recurrence === option.value && <span aria-hidden>Set</span>}
+                </button>
+              ))}
+            </div>
+
+            <div className="h-px bg-rule" />
+            <div className="flex flex-col gap-1">
+              <div className="px-1 font-mono text-[10px] uppercase text-faint">
+                Remind me
+              </div>
+              {REMINDER_PRESET_TIMES.map((time) => (
+                <button
+                  key={time}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    selectDueTime(time);
+                  }}
+                  className="flex items-center justify-between gap-4 rounded-md px-1 py-1 text-xs text-muted hover:bg-ink/[0.06] hover:text-ink"
+                >
+                  <span>{time}</span>
+                  {task.due_time === time && <span aria-hidden>Set</span>}
+                </button>
+              ))}
+              <input
+                type="time"
+                value={task.due_time ?? ""}
+                onChange={(e) => selectDueTime(e.target.value || null)}
+                onPointerDown={(e) => e.stopPropagation()}
+                aria-label="Custom reminder time"
+                className="rounded-md bg-transparent px-1 py-1 text-xs text-muted outline-none hover:bg-ink/[0.06] focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+              />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  selectDueTime(null);
+                }}
+                className="rounded-md px-1 py-1 text-left text-xs text-faint hover:bg-ink/[0.06] hover:text-ink"
+              >
+                Clear
+              </button>
+              {notificationPermission === "denied" && (
+                <div className="px-1 text-[11px] leading-snug text-faint">
+                  Notifications blocked. Enable them in browser settings to receive reminders.
+                </div>
+              )}
+            </div>
+
+            <div className="h-px bg-rule" />
             <button
               onClick={(e) => {
                 e.stopPropagation();

@@ -12,6 +12,8 @@ import { useStore } from './store'
 import { useRollover } from './hooks/useRollover'
 import Toast from './components/Toast'
 import AboutScreen from './components/AboutScreen'
+import { useTodayFocus } from './hooks/useTodayFocus'
+import { startReminderScheduler } from './lib/reminders'
 
 function TaskDragOverlay() {
   const { active } = useDndContext()
@@ -37,6 +39,10 @@ export default function App() {
   const loadEvents = useStore(s => s.loadEvents)
   const loadReviews = useStore(s => s.loadReviews)
   const isLoading = useStore(s => s.isLoading)
+  const currentWeekStart = useStore(s => s.currentWeekStart)
+  const tasks = useStore(s => s.tasks)
+  const toggleDone = useStore(s => s.toggleDone)
+  const todayFocusState = useTodayFocus(currentWeekStart)
 
   const [session, setSession] = useState<Session | null>(null)
   const [authReady, setAuthReady] = useState(false)
@@ -59,6 +65,24 @@ export default function App() {
     loadEvents()
     loadReviews()
   }, [session, loadTasks, loadEvents, loadReviews])
+
+  useEffect(() => {
+    if (!session || isLoading) return
+    return startReminderScheduler(() => useStore.getState().tasks)
+  }, [session, isLoading, tasks])
+
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type !== 'weeklie:mark-done') return
+      const taskId = event.data.taskId as string | undefined
+      if (!taskId) return
+      const task = useStore.getState().tasks.find((item) => item.id === taskId)
+      if (task && !task.done) toggleDone(taskId)
+    }
+    navigator.serviceWorker.addEventListener('message', handleMessage)
+    return () => navigator.serviceWorker.removeEventListener('message', handleMessage)
+  }, [toggleDone])
 
   const [showReview, setShowReview] = useState(false)
   const [showAbout, setShowAbout] = useState(false)
@@ -112,9 +136,19 @@ export default function App() {
           </div>
         ) : (
           <>
-            <WeekHeader onShowReview={() => setShowReview(true)} />
-            <WeekGrid />
-            <FloatingNav onShowAbout={() => setShowAbout(true)} />
+            <WeekHeader
+              onShowReview={() => setShowReview(true)}
+              todayFocus={todayFocusState.todayFocus}
+              canFocusToday={todayFocusState.canFocusToday}
+              onToggleTodayFocus={todayFocusState.toggleTodayFocus}
+            />
+            <WeekGrid todayFocus={todayFocusState.todayFocus} />
+            <FloatingNav
+              onShowAbout={() => setShowAbout(true)}
+              todayFocus={todayFocusState.todayFocus}
+              canFocusToday={todayFocusState.canFocusToday}
+              onToggleTodayFocus={todayFocusState.toggleTodayFocus}
+            />
           </>
         )}
       </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useHideOnScroll } from "../hooks/useHideOnScroll";
+import TodayFocusButton from "./TodayFocusButton";
 
 function Hamburger({ open }: { open: boolean }) {
   return (
@@ -47,9 +48,17 @@ function Checkmark() {
 
 type Props = {
   onShowAbout?: () => void;
+  todayFocus: boolean;
+  canFocusToday: boolean;
+  onToggleTodayFocus: () => void;
 };
 
-export default function FloatingNav({ onShowAbout }: Props) {
+export default function FloatingNav({
+  onShowAbout,
+  todayFocus,
+  canFocusToday,
+  onToggleTodayFocus,
+}: Props) {
   const [open, setOpen] = useState(false);
   const hidden = useHideOnScroll(".weekgrid");
 
@@ -117,6 +126,14 @@ export default function FloatingNav({ onShowAbout }: Props) {
             <Checkmark />
             <span className="opacity-50">_</span>Weeklie
           </a>
+
+          <TodayFocusButton
+            active={todayFocus}
+            disabled={!canFocusToday}
+            onToggle={onToggleTodayFocus}
+            compact
+            tone="ink"
+          />
 
           {/* Burger button */}
           <button
