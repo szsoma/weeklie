@@ -201,7 +201,7 @@ export default function ReviewScreen({ onClose }: Props) {
             placeholder="How was your week?"
             name="reflection"
             aria-label="Weekly reflection"
-            className="w-full bg-transparent border-b border-rule-strong outline-none py-2.5 text-[17px] placeholder:text-faint focus:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:bg-ink/[0.03] transition-colors"
+            className="w-full bg-transparent border-b border-rule-strong outline-none py-2.5 text-[17px] placeholder:text-faint focus-visible:outline-none focus-visible:bg-ink/[0.03] transition-colors"
           />
         </div>
 

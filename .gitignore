@@ -33,3 +33,6 @@ dist-ssr
 .playwright-mcp
 .vercel
 .worktrees
+
+# ShipStudio metadata
+.shipstudio/

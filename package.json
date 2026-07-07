@@ -7,8 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "test:theme-switcher": "node --test tests/theme-switcher.test.mjs"
+    "test:taskrow-note-menu": "node --test tests/taskrow-note-menu.test.mjs",
+    "test:taskrow-popover-menu": "node --test tests/taskrow-popover-menu.test.mjs",
+    "test:input-focus-style": "node --test tests/input-focus-style.test.mjs",
+    "test:theme-switcher": "node --test tests/theme-switcher.test.mjs",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

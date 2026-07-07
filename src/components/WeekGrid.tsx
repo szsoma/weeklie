@@ -4,14 +4,9 @@ import { getWeekDays, isToday } from "../dates";
 import DayColumn from "./DayColumn";
 import BacklogPanel from "./BacklogPanel";
 
-type Props = {
-  todayFocus: boolean;
-};
-
-export default function WeekGrid({ todayFocus }: Props) {
+export default function WeekGrid() {
   const currentWeekStart = useStore((s) => s.currentWeekStart);
   const days = getWeekDays(currentWeekStart);
-  const today = days.find((day) => isToday(day));
   const todayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,16 +18,6 @@ export default function WeekGrid({ todayFocus }: Props) {
   const weekdays = days.slice(0, 5); // Mon-Fri
   const saturday = days[5];
   const sunday = days[6];
-
-  if (todayFocus && today) {
-    return (
-      <div className="weekgrid flex-1 min-h-0 overflow-y-auto pb-24 md:grid md:place-items-start md:overflow-hidden">
-        <div className="w-full md:max-w-[28rem] md:mx-auto md:h-full md:border-x md:border-rule">
-          <DayColumn date={today} />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>
@@ -56,7 +41,7 @@ export default function WeekGrid({ todayFocus }: Props) {
         Sat sits directly above Sun — each weekend day gets a full row of height.
         gap-px + bg-rule draws hairline dividers between every cell.
       */}
-      <div className="hidden md:grid flex-1 min-h-0 grid-cols-6 grid-rows-2 gap-px bg-rule">
+      <div className="hidden mx-6 md:grid flex-1 min-h-0 grid-cols-6 grid-rows-2 gap-px bg-rule">
         {/* Row 1 — weekdays flow into columns 1–5 */}
         {weekdays.map((day) => (
           <div

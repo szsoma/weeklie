@@ -4,11 +4,9 @@ import {
   formatDate,
   formatWeekLabel,
   getWeekDays,
-  getWeekStart,
   nextWeek,
   prevWeek,
 } from "../dates";
-import TodayFocusButton from "./TodayFocusButton";
 import WeekIntention from "./WeekIntention";
 
 function Chevron({ direction }: { direction: "left" | "right" }) {
@@ -103,16 +101,10 @@ function MoreIcon() {
 
 type Props = {
   onShowReview?: () => void;
-  todayFocus: boolean;
-  canFocusToday: boolean;
-  onToggleTodayFocus: () => void;
 };
 
 export default function WeekHeader({
   onShowReview,
-  todayFocus,
-  canFocusToday,
-  onToggleTodayFocus,
 }: Props) {
   const currentWeekStart = useStore((s) => s.currentWeekStart);
   const setCurrentWeekStart = useStore((s) => s.setCurrentWeekStart);
@@ -123,8 +115,6 @@ export default function WeekHeader({
   const copyLastWeekTasks = useStore((s) => s.copyLastWeekTasks);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isCopyingLastWeek, setIsCopyingLastWeek] = useState(false);
-
-  const goToToday = () => setCurrentWeekStart(getWeekStart(new Date()));
 
   const previousWeekStart = prevWeek(currentWeekStart);
   const previousWeekDates = new Set(getWeekDays(previousWeekStart).map(formatDate));
@@ -149,14 +139,6 @@ export default function WeekHeader({
           <h1 className="font-mono font-semibold text-[24px] md:text-[22px] tracking-tight leading-none whitespace-nowrap">
             {formatWeekLabel(currentWeekStart)}
           </h1>
-          <div className="mt-3 md:hidden">
-            <TodayFocusButton
-              active={todayFocus}
-              disabled={!canFocusToday}
-              onToggle={onToggleTodayFocus}
-              compact
-            />
-          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -198,14 +180,6 @@ export default function WeekHeader({
                   ? `Show done${doneCount ? ` ${doneCount}` : ""}`
                   : "Hide done"}
               </span>
-            </button>
-
-            <button
-              onClick={goToToday}
-              aria-label="Jump to today"
-              className="h-10 w-auto font-mono text-[14px] uppercase rounded-md border border-rule-strong text-ink hover:bg-ink/[0.06] active:scale-[0.98] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-            >
-              <span className="hidden md:inline px-4">Today</span>
             </button>
 
             <button
@@ -261,29 +235,6 @@ export default function WeekHeader({
                       ? `Show done${doneCount ? ` (${doneCount})` : ""}`
                       : "Hide done"}
                   </span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    onToggleTodayFocus();
-                    setMenuOpen(false);
-                  }}
-                  disabled={!canFocusToday}
-                  className="flex items-center gap-3 w-full px-4 py-3 font-mono text-[14px] text-ink hover:bg-ink/[0.06] disabled:opacity-40 disabled:cursor-not-allowed transition"
-                >
-                  <CalendarIcon />
-                  <span>{todayFocus ? "Full week" : "Today focus"}</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    goToToday();
-                    setMenuOpen(false);
-                  }}
-                  className="flex items-center gap-3 w-full px-4 py-3 font-mono text-[14px] text-ink hover:bg-ink/[0.06] transition"
-                >
-                  <CalendarIcon />
-                  <span>Today</span>
                 </button>
 
                 <button

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useHideOnScroll } from "../hooks/useHideOnScroll";
 import { useTheme, type ThemeMode } from "../hooks/useTheme";
-import TodayFocusButton from "./TodayFocusButton";
 
 function Hamburger({ open }: { open: boolean }) {
   return (
@@ -55,29 +54,25 @@ const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
 
 type Props = {
   onShowAbout?: () => void;
-  todayFocus: boolean;
-  canFocusToday: boolean;
-  onToggleTodayFocus: () => void;
+  onShowFeatures?: () => void;
 };
 
 export default function FloatingNav({
   onShowAbout,
-  todayFocus,
-  canFocusToday,
-  onToggleTodayFocus,
+  onShowFeatures,
 }: Props) {
   const [open, setOpen] = useState(false);
   const hidden = useHideOnScroll(".weekgrid");
   const { theme, setTheme } = useTheme();
 
   const linkClass =
-    "block font-mono text-[13px] uppercase opacity-70 hover:opacity-100 py-3 transition focus-visible:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
+    "block text-left font-mono text-[13px] uppercase opacity-70 hover:opacity-100 py-3 transition focus-visible:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
 
   return (
     <>
       {/* Overlay backdrop */}
       <div
-        className={`fixed inset-0 z-40 bg-ink/20 backdrop-blur-[2px] transition-opacity duration-200 ${
+        className={`fixed inset-0 z-40 bg-ink/20 backdrop-blur-[4px] transition-opacity duration-200 ${
           open ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={() => setOpen(false)}
@@ -133,14 +128,25 @@ export default function FloatingNav({
               })}
             </div>
           </div>
-          <a href="#features" onClick={() => setOpen(false)} className={linkClass}>
+          <button
+            type="button"
+            onClick={() => {
+              onShowFeatures?.();
+              setOpen(false);
+            }}
+            className={linkClass}
+          >
             Features
-          </a>
+          </button>
           <div className="h-px bg-rule my-1" />
           <a href="#login" onClick={() => setOpen(false)} className={linkClass}>
             Login
           </a>
-          <a href="#signup" onClick={() => setOpen(false)} className={linkClass}>
+          <a
+            href="#signup"
+            onClick={() => setOpen(false)}
+            className={linkClass}
+          >
             Sign up
           </a>
         </div>
@@ -163,14 +169,6 @@ export default function FloatingNav({
             <Checkmark />
             <span className="opacity-50">_</span>Weeklie
           </a>
-
-          <TodayFocusButton
-            active={todayFocus}
-            disabled={!canFocusToday}
-            onToggle={onToggleTodayFocus}
-            compact
-            tone="ink"
-          />
 
           {/* Burger button */}
           <button

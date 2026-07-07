@@ -74,12 +74,13 @@
   body {
     background-color: var(--bg);
     color: var(--ink);
-    /* Geist sans for body / task content — readable at length */
+    /* Google Sans for body / task content — readable at length */
     font-family:
-      "Geist",
+      "Google Sans",
       system-ui,
       -apple-system,
       sans-serif;
+    font-weight: 400;
   }
 
   ::selection {
@@ -107,6 +108,57 @@
     mix-blend-mode: multiply;
     background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
     background-size: 160px 160px;
+  }
+}
+
+@layer components {
+  .task-settings-popover {
+    position: fixed;
+    inset: 50% auto auto 50%;
+    width: min(22rem, calc(100vw - 2rem));
+    max-height: min(42rem, calc(100vh - 2rem));
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    color: var(--ink);
+    border: 1px solid var(--rule-strong);
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.16),
+      0 2px 8px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.98);
+    transition:
+      opacity 140ms ease,
+      transform 140ms ease;
+  }
+
+  .task-settings-popover:popover-open {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .task-settings-popover::backdrop {
+    background: color-mix(in srgb, var(--ink) 9%, transparent);
+    backdrop-filter: blur(1px);
+    -webkit-backdrop-filter: blur(1px);
+  }
+
+  @media (max-width: 640px) {
+    .task-settings-popover {
+      inset: auto 1rem max(1rem, env(safe-area-inset-bottom)) 1rem;
+      width: auto;
+      max-height: min(36rem, calc(100vh - 2rem));
+      border-radius: 1rem;
+      transform: translateY(0.5rem) scale(1);
+    }
+
+    .task-settings-popover:popover-open {
+      transform: translateY(0) scale(1);
+    }
   }
 }
 

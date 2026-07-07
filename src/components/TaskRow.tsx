@@ -23,24 +23,6 @@ type Props = {
   task: Task;
 };
 
-function NoteIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-3.5 w-3.5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M4 4h16v16H4z" />
-      <path d="M8 8h8M8 12h8M8 16h5" />
-    </svg>
-  );
-}
-
 function RepeatIcon({ color }: { color?: string }) {
   return (
     <svg
@@ -87,12 +69,10 @@ export default function TaskRow({ task }: Props) {
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(() =>
     "Notification" in window ? Notification.permission : "denied",
   );
-  const [tooltipOpen, setTooltipOpen] = useState(false);
-  const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
+  const settingsPopoverId = `task-settings-${task.id}`;
   const inputRef = useRef<HTMLInputElement>(null);
   const noteInputRef = useRef<HTMLInputElement>(null);
-  const kebabRef = useRef<HTMLButtonElement>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
+  const settingsPopoverRef = useRef<HTMLDivElement>(null);
   const toggleDone = useStore((s) => s.toggleDone);
   const updateTask = useStore((s) => s.updateTask);
   const deleteTask = useStore((s) => s.deleteTask);
@@ -125,6 +105,10 @@ export default function TaskRow({ task }: Props) {
 
   const handleNoteSave = () => {
     const trimmed = editNote.trim().slice(0, 300);
+    if (trimmed === (task.note ?? "")) {
+      setIsEditingNote(false);
+      return;
+    }
     updateTask(task.id, { note: trimmed ? trimmed : null });
     setIsEditingNote(false);
   };
@@ -137,12 +121,11 @@ export default function TaskRow({ task }: Props) {
     }
   };
 
-  const openTooltip = useCallback(() => {
-    if (kebabRef.current) {
-      const rect = kebabRef.current.getBoundingClientRect();
-      setTooltipPos({ top: rect.bottom + 4, left: rect.right - 180 });
+  const closeSettingsPopover = useCallback(() => {
+    const popover = settingsPopoverRef.current;
+    if (popover?.matches(":popover-open")) {
+      popover.hidePopover();
     }
-    setTooltipOpen(true);
   }, []);
 
   const selectColor = useCallback(
@@ -152,7 +135,6 @@ export default function TaskRow({ task }: Props) {
       } else {
         updateTask(task.id, { color });
       }
-      setTooltipOpen(false);
     },
     [task.color, task.id, updateTask],
   );
@@ -160,7 +142,6 @@ export default function TaskRow({ task }: Props) {
   const selectRecurrence = useCallback(
     (recurrence: Task["recurrence"]) => {
       updateTask(task.id, { recurrence });
-      setTooltipOpen(false);
     },
     [task.id, updateTask],
   );
@@ -172,38 +153,14 @@ export default function TaskRow({ task }: Props) {
         setNotificationPermission(permission);
       }
       updateTask(task.id, { due_time: dueTime });
-      setTooltipOpen(false);
     },
     [task.id, updateTask],
   );
 
   const handleDelete = useCallback(() => {
     deleteTask(task.id);
-    setTooltipOpen(false);
-  }, [deleteTask, task.id]);
-
-  useEffect(() => {
-    if (!tooltipOpen) return;
-    const handleClick = (e: MouseEvent) => {
-      if (
-        tooltipRef.current &&
-        !tooltipRef.current.contains(e.target as Node) &&
-        kebabRef.current &&
-        !kebabRef.current.contains(e.target as Node)
-      ) {
-        setTooltipOpen(false);
-      }
-    };
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setTooltipOpen(false);
-    };
-    document.addEventListener("mousedown", handleClick);
-    document.addEventListener("keydown", handleEsc);
-    return () => {
-      document.removeEventListener("mousedown", handleClick);
-      document.removeEventListener("keydown", handleEsc);
-    };
-  }, [tooltipOpen]);
+    closeSettingsPopover();
+  }, [closeSettingsPopover, deleteTask, task.id]);
 
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
@@ -320,21 +277,7 @@ export default function TaskRow({ task }: Props) {
           >
             {task.note}
           </button>
-        ) : (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditNote("");
-              setIsEditingNote(true);
-            }}
-            onPointerDown={(e) => e.stopPropagation()}
-            aria-label="Add task note"
-            className="hidden group-hover:inline-flex text-faint hover:text-muted focus-visible:inline-flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-          >
-            <NoteIcon />
-          </button>
-        )}
+        ) : null}
       </div>
 
       {task.due_time && (
@@ -358,14 +301,16 @@ export default function TaskRow({ task }: Props) {
       )}
 
       <button
-        ref={kebabRef}
+        popoverTarget={settingsPopoverId}
+        popoverTargetAction="toggle"
         onClick={(e) => {
           e.stopPropagation();
-          if (!tooltipOpen) openTooltip();
-          else setTooltipOpen(false);
+          setEditNote(task.note ?? "");
         }}
         onPointerDown={(e) => e.stopPropagation()}
         aria-label="Task options"
+        aria-controls={settingsPopoverId}
+        aria-haspopup="dialog"
         className="flex-shrink-0 w-4 h-4 grid place-items-center text-faint hover:text-ink transition-colors rounded-md z-[1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
       >
         <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
@@ -375,128 +320,216 @@ export default function TaskRow({ task }: Props) {
         </svg>
       </button>
 
-      {tooltipOpen &&
-        createPortal(
-          <div
-            ref={tooltipRef}
-            className="fixed z-50 flex flex-col gap-3 p-3 min-w-[180px] rounded-xl shadow-xl"
-            style={{
-              top: tooltipPos.top,
-              left: tooltipPos.left,
-              backdropFilter: "blur(16px)",
-              WebkitBackdropFilter: "blur(16px)",
-              backgroundColor:
-                "color-mix(in srgb, var(--surface) 75%, transparent)",
-            }}
-          >
-            <div className="flex items-center justify-center gap-2">
-              {COLOR_TOKENS.map((color) => (
-                <button
-                  key={color}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    selectColor(color);
-                  }}
-                  className={`w-4 h-4 rounded-full transition-transform hover:scale-110 ${
-                    task.color === color
-                      ? "ring-2 ring-white/80 ring-offset-1 ring-offset-transparent"
-                      : ""
-                  }`}
-                  style={{ backgroundColor: COLOR_MAP[color] }}
-                  aria-label={`Set color ${color}`}
-                />
-              ))}
-            </div>
-
-            <div className="h-px bg-rule" />
-            <div className="flex flex-col gap-1">
-              <div className="px-1 font-mono text-[10px] uppercase text-faint">
-                Repeat
+      {createPortal(
+        <div
+          id={settingsPopoverId}
+          ref={settingsPopoverRef}
+          popover="auto"
+          role="dialog"
+          aria-label={`Task settings for ${task.title}`}
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="task-settings-popover"
+        >
+          <div className="flex items-start justify-between gap-4 border-b border-rule px-4 py-3">
+            <div className="min-w-0">
+              <div className="font-mono text-[10px] uppercase tracking-normal text-faint">
+                Task settings
               </div>
-              {RECURRENCE_OPTIONS.map((option) => (
-                <button
-                  key={option.label}
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    selectRecurrence(option.value);
-                  }}
-                  className="flex items-center justify-between gap-4 rounded-md px-1 py-1 text-xs text-muted hover:bg-ink/[0.06] hover:text-ink"
-                >
-                  <span>{option.label}</span>
-                  {task.recurrence === option.value && <span aria-hidden>Set</span>}
-                </button>
-              ))}
-            </div>
-
-            <div className="h-px bg-rule" />
-            <div className="flex flex-col gap-1">
-              <div className="px-1 font-mono text-[10px] uppercase text-faint">
-                Remind me
+              <div className="mt-1 truncate text-sm font-medium text-ink">
+                {task.title}
               </div>
-              {REMINDER_PRESET_TIMES.map((time) => (
-                <button
-                  key={time}
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    selectDueTime(time);
-                  }}
-                  className="flex items-center justify-between gap-4 rounded-md px-1 py-1 text-xs text-muted hover:bg-ink/[0.06] hover:text-ink"
-                >
-                  <span>{time}</span>
-                  {task.due_time === time && <span aria-hidden>Set</span>}
-                </button>
-              ))}
-              <input
-                type="time"
-                value={task.due_time ?? ""}
-                onChange={(e) => selectDueTime(e.target.value || null)}
-                onPointerDown={(e) => e.stopPropagation()}
-                aria-label="Custom reminder time"
-                className="rounded-md bg-transparent px-1 py-1 text-xs text-muted outline-none hover:bg-ink/[0.06] focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-              />
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  selectDueTime(null);
-                }}
-                className="rounded-md px-1 py-1 text-left text-xs text-faint hover:bg-ink/[0.06] hover:text-ink"
-              >
-                Clear
-              </button>
-              {notificationPermission === "denied" && (
-                <div className="px-1 text-[11px] leading-snug text-faint">
-                  Notifications blocked. Enable them in browser settings to receive reminders.
-                </div>
-              )}
             </div>
-
-            <div className="h-px bg-rule" />
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete();
-              }}
-              className="flex items-center gap-2 text-xs text-faint hover:text-red-400 transition-colors px-1 py-0.5"
+              type="button"
+              popoverTarget={settingsPopoverId}
+              popoverTargetAction="hide"
+              aria-label="Close task settings"
+              className="grid h-7 w-7 flex-shrink-0 place-items-center rounded-full text-faint transition-colors hover:bg-ink/[0.06] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15"
             >
               <svg
                 viewBox="0 0 24 24"
+                className="h-4 w-4"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="w-4 h-4"
+                aria-hidden
               >
-                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6" />
+                <path d="M18 6L6 18M6 6l12 12" />
               </svg>
-              Delete
             </button>
-          </div>,
-          document.body,
-        )}
+          </div>
+
+          <div className="flex flex-col gap-4 p-4">
+            <section className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <div className="font-mono text-[10px] uppercase tracking-normal text-faint">
+                  Color
+                </div>
+                {task.color && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateTask(task.id, { color: null });
+                    }}
+                    className="rounded-full px-2 py-1 font-mono text-[10px] uppercase text-faint transition-colors hover:bg-ink/[0.06] hover:text-ink"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                {COLOR_TOKENS.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      selectColor(color);
+                    }}
+                    aria-label={`Set color ${color}`}
+                    className={`grid h-10 place-items-center rounded-xl border border-transparent transition-transform hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 ${
+                      task.color === color
+                        ? "border-ink/25 bg-ink/[0.04]"
+                        : ""
+                    }`}
+                  >
+                    <span
+                      className="h-5 w-5 rounded-full"
+                      style={{ backgroundColor: COLOR_MAP[color] }}
+                    />
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <section className="space-y-2">
+              <label className="block space-y-2">
+                <span className="font-mono text-[10px] uppercase tracking-normal text-faint">
+                  Note
+                </span>
+                <input
+                  type="text"
+                  value={editNote}
+                  maxLength={300}
+                  onChange={(e) => setEditNote(e.target.value)}
+                  onBlur={handleNoteSave}
+                  onKeyDown={handleNoteKeyDown}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  aria-label="Task note"
+                  name="task-settings-note"
+                  autoComplete="off"
+                  placeholder="Add context..."
+                  className="w-full rounded-xl border border-rule bg-bg/40 px-3 py-2.5 text-xs text-muted outline-none transition-colors placeholder:text-faint hover:border-rule-strong hover:bg-ink/[0.035] focus:ring-2 focus:ring-ink/10"
+                />
+              </label>
+            </section>
+
+            <section className="space-y-2">
+              <div className="font-mono text-[10px] uppercase tracking-normal text-faint">
+                Repeat
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {RECURRENCE_OPTIONS.map((option) => (
+                  <button
+                    key={option.label}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      selectRecurrence(option.value);
+                    }}
+                    className={`rounded-xl border px-3 py-2 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 ${
+                      task.recurrence === option.value
+                        ? "border-ink/30 bg-ink text-bg"
+                        : "border-rule bg-bg/40 text-muted hover:border-rule-strong hover:bg-ink/[0.035] hover:text-ink"
+                    }`}
+                  >
+                    <span>{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <section className="space-y-2">
+              <div className="font-mono text-[10px] uppercase tracking-normal text-faint">
+                Remind me
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {REMINDER_PRESET_TIMES.map((time) => (
+                  <button
+                    key={time}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      selectDueTime(time);
+                    }}
+                    className={`rounded-xl border px-2 py-2 font-mono text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 ${
+                      task.due_time === time
+                        ? "border-ink/30 bg-ink text-bg"
+                        : "border-rule bg-bg/40 text-muted hover:border-rule-strong hover:bg-ink/[0.035] hover:text-ink"
+                    }`}
+                  >
+                    <span>{time}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="grid grid-cols-[1fr_auto] gap-2">
+                <input
+                  type="time"
+                  value={task.due_time ?? ""}
+                  onChange={(e) => selectDueTime(e.target.value || null)}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  aria-label="Custom reminder time"
+                  className="min-w-0 rounded-xl border border-rule bg-bg/40 px-3 py-2 font-mono text-xs text-muted outline-none transition-colors hover:border-rule-strong hover:bg-ink/[0.035] focus:ring-2 focus:ring-ink/10"
+                />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    selectDueTime(null);
+                  }}
+                  className="rounded-xl border border-rule bg-bg/40 px-3 py-2 font-mono text-[10px] uppercase text-faint transition-colors hover:border-rule-strong hover:bg-ink/[0.035] hover:text-ink"
+                >
+                  Clear
+                </button>
+              </div>
+              {notificationPermission === "denied" && (
+                <div className="rounded-xl bg-ink/[0.035] px-3 py-2 text-[11px] leading-snug text-faint">
+                  Notifications blocked. Enable them in browser settings to receive reminders.
+                </div>
+              )}
+            </section>
+
+            <section className="border-t border-rule pt-3">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete();
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-rule bg-bg/40 px-3 py-2.5 text-xs text-faint transition-colors hover:border-red-400/30 hover:bg-red-400/10 hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/20"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-4 h-4"
+                >
+                  <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6" />
+                </svg>
+                Delete
+              </button>
+            </section>
+          </div>
+        </div>,
+        document.body,
+      )}
     </div>
   );
 }

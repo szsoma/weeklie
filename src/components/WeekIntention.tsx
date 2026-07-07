@@ -39,7 +39,7 @@ export default function WeekIntention({ weekStart }: Props) {
         placeholder="This week I want to..."
         aria-label="This week I want to"
         name="week-intention"
-        className="w-full bg-transparent text-center text-[15px] italic text-muted placeholder:text-faint outline-none focus:text-ink focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+        className="w-full bg-transparent text-center text-[15px] italic text-muted placeholder:text-faint outline-none focus:text-ink"
       />
     </div>
   );

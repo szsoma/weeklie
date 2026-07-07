@@ -1,6 +1,13 @@
 -- weeklie schema (reference; applied via Supabase migration 'create_weeklie_schema')
 -- Note: last_rolled_over_at is TEXT (date-only string used in equality comparisons).
 
+-- weeklie schema (applied via Supabase migration 'create_weeklie_schema')
+-- Note: last_rolled_over_at is TEXT (date-only string used in equality comparisons).
+
+-- ============================================================
+-- Base tables
+-- ============================================================
+
 create table if not exists public.tasks (
   id text primary key,
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
@@ -56,7 +63,10 @@ create table if not exists public.week_reviews (
 alter table public.week_reviews
   add column if not exists intention text;
 
--- updated_at maintenance
+-- ============================================================
+-- updated_at trigger function
+-- ============================================================
+
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
@@ -77,3 +87,171 @@ drop trigger if exists week_reviews_set_updated_at on public.week_reviews;
 create trigger week_reviews_set_updated_at
   before update on public.week_reviews
   for each row execute function public.set_updated_at();
+
+-- ============================================================
+-- RLS: enable on all tables
+-- ============================================================
+
+alter table public.tasks enable row level security;
+alter table public.task_events enable row level security;
+alter table public.week_reviews enable row level security;
+
+-- Tasks RLS
+drop policy if exists "Users can read own tasks" on public.tasks;
+create policy "Users can read own tasks"
+  on public.tasks for select to authenticated
+  using (user_id = auth.uid());
+
+drop policy if exists "Users can create own tasks" on public.tasks;
+create policy "Users can create own tasks"
+  on public.tasks for insert to authenticated
+  with check (user_id = auth.uid());
+
+drop policy if exists "Users can update own tasks" on public.tasks;
+create policy "Users can update own tasks"
+  on public.tasks for update to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+drop policy if exists "Users can delete own tasks" on public.tasks;
+create policy "Users can delete own tasks"
+  on public.tasks for delete to authenticated
+  using (user_id = auth.uid());
+
+-- Task events RLS
+drop policy if exists "Users can read own task events" on public.task_events;
+create policy "Users can read own task events"
+  on public.task_events for select to authenticated
+  using (user_id = auth.uid());
+
+drop policy if exists "Users can create own task events" on public.task_events;
+create policy "Users can create own task events"
+  on public.task_events for insert to authenticated
+  with check (user_id = auth.uid());
+
+-- Week reviews RLS
+drop policy if exists "Users can read own week reviews" on public.week_reviews;
+create policy "Users can read own week reviews"
+  on public.week_reviews for select to authenticated
+  using (user_id = auth.uid());
+
+drop policy if exists "Users can create own week reviews" on public.week_reviews;
+create policy "Users can create own week reviews"
+  on public.week_reviews for insert to authenticated
+  with check (user_id = auth.uid());
+
+drop policy if exists "Users can update own week reviews" on public.week_reviews;
+create policy "Users can update own week reviews"
+  on public.week_reviews for update to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+-- ============================================================
+-- Week shares
+-- ============================================================
+
+create table if not exists public.week_shares (
+  id text primary key,
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  week_id text not null,
+  week_start text not null,
+  token text not null unique,
+  revoked_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, week_start)
+);
+
+create index if not exists week_shares_user_week_start_idx
+  on public.week_shares (user_id, week_start);
+
+drop trigger if exists week_shares_set_updated_at on public.week_shares;
+create trigger week_shares_set_updated_at
+  before update on public.week_shares
+  for each row execute function public.set_updated_at();
+
+alter table public.week_shares enable row level security;
+
+drop policy if exists "Users can read own week shares" on public.week_shares;
+create policy "Users can read own week shares"
+  on public.week_shares for select to authenticated
+  using (user_id = auth.uid());
+
+drop policy if exists "Users can create own week shares" on public.week_shares;
+create policy "Users can create own week shares"
+  on public.week_shares for insert to authenticated
+  with check (user_id = auth.uid());
+
+drop policy if exists "Users can update own week shares" on public.week_shares;
+create policy "Users can update own week shares"
+  on public.week_shares for update to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+drop policy if exists "Users can delete own week shares" on public.week_shares;
+create policy "Users can delete own week shares"
+  on public.week_shares for delete to authenticated
+  using (user_id = auth.uid());
+
+-- ============================================================
+-- Shared week RPC (security definer, anon-accessible)
+-- ============================================================
+
+create or replace function public.get_shared_week(share_token text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  share_record public.week_shares%rowtype;
+  week_end text;
+begin
+  select *
+    into share_record
+    from public.week_shares
+    where token = share_token
+      and revoked_at is null
+    limit 1;
+
+  if share_record.id is null then
+    return jsonb_build_object(
+      'ok', false,
+      'reason', 'unavailable'
+    );
+  end if;
+
+  week_end := to_char((share_record.week_start::date + interval '7 days'), 'YYYY-MM-DD');
+
+  return jsonb_build_object(
+    'ok', true,
+    'week_id', share_record.week_id,
+    'week_start', share_record.week_start,
+    'tasks', coalesce(
+      (
+        select jsonb_agg(
+          jsonb_build_object(
+            'id', t.id,
+            'title', t.title,
+            'date', t.date,
+            'done', t.done,
+            'color', t.color,
+            'order', t."order"
+          )
+          order by t.date, t."order"
+        )
+        from public.tasks t
+        where t.user_id = share_record.user_id
+          and t.deleted_at is null
+          and t.date is not null
+          and t.date >= share_record.week_start
+          and t.date < week_end
+      ),
+      '[]'::jsonb
+    )
+  );
+end;
+$$;
+
+revoke all on function public.get_shared_week(text) from public;
+grant execute on function public.get_shared_week(text) to anon, authenticated;

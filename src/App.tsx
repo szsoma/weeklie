@@ -12,7 +12,7 @@ import { useStore } from './store'
 import { useRollover } from './hooks/useRollover'
 import Toast from './components/Toast'
 import AboutScreen from './components/AboutScreen'
-import { useTodayFocus } from './hooks/useTodayFocus'
+import FeaturesScreen from './components/FeaturesScreen'
 import { startReminderScheduler } from './lib/reminders'
 
 function TaskDragOverlay() {
@@ -39,10 +39,8 @@ export default function App() {
   const loadEvents = useStore(s => s.loadEvents)
   const loadReviews = useStore(s => s.loadReviews)
   const isLoading = useStore(s => s.isLoading)
-  const currentWeekStart = useStore(s => s.currentWeekStart)
   const tasks = useStore(s => s.tasks)
   const toggleDone = useStore(s => s.toggleDone)
-  const todayFocusState = useTodayFocus(currentWeekStart)
 
   const [session, setSession] = useState<Session | null>(null)
   const [authReady, setAuthReady] = useState(false)
@@ -86,6 +84,7 @@ export default function App() {
 
   const [showReview, setShowReview] = useState(false)
   const [showAbout, setShowAbout] = useState(false)
+  const [showFeatures, setShowFeatures] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -138,22 +137,18 @@ export default function App() {
           <>
             <WeekHeader
               onShowReview={() => setShowReview(true)}
-              todayFocus={todayFocusState.todayFocus}
-              canFocusToday={todayFocusState.canFocusToday}
-              onToggleTodayFocus={todayFocusState.toggleTodayFocus}
             />
-            <WeekGrid todayFocus={todayFocusState.todayFocus} />
+            <WeekGrid />
             <FloatingNav
               onShowAbout={() => setShowAbout(true)}
-              todayFocus={todayFocusState.todayFocus}
-              canFocusToday={todayFocusState.canFocusToday}
-              onToggleTodayFocus={todayFocusState.toggleTodayFocus}
+              onShowFeatures={() => setShowFeatures(true)}
             />
           </>
         )}
       </div>
       {showReview && <ReviewScreen onClose={() => setShowReview(false)} />}
       {showAbout && <AboutScreen onClose={() => setShowAbout(false)} />}
+      {showFeatures && <FeaturesScreen onClose={() => setShowFeatures(false)} />}
       {rolloverToast && (
         <Toast
           message={rolloverToast.message}

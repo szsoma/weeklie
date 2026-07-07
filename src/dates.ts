@@ -8,7 +8,6 @@ import {
   eachDayOfInterval,
   isToday,
   isBefore,
-  isSameDay,
   parseISO,
   startOfDay,
   getISOWeek,
@@ -75,10 +74,6 @@ export function isDateInWeek(dateKey: string, weekStart: Date): boolean {
   const start = startOfDay(weekStart)
   const end = startOfDay(endOfISOWeek(weekStart))
   return date >= start && date <= end
-}
-
-export function weekContainsToday(weekStart: Date): boolean {
-  return getWeekDays(weekStart).some(day => isSameDay(day, new Date()))
 }
 
 export function getWeekId(date: Date): string {
