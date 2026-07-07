@@ -74,7 +74,6 @@
   body {
     background-color: var(--bg);
     color: var(--ink);
-    /* Google Sans for body / task content — readable at length */
     font-family:
       "Google Sans",
       system-ui,
@@ -166,14 +165,10 @@ code,
 pre,
 .font-mono {
   font-family:
-    "Geist Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    "Liberation Mono",
-    monospace;
+    "Google Sans",
+    system-ui,
+    -apple-system,
+    sans-serif;
   font-variant-numeric: tabular-nums;
 }
 

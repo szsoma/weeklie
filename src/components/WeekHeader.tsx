@@ -103,9 +103,7 @@ type Props = {
   onShowReview?: () => void;
 };
 
-export default function WeekHeader({
-  onShowReview,
-}: Props) {
+export default function WeekHeader({ onShowReview }: Props) {
   const currentWeekStart = useStore((s) => s.currentWeekStart);
   const setCurrentWeekStart = useStore((s) => s.setCurrentWeekStart);
   const hideDone = useStore((s) => s.hideDone);
@@ -117,9 +115,12 @@ export default function WeekHeader({
   const [isCopyingLastWeek, setIsCopyingLastWeek] = useState(false);
 
   const previousWeekStart = prevWeek(currentWeekStart);
-  const previousWeekDates = new Set(getWeekDays(previousWeekStart).map(formatDate));
+  const previousWeekDates = new Set(
+    getWeekDays(previousWeekStart).map(formatDate),
+  );
   const previousUndoneCount = tasks.filter(
-    (task) => task.date !== null && previousWeekDates.has(task.date) && !task.done,
+    (task) =>
+      task.date !== null && previousWeekDates.has(task.date) && !task.done,
   ).length;
 
   const handleCopyLastWeek = async () => {
@@ -145,7 +146,7 @@ export default function WeekHeader({
           <button
             onClick={() => setCurrentWeekStart(prevWeek(currentWeekStart))}
             aria-label="Previous week"
-            className="grid place-items-center w-10 h-10 rounded-lg text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+            className="grid place-items-center w-10 h-8 rounded-lg text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >
             <Chevron direction="left" />
           </button>
@@ -153,7 +154,7 @@ export default function WeekHeader({
           <button
             onClick={() => setCurrentWeekStart(nextWeek(currentWeekStart))}
             aria-label="Next week"
-            className="grid place-items-center w-10 h-10 rounded-lg text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+            className="grid place-items-center w-10 h-8 rounded-lg text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >
             <Chevron direction="right" />
           </button>
@@ -169,7 +170,7 @@ export default function WeekHeader({
                     : "Show done tasks"
                   : "Hide done tasks"
               }
-              className={`relative h-10 font-mono text-[14px] uppercase rounded-md border transition active:scale-[0.98] ${
+              className={`relative h-8 font-mono text-[14px] uppercase rounded-md border transition active:scale-[0.98] ${
                 hideDone
                   ? "bg-ink text-bg border-ink"
                   : "border-rule-strong text-muted hover:text-ink hover:bg-ink/[0.06]"
@@ -185,8 +186,12 @@ export default function WeekHeader({
             <button
               onClick={handleCopyLastWeek}
               disabled={isCopyingLastWeek || previousUndoneCount === 0}
-              title={previousUndoneCount === 0 ? "No tasks to copy" : "Copy undone tasks from last week"}
-              className="h-10 w-auto font-mono text-[14px] uppercase rounded-md border border-rule-strong text-muted hover:text-ink hover:bg-ink/[0.06] disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+              title={
+                previousUndoneCount === 0
+                  ? "No tasks to copy"
+                  : "Copy undone tasks from last week"
+              }
+              className="h-8 w-auto font-mono text-[14px] uppercase rounded-md border border-rule-strong text-muted hover:text-ink hover:bg-ink/[0.06] disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
             >
               <span className="hidden md:inline px-4">
                 {isCopyingLastWeek ? "Copying" : "Copy last week"}
@@ -196,7 +201,7 @@ export default function WeekHeader({
             <button
               onClick={onShowReview}
               aria-label="Open weekly review"
-              className="h-10 w-auto font-mono text-[14px] uppercase rounded-md border border-rule-strong text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-[0.98] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+              className="h-8 w-auto font-mono text-[14px] uppercase rounded-md border border-rule-strong text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-[0.98] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
             >
               <span className="hidden md:inline px-4">Review</span>
             </button>
@@ -207,7 +212,7 @@ export default function WeekHeader({
               onClick={() => setMenuOpen((v) => !v)}
               aria-expanded={menuOpen}
               aria-label="More actions"
-              className="grid place-items-center w-10 h-10 rounded-lg text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+              className="grid place-items-center w-10 h-8 rounded-lg text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
             >
               <MoreIcon />
             </button>
@@ -246,7 +251,9 @@ export default function WeekHeader({
                   className="flex items-center gap-3 w-full px-4 py-3 font-mono text-[14px] text-ink hover:bg-ink/[0.06] disabled:opacity-40 disabled:cursor-not-allowed transition"
                 >
                   <CalendarIcon />
-                  <span>{isCopyingLastWeek ? "Copying" : "Copy last week"}</span>
+                  <span>
+                    {isCopyingLastWeek ? "Copying" : "Copy last week"}
+                  </span>
                 </button>
 
                 <button
