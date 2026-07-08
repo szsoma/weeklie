@@ -4,6 +4,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { REMINDER_PRESET_TIMES, requestReminderPermission } from "../lib/reminders";
 import { useStore } from "../store";
 import type { Task } from "../types";
+import type { ReactNode } from "react";
 
 const COLOR_TOKENS = ["red", "orange", "yellow", "green"] as const;
 const COLOR_MAP: Record<string, string> = {
@@ -19,9 +20,87 @@ const RECURRENCE_OPTIONS = [
   { value: "weekly", label: "Weekly" },
 ] as const;
 
+type ColorToken = (typeof COLOR_TOKENS)[number];
+
+const TASK_ROW_BASE_CLASS =
+  "group relative grid grid-cols-[1rem_minmax(0,1fr)_auto_auto_auto] items-center m-1 gap-x-2 px-2 min-h-10 text-sm leading-snug rounded-full transition-colors";
+const TASK_ROW_DRAGGING_CLASS = "opacity-40 cursor-grabbing";
+const TASK_ROW_EDITING_CLASS = "cursor-text";
+const TASK_ROW_IDLE_CLASS = "cursor-grab hover:bg-ink/[0.025]";
+const TASK_TITLE_BASE_CLASS = "block cursor-text truncate";
+const SETTINGS_SECTION_CLASS = "space-y-2";
+const SETTINGS_LABEL_CLASS =
+  "font-mono text-[10px] uppercase tracking-normal text-faint";
+const SETTINGS_CHOICE_ACTIVE_CLASS = "border-ink/30 bg-ink text-bg";
+const SETTINGS_CHOICE_IDLE_CLASS =
+  "border-rule bg-bg/40 text-muted hover:border-rule-strong hover:bg-ink/[0.035] hover:text-ink";
+const SETTINGS_TEXT_INPUT_CLASS =
+  "w-full rounded-xl border border-rule bg-bg/40 px-3 py-2.5 text-xs text-muted outline-none transition-colors placeholder:text-faint hover:border-rule-strong hover:bg-ink/[0.035] focus:ring-2 focus:ring-ink/10";
+const SETTINGS_TIME_INPUT_CLASS =
+  "min-w-0 rounded-xl border border-rule bg-bg/40 px-3 py-2 font-mono text-xs text-muted outline-none transition-colors hover:border-rule-strong hover:bg-ink/[0.035] focus:ring-2 focus:ring-ink/10";
+const SETTINGS_CLEAR_BUTTON_CLASS =
+  "rounded-xl border border-rule bg-bg/40 px-3 py-2 font-mono text-[10px] uppercase text-faint transition-colors hover:border-rule-strong hover:bg-ink/[0.035] hover:text-ink";
+
 type Props = {
   task: Task;
 };
+
+type SettingsSectionProps = {
+  label: string;
+  action?: ReactNode;
+  children: ReactNode;
+};
+
+function getTaskColor(color: string | null): string | null {
+  if (!color || !(color in COLOR_MAP)) return null;
+  return COLOR_MAP[color];
+}
+
+function getTaskRowClassName(isDragging: boolean, isEditingTask: boolean): string {
+  let stateClass = TASK_ROW_IDLE_CLASS;
+  if (isDragging) {
+    stateClass = TASK_ROW_DRAGGING_CLASS;
+  } else if (isEditingTask) {
+    stateClass = TASK_ROW_EDITING_CLASS;
+  }
+  return `${TASK_ROW_BASE_CLASS} ${stateClass}`;
+}
+
+function getTaskTitleClassName(done: boolean): string {
+  const stateClass = done ? "line-through text-faint" : "text-ink";
+  return `${TASK_TITLE_BASE_CLASS} ${stateClass}`;
+}
+
+function getSwatchButtonClassName(isSelected: boolean): string {
+  const selectedClass = isSelected ? "border-ink/25 bg-ink/[0.04]" : "";
+  return `grid h-10 place-items-center rounded-xl border border-transparent transition-transform hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 ${selectedClass}`;
+}
+
+function getSettingsChoiceClassName(
+  isSelected: boolean,
+  sizeClass: string,
+): string {
+  const stateClass = isSelected
+    ? SETTINGS_CHOICE_ACTIVE_CLASS
+    : SETTINGS_CHOICE_IDLE_CLASS;
+  return `rounded-xl border ${sizeClass} transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 ${stateClass}`;
+}
+
+function SettingsSection({ label, action, children }: SettingsSectionProps) {
+  return (
+    <section className={SETTINGS_SECTION_CLASS}>
+      {action ? (
+        <div className="flex items-center justify-between gap-3">
+          <div className={SETTINGS_LABEL_CLASS}>{label}</div>
+          {action}
+        </div>
+      ) : (
+        <div className={SETTINGS_LABEL_CLASS}>{label}</div>
+      )}
+      {children}
+    </section>
+  );
+}
 
 function RepeatIcon({ color }: { color?: string }) {
   return (
@@ -132,7 +211,7 @@ export default function TaskRow({ task }: Props) {
   }, []);
 
   const selectColor = useCallback(
-    (color: string) => {
+    (color: ColorToken) => {
       if (task.color === color) {
         updateTask(task.id, { color: null });
       } else {
@@ -175,10 +254,8 @@ export default function TaskRow({ task }: Props) {
     ? { transform: `translate(${transform.x}px, ${transform.y}px)` }
     : undefined;
 
-  const hasColor = task.color !== null && task.color in COLOR_MAP;
-  const colorBg = hasColor
-    ? { backgroundColor: `${COLOR_MAP[task.color!]}18` }
-    : undefined;
+  const taskColor = getTaskColor(task.color);
+  const colorBg = taskColor ? { backgroundColor: `${taskColor}18` } : undefined;
 
   return (
     <div
@@ -253,15 +330,9 @@ export default function TaskRow({ task }: Props) {
           moveFocusedTask(1);
         }
       }}
-      className={`group relative grid grid-cols-[1rem_minmax(0,1fr)_auto_auto_auto] items-center m-1 gap-x-2 px-2 min-h-10 text-sm leading-snug rounded-full transition-colors ${
-        isDragging
-          ? "opacity-40 cursor-grabbing"
-          : isEditing || isEditingNote
-            ? "cursor-text"
-            : "cursor-grab hover:bg-ink/[0.025]"
-      }`}
+      className={getTaskRowClassName(isDragging, isEditing || isEditingNote)}
     >
-      {hasColor && (
+      {taskColor && (
         <div
           className="absolute inset-0 rounded-full pointer-events-none"
           style={colorBg}
@@ -310,9 +381,7 @@ export default function TaskRow({ task }: Props) {
               setEditTitle(task.title);
               setIsEditing(true);
             }}
-            className={`block cursor-text truncate ${
-              task.done ? "line-through text-faint" : "text-ink"
-            }`}
+            className={getTaskTitleClassName(task.done)}
           >
             {task.title}
           </span>
@@ -366,7 +435,7 @@ export default function TaskRow({ task }: Props) {
           title={`Repeats ${task.recurrence}`}
           aria-label={`Repeats ${task.recurrence}`}
         >
-          <RepeatIcon color={hasColor ? COLOR_MAP[task.color!] : undefined} />
+          <RepeatIcon color={taskColor ?? undefined} />
         </span>
       )}
 
@@ -433,12 +502,10 @@ export default function TaskRow({ task }: Props) {
           </div>
 
           <div className="flex flex-col gap-4 p-4">
-            <section className="space-y-2">
-              <div className="flex items-center justify-between gap-3">
-                <div className="font-mono text-[10px] uppercase tracking-normal text-faint">
-                  Color
-                </div>
-                {task.color && (
+            <SettingsSection
+              label="Color"
+              action={
+                task.color ? (
                   <button
                     type="button"
                     onClick={(e) => {
@@ -449,8 +516,9 @@ export default function TaskRow({ task }: Props) {
                   >
                     Clear
                   </button>
-                )}
-              </div>
+                ) : null
+              }
+            >
               <div className="grid grid-cols-4 gap-2">
                 {COLOR_TOKENS.map((color) => (
                   <button
@@ -461,11 +529,7 @@ export default function TaskRow({ task }: Props) {
                       selectColor(color);
                     }}
                     aria-label={`Set color ${color}`}
-                    className={`grid h-10 place-items-center rounded-xl border border-transparent transition-transform hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 ${
-                      task.color === color
-                        ? "border-ink/25 bg-ink/[0.04]"
-                        : ""
-                    }`}
+                    className={getSwatchButtonClassName(task.color === color)}
                   >
                     <span
                       className="h-5 w-5 rounded-full"
@@ -474,13 +538,11 @@ export default function TaskRow({ task }: Props) {
                   </button>
                 ))}
               </div>
-            </section>
+            </SettingsSection>
 
-            <section className="space-y-2">
+            <section className={SETTINGS_SECTION_CLASS}>
               <label className="block space-y-2">
-                <span className="font-mono text-[10px] uppercase tracking-normal text-faint">
-                  Note
-                </span>
+                <span className={SETTINGS_LABEL_CLASS}>Note</span>
                 <input
                   type="text"
                   value={editNote}
@@ -493,15 +555,12 @@ export default function TaskRow({ task }: Props) {
                   name="task-settings-note"
                   autoComplete="off"
                   placeholder="Add context..."
-                  className="w-full rounded-xl border border-rule bg-bg/40 px-3 py-2.5 text-xs text-muted outline-none transition-colors placeholder:text-faint hover:border-rule-strong hover:bg-ink/[0.035] focus:ring-2 focus:ring-ink/10"
+                  className={SETTINGS_TEXT_INPUT_CLASS}
                 />
               </label>
             </section>
 
-            <section className="space-y-2">
-              <div className="font-mono text-[10px] uppercase tracking-normal text-faint">
-                Repeat
-              </div>
+            <SettingsSection label="Repeat">
               <div className="grid grid-cols-3 gap-2">
                 {RECURRENCE_OPTIONS.map((option) => (
                   <button
@@ -511,22 +570,18 @@ export default function TaskRow({ task }: Props) {
                       e.stopPropagation();
                       selectRecurrence(option.value);
                     }}
-                    className={`rounded-xl border px-3 py-2 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 ${
-                      task.recurrence === option.value
-                        ? "border-ink/30 bg-ink text-bg"
-                        : "border-rule bg-bg/40 text-muted hover:border-rule-strong hover:bg-ink/[0.035] hover:text-ink"
-                    }`}
+                    className={getSettingsChoiceClassName(
+                      task.recurrence === option.value,
+                      "px-3 py-2 text-xs",
+                    )}
                   >
                     <span>{option.label}</span>
                   </button>
                 ))}
               </div>
-            </section>
+            </SettingsSection>
 
-            <section className="space-y-2">
-              <div className="font-mono text-[10px] uppercase tracking-normal text-faint">
-                Remind me
-              </div>
+            <SettingsSection label="Remind me">
               <div className="grid grid-cols-3 gap-2">
                 {REMINDER_PRESET_TIMES.map((time) => (
                   <button
@@ -536,11 +591,10 @@ export default function TaskRow({ task }: Props) {
                       e.stopPropagation();
                       selectDueTime(time);
                     }}
-                    className={`rounded-xl border px-2 py-2 font-mono text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 ${
-                      task.due_time === time
-                        ? "border-ink/30 bg-ink text-bg"
-                        : "border-rule bg-bg/40 text-muted hover:border-rule-strong hover:bg-ink/[0.035] hover:text-ink"
-                    }`}
+                    className={getSettingsChoiceClassName(
+                      task.due_time === time,
+                      "px-2 py-2 font-mono text-[11px]",
+                    )}
                   >
                     <span>{time}</span>
                   </button>
@@ -553,7 +607,7 @@ export default function TaskRow({ task }: Props) {
                   onChange={(e) => selectDueTime(e.target.value || null)}
                   onPointerDown={(e) => e.stopPropagation()}
                   aria-label="Custom reminder time"
-                  className="min-w-0 rounded-xl border border-rule bg-bg/40 px-3 py-2 font-mono text-xs text-muted outline-none transition-colors hover:border-rule-strong hover:bg-ink/[0.035] focus:ring-2 focus:ring-ink/10"
+                  className={SETTINGS_TIME_INPUT_CLASS}
                 />
                 <button
                   type="button"
@@ -561,7 +615,7 @@ export default function TaskRow({ task }: Props) {
                     e.stopPropagation();
                     selectDueTime(null);
                   }}
-                  className="rounded-xl border border-rule bg-bg/40 px-3 py-2 font-mono text-[10px] uppercase text-faint transition-colors hover:border-rule-strong hover:bg-ink/[0.035] hover:text-ink"
+                  className={SETTINGS_CLEAR_BUTTON_CLASS}
                 >
                   Clear
                 </button>
@@ -571,7 +625,7 @@ export default function TaskRow({ task }: Props) {
                   Notifications blocked. Enable them in browser settings to receive reminders.
                 </div>
               )}
-            </section>
+            </SettingsSection>
 
             <section className="border-t border-rule pt-3">
               <button

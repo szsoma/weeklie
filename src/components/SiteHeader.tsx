@@ -42,7 +42,7 @@ export default function SiteHeader() {
           >
             <path d="M5 12.5l4.5 4.5L19 7" />
           </svg>
-          <span className="opacity-50">_</span>Weeklie
+          <span className="opacity-50">_</span>Weekly
         </a>
 
         {/* Desktop nav — section anchors + auth actions */}

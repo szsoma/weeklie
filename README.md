@@ -1,10 +1,10 @@
-# Weeklie
+# Weekly
 
 A minimalist weekly task planner. Plan your week across Monday–Sunday columns plus a backlog, drag to reorder, roll over unfinished tasks, and reflect with a weekly review — wrapped in a warm, paper-quiet interface.
 
 ## Features
 
-Weeklie 2.0 adds a cohesive set of tools across the three moments of a week — setting it up, working through it, and reviewing it.
+Weekly 2.0 adds a cohesive set of tools across the three moments of a week — setting it up, working through it, and reviewing it.
 
 **Planning the week**
 - **Week intention** — a single italic line under the header ("This week I want to…") saved per week.
@@ -70,7 +70,7 @@ src/
 └── index.css        # Theme tokens + base styles
 ```
 
-`supabase/schema.sql` is the reference schema. Weeklie 2.0 adds nullable `recurrence`, `note`, and `due_time` columns on `tasks` and an `intention` column on `week_reviews`; apply the same `alter table … add column if not exists` statements to your Supabase project before deploying.
+`supabase/schema.sql` is the reference schema. Weekly 2.0 adds nullable `recurrence`, `note`, and `due_time` columns on `tasks` and an `intention` column on `week_reviews`; apply the same `alter table … add column if not exists` statements to your Supabase project before deploying.
 
 ## Notes
 

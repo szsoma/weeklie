@@ -169,7 +169,7 @@ export default function FloatingNav({
             className="inline-flex items-center gap-1 font-mono font-semibold text-[16px] tracking-tight text-bg whitespace-nowrap shrink-0 hover:opacity-80 transition"
           >
             <Checkmark />
-            <span className="opacity-50">_</span>Weeklie
+            <span className="opacity-50">_</span>Weekly
           </a>
 
           {/* Burger button */}

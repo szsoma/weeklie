@@ -9,6 +9,16 @@ type FeatureGroup = {
   items: { name: string; desc: string }[];
 };
 
+const shortcuts: [string, string][] = [
+  ["Quick capture", "Cmd/Ctrl + K"],
+  ["Focus backlog", "/"],
+  ["Toggle today", "T"],
+  ["Add task", "N"],
+  ["Mark done", "Space"],
+  ["Move task", "Shift + Arrow"],
+  ["Close", "Esc"],
+];
+
 const groups: FeatureGroup[] = [
   {
     title: "Planning the week",
@@ -70,7 +80,7 @@ export default function FeaturesScreen({ onClose }: Props) {
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="Weeklie features"
+      aria-label="Weekly features"
     >
       <div
         className="w-[min(36rem,calc(100vw-2rem))] max-h-[85dvh] overflow-y-auto bg-surface border border-rule-strong rounded-2xl shadow-2xl p-6"
@@ -122,7 +132,29 @@ export default function FeaturesScreen({ onClose }: Props) {
           ))}
         </div>
 
-        <p className="mt-6 pt-4 border-t border-rule text-[12px] leading-relaxed text-faint">
+        <section className="mt-6 pt-5 border-t border-rule">
+          <h3 className="font-mono text-[11px] uppercase tracking-[0.08em] text-faint mb-3">
+            Keyboard shortcuts
+          </h3>
+          <dl className="space-y-1">
+            {shortcuts.map(([label, value]) => (
+              <div
+                key={label}
+                className="flex items-center justify-between gap-4 border-b border-rule py-1.5"
+              >
+                <dt className="text-[13px] text-muted">{label}</dt>
+                <dd className="font-mono text-[12px] text-ink">{value}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-3 text-[12px] leading-relaxed text-faint">
+            Shortcuts don't fire while typing. Press{" "}
+            <kbd className="font-mono text-[11px] text-muted">?</kbd> anywhere
+            to open this reference again.
+          </p>
+        </section>
+
+        <p className="mt-3 pt-4 border-t border-rule text-[12px] leading-relaxed text-faint">
           The light-mode background was lightened toward near-white paper so task
           highlight colors read more clearly; dark mode is unchanged.
         </p>

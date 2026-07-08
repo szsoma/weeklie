@@ -6,7 +6,6 @@ import AboutScreen from './components/AboutScreen'
 import AuthScreen from './components/AuthScreen'
 import FeaturesScreen from './components/FeaturesScreen'
 import FloatingNav from './components/FloatingNav'
-import HabitTracker from './components/HabitTracker'
 import KeyboardShortcutsDialog from './components/KeyboardShortcutsDialog'
 import QuickCaptureDialog from './components/QuickCaptureDialog'
 import ReviewScreen from './components/ReviewScreen'
@@ -62,8 +61,6 @@ function AuthenticatedApp() {
   const loadEvents = useStore(s => s.loadEvents)
   const loadReviews = useStore(s => s.loadReviews)
   const loadDayCheckinsForWeek = useStore(s => s.loadDayCheckinsForWeek)
-  const loadHabitsForWeek = useStore(s => s.loadHabitsForWeek)
-  const loadHabitEntriesForWeek = useStore(s => s.loadHabitEntriesForWeek)
   const currentWeekStart = useStore(s => s.currentWeekStart)
   const isLoading = useStore(s => s.isLoading)
   const tasks = useStore(s => s.tasks)
@@ -105,12 +102,6 @@ function AuthenticatedApp() {
     if (!session) return
     loadDayCheckinsForWeek(currentWeekStart)
   }, [session, currentWeekStart, loadDayCheckinsForWeek])
-
-  useEffect(() => {
-    if (!session) return
-    loadHabitsForWeek(currentWeekStart)
-    loadHabitEntriesForWeek(currentWeekStart)
-  }, [session, currentWeekStart, loadHabitEntriesForWeek, loadHabitsForWeek])
 
   useEffect(() => {
     if (!session || isLoading) return
@@ -183,7 +174,6 @@ function AuthenticatedApp() {
               onShowReview={() => setShowReview(true)}
               onShowShare={() => setShowShare(true)}
             />
-            <HabitTracker />
             <WeekGrid />
             <FloatingNav
               onShowAbout={() => setShowAbout(true)}

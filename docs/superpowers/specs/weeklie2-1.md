@@ -1,199 +1,24 @@
-Here is a product specification for features 1, 18, 19, and 2: Habit Tracker, Quick Capture, Keyboard Navigation, and Energy/Mood Check-in.
+Here is a product specification for features 18, 19, and 2: Quick Capture, Keyboard Navigation, and Energy/Mood Check-in.
 
 Weeklie 2.1 Feature Specification
 
 Overview
 
-Weeklie 2.1 expands the app from a weekly task planner into a more complete weekly rhythm tool. The release introduces four connected features:
+Weeklie 2.1 expands the app from a weekly task planner into a more complete weekly rhythm tool. The release introduces three connected features:
 
-1. Habit tracker
-2. Quick capture
-3. Keyboard navigation
-4. Energy and mood check-in
+1. Quick capture
+2. Keyboard navigation
+3. Energy and mood check-in
 
 These features should preserve Weeklie’s existing product direction: minimalist, calm, paper-like, mobile-first, and focused on weekly planning rather than heavy productivity management.
 
-The goal is to help users not only plan and complete tasks, but also track repeating behaviors, capture tasks quickly, navigate faster, and reflect on how each day felt.
+The goal is to help users not only plan and complete tasks, but also capture tasks quickly, navigate faster, and reflect on how each day felt.
 
 Important: all of these features should work together seamlessly to provide a cohesive weekly rhythm experience. Make sure that these features are proveide the best user experience on Mobile devices too.
 
 ⸻
 
-1. Habit Tracker
-
-Purpose
-
-The habit tracker gives users a simple way to track recurring personal behaviors across the week without turning them into tasks.
-
-Tasks answer:
-
-“What do I need to do?”
-
-Habits answer:
-
-“What do I want to keep showing up for?”
-
-Habits should feel lighter than tasks and should not clutter the main task grid.
-
-Core User Stories
-
-* As a user, I can create a habit so I can track it during the week.
-* As a user, I can check off a habit for each day of the week.
-* As a user, I can see my habit progress for the current week.
-* As a user, I can archive habits I no longer want to track.
-* As a user, I can see habit performance in the weekly review.
-
-Placement
-
-The habit tracker should appear below the week intention and above the main weekly task grid.
-
-Suggested layout:
-
-Week Header
-Week Intention
-Habit Tracker
-Weekly Task Grid
-Backlog
-
-On mobile, the habit tracker should appear as a compact horizontal section above the day columns.
-
-Habit Model
-
-A habit should have:
-
-* Title
-* Optional color
-* Archived state
-* Creation date
-* User ownership
-
-A habit entry should have:
-
-* Habit ID
-* Date
-* Completed state
-
-Suggested Supabase Schema
-
-create table if not exists habits (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) not null,
-  title text not null,
-  color text,
-  archived boolean not null default false,
-  created_at timestamptz not null default now()
-);
-create table if not exists habit_entries (
-  id uuid primary key default gen_random_uuid(),
-  habit_id uuid references habits(id) on delete cascade not null,
-  user_id uuid references auth.users(id) not null,
-  date date not null,
-  completed boolean not null default false,
-  created_at timestamptz not null default now(),
-  unique (habit_id, date)
-);
-
-Recommended indexes:
-
-create index if not exists habits_user_id_idx
-on habits(user_id);
-create index if not exists habit_entries_user_id_date_idx
-on habit_entries(user_id, date);
-create index if not exists habit_entries_habit_id_date_idx
-on habit_entries(habit_id, date);
-
-UI Behavior
-
-Each habit appears as a row.
-
-Desktop example:
-
-Habit        M   T   W   T   F   S   S
-Read         ✓   ✓   ○   ○   ○   ○   ○
-Workout      ○   ✓   ○   ○   ○   ○   ○
-Journal      ✓   ✓   ✓   ○   ○   ○   ○
-
-Mobile example:
-
-Habits
-Read       2/7
-Workout    1/7
-Journal    3/7
-
-Tapping a habit can expand it into the full Monday-Sunday check grid.
-
-Interactions
-
-Create habit
-
-Users can create a habit using an inline input:
-
-+ Add habit
-
-When submitted:
-
-* Create a new habit.
-* Add it to the current week habit list.
-* Do not create habit entries until a day is checked.
-
-Check habit
-
-When a user checks a day:
-
-* If no entry exists for that habit/date, create one with completed = true.
-* If an entry exists, toggle completed.
-
-Archive habit
-
-Users should be able to archive a habit from a small menu.
-
-Archived habits:
-
-* Should not appear in future weeks by default.
-* Should remain visible in past weekly review data.
-* Should not delete historical entries.
-
-Delete habit
-
-Deletion should not be part of the primary UI. Prefer archive to protect history.
-
-Weekly Review Integration
-
-The weekly review should include:
-
-* Habit completion count
-* Best habit of the week
-* Lowest-consistency habit
-* Optional streak indicator
-
-Example:
-
-Habits
-Read: 5/7
-Workout: 3/7
-Journal: 6/7
-
-Edge Cases
-
-* If a habit is archived midweek, existing entries should remain.
-* If a user navigates to a past week, historical habit entries should still display.
-* If a user navigates to a future week, habits should appear but have no completed entries yet.
-* If a user signs out, habit data should clear from local state.
-* Offline habit toggles should eventually sync when persistence is available.
-
-Acceptance Criteria
-
-* Users can create a habit.
-* Users can check and uncheck habits for specific days.
-* Habit entries save to Supabase.
-* Habits are scoped to the authenticated user.
-* Archived habits disappear from active tracking.
-* Historical habit entries remain available.
-* Weekly review displays habit completion data.
-
-⸻
-
-2. Quick Capture
+1. Quick Capture
 
 Purpose
 
@@ -597,8 +422,6 @@ Store Updates
 
 The Zustand store should add state and actions for:
 
-habits
-habitEntries
 dayCheckins
 quickCaptureOpen
 focusedColumnId
@@ -606,11 +429,6 @@ focusedTaskId
 
 Suggested actions:
 
-createHabit()
-archiveHabit()
-toggleHabitEntry()
-loadHabitsForWeek()
-loadHabitEntriesForWeek()
 openQuickCapture()
 closeQuickCapture()
 createTaskFromQuickCapture()
@@ -624,22 +442,6 @@ TypeScript Types
 
 Suggested types:
 
-type Habit = {
-  id: string;
-  userId: string;
-  title: string;
-  color?: string | null;
-  archived: boolean;
-  createdAt: string;
-};
-type HabitEntry = {
-  id: string;
-  habitId: string;
-  userId: string;
-  date: string;
-  completed: boolean;
-  createdAt: string;
-};
 type DayCheckin = {
   id: string;
   userId: string;
@@ -665,10 +467,6 @@ Components
 
 New components:
 
-HabitTracker
-HabitRow
-HabitAddInput
-HabitMenu
 QuickCaptureDialog
 KeyboardShortcutsDialog
 DayCheckinButton
@@ -689,10 +487,6 @@ Testing
 
 Recommended tests:
 
-habit creation
-habit entry toggle
-habit archive behavior
-habit weekly summary
 quick capture opens from shortcut
 quick capture creates task in selected destination
 quick capture rejects empty title
@@ -711,11 +505,10 @@ Recommended implementation order:
 1. Quick capture
 2. Keyboard navigation
 3. Energy and mood check-in
-4. Habit tracker
 
 Reasoning:
 
-Quick capture and keyboard navigation improve the core task experience first. Energy check-ins are simpler than the habit tracker and can feed into the weekly review. Habit tracking is the largest feature because it requires new data models, weekly UI, and review summaries.
+Quick capture and keyboard navigation improve the core task experience first. Energy check-ins are simpler and can feed into the weekly review.
 
 Definition of Done
 
@@ -724,8 +517,7 @@ Weeklie 2.1 is complete when:
 * Users can add tasks quickly from anywhere.
 * Users can operate the main planner with keyboard shortcuts.
 * Users can track daily energy and mood.
-* Users can create and complete weekly habits.
-* Weekly review includes habit and energy insights.
+* Weekly review includes energy insights.
 * All features work with Supabase persistence.
 * Mobile layouts remain clean and usable.
 * Light and dark mode both remain visually consistent.

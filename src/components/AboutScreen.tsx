@@ -19,7 +19,7 @@ export default function AboutScreen({ onClose }: Props) {
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="About Weeklie"
+      aria-label="About Weekly"
     >
       <div
         className="w-[min(32rem,calc(100vw-2rem))] bg-surface border border-rule-strong rounded-2xl shadow-2xl p-6"
@@ -27,7 +27,7 @@ export default function AboutScreen({ onClose }: Props) {
       >
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-mono font-semibold text-[20px] tracking-tight">
-            <span className="opacity-50">_</span>Weeklie
+            <span className="opacity-50">_</span>Weekly
           </h2>
           <button
             type="button"
@@ -49,7 +49,7 @@ export default function AboutScreen({ onClose }: Props) {
           </button>
         </div>
         <p className="text-sm leading-relaxed text-muted">
-          Weeklie is a minimalist weekly task planner. Plan your week across
+          Weekly is a minimalist weekly task planner. Plan your week across
           Monday–Sunday columns plus a backlog, drag to reorder, roll over
           unfinished tasks, and reflect with a weekly review — wrapped in a
           warm, paper-quiet interface.

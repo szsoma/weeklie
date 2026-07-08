@@ -18,8 +18,8 @@
 }
 
 :root {
-  --bg: #fffdf3; /* near-white paper */
-  --surface: #fffaf0; /* lifted paper */
+  --bg: #fffdfc; /* near-white paper */
+  --surface: #fff; /* lifted paper */
   --ink: #1a1a1a; /* primary text */
   --muted: #514b3f; /* readable secondary text */
   --faint: #6f6657; /* subtle labels / placeholders */
@@ -42,14 +42,14 @@
 }
 
 :root[data-theme="light"] {
-  --bg: #fffdf3;
-  --surface: #fffaf0;
+  --bg: #fffdfc;
+  --surface: #fff;
   --ink: #1a1a1a;
   --muted: #514b3f;
   --faint: #6f6657;
   --rule: rgba(26, 26, 26, 0.12);
   --rule-strong: rgba(26, 26, 26, 0.22);
-  --today: #f8f2d8;
+  --today: #fff;
 }
 
 :root[data-theme="dark"] {

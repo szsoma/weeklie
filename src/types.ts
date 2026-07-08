@@ -81,26 +81,6 @@ export type SharedWeekUnavailable = {
 
 export type SharedWeekResponse = SharedWeekAvailable | SharedWeekUnavailable;
 
-export type Habit = {
-  id: string;
-  user_id: string;
-  title: string;
-  color: string | null;
-  archived: boolean;
-  created_at: string;
-  updated_at: string;
-};
-
-export type HabitEntry = {
-  id: string;
-  habit_id: string;
-  user_id: string;
-  date: string;
-  completed: boolean;
-  created_at: string;
-  updated_at: string;
-};
-
 export type MoodOption =
   | 'Calm'
   | 'Focused'

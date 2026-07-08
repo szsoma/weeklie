@@ -1,4 +1,4 @@
-import type { DayCheckin, Habit, HabitEntry, Task } from '../types'
+import type { DayCheckin, Task } from '../types'
 
 export type DayCheckinSummary = {
   averageEnergy: number | null;
@@ -63,22 +63,3 @@ function buildEnergyCompletionInsight(checkins: DayCheckin[], tasks: Task[]): st
     : null
 }
 
-export type HabitSummary = {
-  rows: { habit: Habit; completed: number; total: number }[];
-  bestHabit: Habit | null;
-  lowestConsistencyHabit: Habit | null;
-}
-
-export function summarizeHabits(habits: Habit[], entries: HabitEntry[]): HabitSummary {
-  const rows = habits.map(habit => ({
-    habit,
-    completed: entries.filter(entry => entry.habit_id === habit.id && entry.completed).length,
-    total: 7,
-  }))
-  const sorted = [...rows].sort((a, b) => b.completed - a.completed)
-  return {
-    rows,
-    bestHabit: sorted[0]?.habit ?? null,
-    lowestConsistencyHabit: sorted[sorted.length - 1]?.habit ?? null,
-  }
-}

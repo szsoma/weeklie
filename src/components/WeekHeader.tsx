@@ -117,6 +117,49 @@ function MoreIcon() {
   );
 }
 
+const NAV_BUTTON_CLASS =
+  "grid place-items-center w-10 h-8 rounded-lg text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg";
+const DESKTOP_ACTION_BASE_CLASS =
+  "h-8 w-auto font-mono text-[12px] uppercase rounded-md border active:scale-[0.98] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg";
+const DESKTOP_ACTION_BUTTON_CLASS = `${DESKTOP_ACTION_BASE_CLASS} border-rule-strong text-muted hover:text-ink hover:bg-ink/[0.06]`;
+const MOBILE_MENU_ITEM_CLASS =
+  "flex items-center gap-3 w-full px-4 py-3 font-mono text-[12px] text-ink hover:bg-ink/[0.06] transition";
+const DISABLED_ACTION_CLASS = "disabled:opacity-40 disabled:cursor-not-allowed";
+
+function getShowDoneLabel(doneCount: number): string {
+  if (doneCount === 0) return "Show done tasks";
+  return `Show ${doneCount} done task${doneCount === 1 ? "" : "s"}`;
+}
+
+function getHideDoneAriaLabel(hideDone: boolean, doneCount: number): string {
+  return hideDone ? getShowDoneLabel(doneCount) : "Hide done tasks";
+}
+
+function getHideDoneButtonClassName(hideDone: boolean): string {
+  const stateClass = hideDone
+    ? "bg-ink text-bg border-ink"
+    : "border-rule-strong text-muted hover:text-ink hover:bg-ink/[0.06]";
+  return `relative ${DESKTOP_ACTION_BASE_CLASS} ${stateClass}`;
+}
+
+function getHideDoneText(
+  hideDone: boolean,
+  doneCount: number,
+  countStyle: "plain" | "parenthesized",
+): string {
+  if (!hideDone) return "Hide done";
+  if (doneCount === 0) return "Show done";
+  return countStyle === "parenthesized"
+    ? `Show done (${doneCount})`
+    : `Show done ${doneCount}`;
+}
+
+function getCopyLastWeekTitle(previousUndoneCount: number): string {
+  return previousUndoneCount === 0
+    ? "No tasks to copy"
+    : "Copy undone tasks from last week";
+}
+
 type Props = {
   onShowReview?: () => void;
   onShowShare?: () => void;
@@ -147,9 +190,17 @@ export default function WeekHeader({ onShowReview, onShowShare }: Props) {
     (task) =>
       task.date !== null && previousWeekDates.has(task.date) && !task.done,
   ).length;
+  const copyLastWeekDisabled = isCopyingLastWeek || previousUndoneCount === 0;
+  const copyLastWeekLabel = isCopyingLastWeek ? "Copying" : "Copy last week";
+  const hideDoneDesktopLabel = getHideDoneText(hideDone, doneCount, "plain");
+  const hideDoneMobileLabel = getHideDoneText(
+    hideDone,
+    doneCount,
+    "parenthesized",
+  );
 
   const handleCopyLastWeek = async () => {
-    if (isCopyingLastWeek || previousUndoneCount === 0) return;
+    if (copyLastWeekDisabled) return;
     setIsCopyingLastWeek(true);
     await copyLastWeekTasks();
     setIsCopyingLastWeek(false);
@@ -170,7 +221,7 @@ export default function WeekHeader({ onShowReview, onShowShare }: Props) {
           <button
             onClick={() => setCurrentWeekStart(prevWeek(currentWeekStart))}
             aria-label="Previous week"
-            className="grid place-items-center w-10 h-8 rounded-lg text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+            className={NAV_BUTTON_CLASS}
           >
             <Chevron direction="left" />
           </button>
@@ -178,7 +229,7 @@ export default function WeekHeader({ onShowReview, onShowShare }: Props) {
           <button
             onClick={() => setCurrentWeekStart(nextWeek(currentWeekStart))}
             aria-label="Next week"
-            className="grid place-items-center w-10 h-8 rounded-lg text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+            className={NAV_BUTTON_CLASS}
           >
             <Chevron direction="right" />
           </button>
@@ -201,39 +252,21 @@ export default function WeekHeader({ onShowReview, onShowShare }: Props) {
             <button
               onClick={() => setHideDone(!hideDone)}
               aria-pressed={hideDone}
-              aria-label={
-                hideDone
-                  ? doneCount
-                    ? `Show ${doneCount} done task${doneCount === 1 ? "" : "s"}`
-                    : "Show done tasks"
-                  : "Hide done tasks"
-              }
-              className={`relative h-8 font-mono text-[14px] uppercase rounded-md border transition active:scale-[0.98] ${
-                hideDone
-                  ? "bg-ink text-bg border-ink"
-                  : "border-rule-strong text-muted hover:text-ink hover:bg-ink/[0.06]"
-              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg`}
+              aria-label={getHideDoneAriaLabel(hideDone, doneCount)}
+              className={getHideDoneButtonClassName(hideDone)}
             >
               <span className="hidden md:inline px-4">
-                {hideDone
-                  ? `Show done${doneCount ? ` ${doneCount}` : ""}`
-                  : "Hide done"}
+                {hideDoneDesktopLabel}
               </span>
             </button>
 
             <button
               onClick={handleCopyLastWeek}
-              disabled={isCopyingLastWeek || previousUndoneCount === 0}
-              title={
-                previousUndoneCount === 0
-                  ? "No tasks to copy"
-                  : "Copy undone tasks from last week"
-              }
-              className="h-8 w-auto font-mono text-[14px] uppercase rounded-md border border-rule-strong text-muted hover:text-ink hover:bg-ink/[0.06] disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+              disabled={copyLastWeekDisabled}
+              title={getCopyLastWeekTitle(previousUndoneCount)}
+              className={`${DESKTOP_ACTION_BUTTON_CLASS} ${DISABLED_ACTION_CLASS}`}
             >
-              <span className="hidden md:inline px-4">
-                {isCopyingLastWeek ? "Copying" : "Copy last week"}
-              </span>
+              <span className="hidden md:inline px-4">{copyLastWeekLabel}</span>
             </button>
 
             {onShowShare && (
@@ -249,7 +282,7 @@ export default function WeekHeader({ onShowReview, onShowShare }: Props) {
             <button
               onClick={onShowReview}
               aria-label="Open weekly review"
-              className="h-8 w-auto font-mono text-[14px] uppercase rounded-md border border-rule-strong text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-[0.98] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+              className={DESKTOP_ACTION_BUTTON_CLASS}
             >
               <span className="hidden md:inline px-4">Review</span>
             </button>
@@ -260,7 +293,7 @@ export default function WeekHeader({ onShowReview, onShowShare }: Props) {
               onClick={() => setMenuOpen((v) => !v)}
               aria-expanded={menuOpen}
               aria-label="More actions"
-              className="grid place-items-center w-10 h-8 rounded-lg text-muted hover:text-ink hover:bg-ink/[0.06] active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+              className={NAV_BUTTON_CLASS}
             >
               <MoreIcon />
             </button>
@@ -293,14 +326,10 @@ export default function WeekHeader({ onShowReview, onShowShare }: Props) {
                     setHideDone(!hideDone);
                     setMenuOpen(false);
                   }}
-                  className="flex items-center gap-3 w-full px-4 py-3 font-mono text-[14px] text-ink hover:bg-ink/[0.06] transition"
+                  className={MOBILE_MENU_ITEM_CLASS}
                 >
                   <EyeIcon hidden={hideDone} />
-                  <span>
-                    {hideDone
-                      ? `Show done${doneCount ? ` (${doneCount})` : ""}`
-                      : "Hide done"}
-                  </span>
+                  <span>{hideDoneMobileLabel}</span>
                 </button>
 
                 <button
@@ -308,13 +337,11 @@ export default function WeekHeader({ onShowReview, onShowShare }: Props) {
                     await handleCopyLastWeek();
                     setMenuOpen(false);
                   }}
-                  disabled={isCopyingLastWeek || previousUndoneCount === 0}
-                  className="flex items-center gap-3 w-full px-4 py-3 font-mono text-[14px] text-ink hover:bg-ink/[0.06] disabled:opacity-40 disabled:cursor-not-allowed transition"
+                  disabled={copyLastWeekDisabled}
+                  className={`${MOBILE_MENU_ITEM_CLASS} ${DISABLED_ACTION_CLASS}`}
                 >
                   <CalendarIcon />
-                  <span>
-                    {isCopyingLastWeek ? "Copying" : "Copy last week"}
-                  </span>
+                  <span>{copyLastWeekLabel}</span>
                 </button>
 
                 {onShowShare && (
@@ -335,7 +362,7 @@ export default function WeekHeader({ onShowReview, onShowShare }: Props) {
                     onShowReview?.();
                     setMenuOpen(false);
                   }}
-                  className="flex items-center gap-3 w-full px-4 py-3 font-mono text-[14px] text-ink hover:bg-ink/[0.06] transition"
+                  className={MOBILE_MENU_ITEM_CLASS}
                 >
                   <ReviewIcon />
                   <span>Review</span>

@@ -9,8 +9,6 @@ import { playChime } from './lib/sound'
 import type {
   DayCheckin,
   FocusColumnId,
-  Habit,
-  HabitEntry,
   QuickCaptureDestination,
   Task,
   TaskEvent,
@@ -57,13 +55,23 @@ type SaveIntentionInput = {
   intention: string;
 };
 
+type ReviewPersistencePayload = Partial<WeekReview>
+
+type ReviewPersistenceInput = {
+  weekId: string
+  selectErrorMessage: string
+  updateErrorMessage: string
+  insertErrorMessage: string
+  getTimestamp?: () => string
+  createUpdatePayload: (now: string) => ReviewPersistencePayload
+  createInsertPayload: (now: string) => ReviewPersistencePayload
+}
+
 type State = {
   tasks: Task[]
   events: TaskEvent[]
   reviews: WeekReview[]
   dayCheckins: DayCheckin[]
-  habits: Habit[]
-  habitEntries: HabitEntry[]
   currentWeekStart: Date
   isLoading: boolean
   hideDone: boolean
@@ -81,8 +89,6 @@ type Actions = {
   loadEvents: () => Promise<void>
   loadReviews: () => Promise<void>
   loadDayCheckinsForWeek: (weekStart: Date) => Promise<void>
-  loadHabitsForWeek: (weekStart: Date) => Promise<void>
-  loadHabitEntriesForWeek: (weekStart: Date) => Promise<void>
   clearSessionData: () => void
   addTask: (title: string, date: string | null, options?: AddTaskOptions) => Promise<Task | null>
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>
@@ -109,9 +115,6 @@ type Actions = {
   closeKeyboardHelp: () => void
   toggleTodayFocus: () => void
   upsertDayCheckin: (date: string, updates: Partial<Pick<DayCheckin, 'energy' | 'mood' | 'note'>>) => Promise<void>
-  createHabit: (title: string, color?: string | null) => Promise<Habit | null>
-  archiveHabit: (habitId: string) => Promise<void>
-  toggleHabitEntry: (habitId: string, date: string) => Promise<void>
   createTaskFromQuickCapture: (input: {
     title: string;
     destination: QuickCaptureDestination;
@@ -121,13 +124,68 @@ type Actions = {
   }) => Promise<Task | null>
 }
 
+function getTaskCarryoverOptions(
+  task: Task,
+  overrides: AddTaskOptions = {},
+): AddTaskOptions {
+  return {
+    color: task.color,
+    recurrence: task.recurrence,
+    note: task.note,
+    due_time: task.due_time,
+    ...overrides,
+  }
+}
+
+async function persistReviewChange({
+  weekId,
+  selectErrorMessage,
+  updateErrorMessage,
+  insertErrorMessage,
+  getTimestamp,
+  createUpdatePayload,
+  createInsertPayload,
+}: ReviewPersistenceInput): Promise<boolean> {
+  const { data: existing, error: selErr } = await supabase
+    .from('week_reviews')
+    .select('week_id')
+    .eq('week_id', weekId)
+    .maybeSingle()
+
+  if (selErr) {
+    console.error(selectErrorMessage, selErr)
+    return false
+  }
+
+  const now = getTimestamp?.() ?? new Date().toISOString()
+
+  if (existing) {
+    const { error } = await supabase
+      .from('week_reviews')
+      .update(createUpdatePayload(now))
+      .eq('week_id', weekId)
+    if (error) {
+      console.error(updateErrorMessage, error)
+      return false
+    }
+    return true
+  }
+
+  const { error } = await supabase
+    .from('week_reviews')
+    .insert(createInsertPayload(now))
+  if (error) {
+    console.error(insertErrorMessage, error)
+    return false
+  }
+  return true
+}
+
 export const useStore = create<State & Actions>((set, get) => ({
   tasks: [],
   events: [],
   reviews: [],
   dayCheckins: [],
-  habits: [],
-  habitEntries: [],
   currentWeekStart: getWeekStart(new Date()),
   isLoading: true,
   hideDone: readHideDone(),
@@ -188,42 +246,10 @@ export const useStore = create<State & Actions>((set, get) => ({
     set({ dayCheckins: (data as DayCheckin[]) ?? [] })
   },
 
-  loadHabitsForWeek: async () => {
-    const { data, error } = await supabase
-      .from('habits')
-      .select('*')
-      .order('created_at', { ascending: true })
-
-    if (error) {
-      console.error('loadHabitsForWeek failed', error)
-      return
-    }
-
-    set({ habits: (data as Habit[]) ?? [] })
-  },
-
-  loadHabitEntriesForWeek: async (weekStart) => {
-    const days = getWeekDays(weekStart).map(formatDate)
-    const { data, error } = await supabase
-      .from('habit_entries')
-      .select('*')
-      .gte('date', days[0])
-      .lte('date', days[6])
-
-    if (error) {
-      console.error('loadHabitEntriesForWeek failed', error)
-      return
-    }
-
-    set({ habitEntries: (data as HabitEntry[]) ?? [] })
-  },
-
   clearSessionData: () => set({
     tasks: [],
     events: [],
     reviews: [],
-    habits: [],
-    habitEntries: [],
     dayCheckins: [],
     quickCaptureOpen: false,
     quickCaptureNotice: null,
@@ -297,14 +323,10 @@ export const useStore = create<State & Actions>((set, get) => ({
     const nextDate = getNextAvailableRecurringDate(get().tasks, task)
     if (!nextDate) return
 
-    await get().addTask(task.title, nextDate, {
-      color: task.color,
-      recurrence: task.recurrence,
-      note: task.note,
-      due_time: task.due_time,
+    await get().addTask(task.title, nextDate, getTaskCarryoverOptions(task, {
       planned_date: nextDate,
       silent: true,
-    })
+    }))
   },
 
   deleteTask: async (id) => {
@@ -358,13 +380,11 @@ export const useStore = create<State & Actions>((set, get) => ({
       const previousDayIndex = previousDays.indexOf(task.date!)
       const targetDate = currentDays[previousDayIndex]
       if (!targetDate) continue
-      await get().addTask(task.title, targetDate, {
-        color: task.color,
-        note: task.note,
+      await get().addTask(task.title, targetDate, getTaskCarryoverOptions(task, {
         recurrence: null,
         due_time: null,
         silent: true,
-      })
+      }))
     }
 
     return copied.length
@@ -373,14 +393,10 @@ export const useStore = create<State & Actions>((set, get) => ({
   generateRecurringTasksForWeek: async (weekStart) => {
     const seeds = getRecurringSeedsForWeek(get().tasks, weekStart)
     for (const seed of seeds) {
-      await get().addTask(seed.sourceTask.title, seed.date, {
-        color: seed.sourceTask.color,
-        recurrence: seed.sourceTask.recurrence,
-        note: seed.sourceTask.note,
-        due_time: seed.sourceTask.due_time,
+      await get().addTask(seed.sourceTask.title, seed.date, getTaskCarryoverOptions(seed.sourceTask, {
         planned_date: seed.date,
         silent: true,
-      })
+      }))
     }
   },
 
@@ -423,36 +439,17 @@ export const useStore = create<State & Actions>((set, get) => ({
     // optimistic
     set({ reviews: prev.filter(r => r.week_id !== review.week_id).concat(review) })
 
-    const { data: existing, error: selErr } = await supabase
-      .from('week_reviews')
-      .select('week_id')
-      .eq('week_id', review.week_id)
-      .maybeSingle()
+    const persisted = await persistReviewChange({
+      weekId: review.week_id,
+      selectErrorMessage: 'saveReview select failed',
+      updateErrorMessage: 'saveReview update failed',
+      insertErrorMessage: 'saveReview insert failed',
+      createUpdatePayload: now => ({ ...review, updated_at: now }),
+      createInsertPayload: now => ({ ...review, created_at: now, updated_at: now }),
+    })
 
-    const now = new Date().toISOString()
-    if (selErr) {
-      console.error('saveReview select failed', selErr)
+    if (!persisted) {
       set({ reviews: prev })
-      return
-    }
-
-    if (existing) {
-      const { error } = await supabase
-        .from('week_reviews')
-        .update({ ...review, updated_at: now })
-        .eq('week_id', review.week_id)
-      if (error) {
-        console.error('saveReview update failed', error)
-        set({ reviews: prev })
-      }
-    } else {
-      const { error } = await supabase
-        .from('week_reviews')
-        .insert({ ...review, created_at: now, updated_at: now })
-      if (error) {
-        console.error('saveReview insert failed', error)
-        set({ reviews: prev })
-      }
     }
   },
 
@@ -480,35 +477,23 @@ export const useStore = create<State & Actions>((set, get) => ({
 
     set({ reviews: prev.filter(r => r.week_id !== weekId).concat(nextReview) })
 
-    const { data: existingRow, error: selErr } = await supabase
-      .from('week_reviews')
-      .select('week_id')
-      .eq('week_id', weekId)
-      .maybeSingle()
+    const persisted = await persistReviewChange({
+      weekId,
+      selectErrorMessage: 'saveIntention select failed',
+      updateErrorMessage: 'saveIntention update failed',
+      insertErrorMessage: 'saveIntention insert failed',
+      getTimestamp: () => now,
+      createUpdatePayload: timestamp => ({ intention, updated_at: timestamp }),
+      createInsertPayload: timestamp => ({
+        week_id: weekId,
+        intention,
+        viewed_at: timestamp,
+        updated_at: timestamp,
+      }),
+    })
 
-    if (selErr) {
-      console.error('saveIntention select failed', selErr)
+    if (!persisted) {
       set({ reviews: prev })
-      return
-    }
-
-    if (existingRow) {
-      const { error } = await supabase
-        .from('week_reviews')
-        .update({ intention, updated_at: now })
-        .eq('week_id', weekId)
-      if (error) {
-        console.error('saveIntention update failed', error)
-        set({ reviews: prev })
-      }
-    } else {
-      const { error } = await supabase
-        .from('week_reviews')
-        .insert({ week_id: weekId, intention, viewed_at: now, updated_at: now })
-      if (error) {
-        console.error('saveIntention insert failed', error)
-        set({ reviews: prev })
-      }
     }
   },
 
@@ -606,86 +591,6 @@ export const useStore = create<State & Actions>((set, get) => ({
       dayCheckins: get().dayCheckins
         .filter(checkin => checkin.date !== date)
         .concat(data as DayCheckin),
-    })
-  },
-
-  createHabit: async (title, color = null) => {
-    const trimmed = title.trim()
-    if (!trimmed) return null
-
-    const { data, error } = await supabase
-      .from('habits')
-      .insert({ title: trimmed, color })
-      .select()
-      .single()
-
-    if (error) {
-      console.error('createHabit failed', error)
-      return null
-    }
-
-    const habit = data as Habit
-    set({ habits: get().habits.concat(habit) })
-    return habit
-  },
-
-  archiveHabit: async (habitId) => {
-    const prev = get().habits
-    set({ habits: prev.map(habit => habit.id === habitId ? { ...habit, archived: true } : habit) })
-
-    const { error } = await supabase
-      .from('habits')
-      .update({ archived: true })
-      .eq('id', habitId)
-
-    if (error) {
-      console.error('archiveHabit failed', error)
-      set({ habits: prev })
-    }
-  },
-
-  toggleHabitEntry: async (habitId, date) => {
-    const prev = get().habitEntries
-    const existing = prev.find(entry => entry.habit_id === habitId && entry.date === date)
-    const nextCompleted = !existing?.completed
-    const now = new Date().toISOString()
-    const optimistic = existing
-      ? { ...existing, completed: nextCompleted, updated_at: now }
-      : {
-          id: `pending-${habitId}-${date}`,
-          habit_id: habitId,
-          user_id: '',
-          date,
-          completed: true,
-          created_at: now,
-          updated_at: now,
-        }
-
-    set({
-      habitEntries: prev
-        .filter(entry => !(entry.habit_id === habitId && entry.date === date))
-        .concat(optimistic as HabitEntry),
-    })
-
-    const { data, error } = await supabase
-      .from('habit_entries')
-      .upsert(
-        { habit_id: habitId, date, completed: nextCompleted },
-        { onConflict: 'habit_id,date' },
-      )
-      .select()
-      .single()
-
-    if (error) {
-      console.error('toggleHabitEntry failed', error)
-      set({ habitEntries: prev })
-      return
-    }
-
-    set({
-      habitEntries: get().habitEntries
-        .filter(entry => !(entry.habit_id === habitId && entry.date === date))
-        .concat(data as HabitEntry),
     })
   },
 
