@@ -37,3 +37,13 @@ test("day check-in UI supports energy mood and note saves", () => {
 test("day columns render the day check-in control near the heading", () => {
   assert.match(dayColumn, /<DayCheckinButton/);
 });
+
+const review = readFileSync(new URL("../src/components/ReviewScreen.tsx", import.meta.url), "utf8");
+
+test("weekly review renders daily rhythm insights", () => {
+  assert.match(review, /Daily rhythm/);
+  assert.match(review, /averageEnergy/);
+  assert.match(review, /mostCommonMood/);
+  assert.match(review, /bestEnergyDay/);
+  assert.match(review, /lowestEnergyDay/);
+});

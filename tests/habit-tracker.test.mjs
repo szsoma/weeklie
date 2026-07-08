@@ -41,3 +41,11 @@ test("habit UI supports creation toggling and archiving", () => {
 test("habit tracker is placed below the week header and intention", () => {
   assert.match(app, /<HabitTracker/);
 });
+
+const review = readFileSync(new URL("../src/components/ReviewScreen.tsx", import.meta.url), "utf8");
+
+test("weekly review renders habit insights", () => {
+  assert.match(review, /Habit rhythm/);
+  assert.match(review, /bestHabit/);
+  assert.match(review, /lowestConsistencyHabit/);
+});

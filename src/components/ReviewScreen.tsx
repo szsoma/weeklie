@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useStore } from "../store";
-import { formatDate, getWeekDays, getWeekStart, getWeekId } from "../dates";
+import { formatDate, getWeekDays, getWeekId } from "../dates";
+import { summarizeDayCheckins, summarizeHabits } from "../lib/week-insights";
 import { endOfISOWeek } from "date-fns";
 import RingChart from "./RingChart";
 import WeekTrendBars from "./WeekTrendBars";
@@ -14,11 +15,14 @@ export default function ReviewScreen({ onClose }: Props) {
   const tasks = useStore((s) => s.tasks);
   const events = useStore((s) => s.events);
   const reviews = useStore((s) => s.reviews);
+  const weekStart = useStore((s) => s.currentWeekStart);
+  const dayCheckins = useStore((s) => s.dayCheckins);
+  const habits = useStore((s) => s.habits);
+  const habitEntries = useStore((s) => s.habitEntries);
   const saveReview = useStore((s) => s.saveReview);
   const deleteTask = useStore((s) => s.deleteTask);
   const moveTask = useStore((s) => s.moveTask);
 
-  const weekStart = getWeekStart(new Date());
   const weekEnd = endOfISOWeek(weekStart);
   const weekDays = getWeekDays(weekStart);
   const weekId = getWeekId(weekStart);
@@ -49,6 +53,10 @@ export default function ReviewScreen({ onClose }: Props) {
 
   const completed = tasks.filter((t) => completedTaskIds.includes(t.id));
   const rolledOver = tasks.filter((t) => rolledOverTaskIds.includes(t.id));
+  const dayCheckinSummary = summarizeDayCheckins(dayCheckins, weekTasks);
+  const habitIdsWithEntries = new Set(habitEntries.map((entry) => entry.habit_id));
+  const reviewHabits = habits.filter((habit) => !habit.archived || habitIdsWithEntries.has(habit.id));
+  const habitSummary = summarizeHabits(reviewHabits, habitEntries);
 
   const [reflection, setReflection] = useState("");
 
@@ -189,6 +197,43 @@ export default function ReviewScreen({ onClose }: Props) {
             })}
           </div>
         )}
+
+        <div className="mb-6">
+          <h3 className="mb-3 font-mono text-[12px] uppercase text-faint">
+            Daily rhythm
+          </h3>
+          <div className="space-y-2 rounded-xl bg-ink/[0.035] p-3 text-sm text-muted">
+            <div>Average energy: {dayCheckinSummary.averageEnergy ?? "No data"}</div>
+            <div>Most common mood: {dayCheckinSummary.mostCommonMood ?? "No data"}</div>
+            <div>Best energy day: {dayCheckinSummary.bestEnergyDay ?? "No data"}</div>
+            <div>Lowest energy day: {dayCheckinSummary.lowestEnergyDay ?? "No data"}</div>
+            {dayCheckinSummary.energyCompletionInsight && (
+              <div className="text-ink">{dayCheckinSummary.energyCompletionInsight}</div>
+            )}
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="mb-3 font-mono text-[12px] uppercase text-faint">
+            Habit rhythm
+          </h3>
+          <div className="space-y-2 rounded-xl bg-ink/[0.035] p-3 text-sm text-muted">
+            {habitSummary.rows.length === 0 ? (
+              <div>No habits tracked this week.</div>
+            ) : (
+              habitSummary.rows.map((row) => (
+                <div key={row.habit.id} className="flex justify-between gap-4">
+                  <span>{row.habit.title}</span>
+                  <span className="font-mono text-ink">{row.completed}/{row.total}</span>
+                </div>
+              ))
+            )}
+            {habitSummary.bestHabit && <div>Best habit: {habitSummary.bestHabit.title}</div>}
+            {habitSummary.lowestConsistencyHabit && (
+              <div>Lowest consistency: {habitSummary.lowestConsistencyHabit.title}</div>
+            )}
+          </div>
+        </div>
 
         {/* Reflection */}
         <div className="mb-6">
