@@ -51,3 +51,55 @@ export type WeekReview = {
   created_at: string;
   updated_at: string;
 };
+
+export type Habit = {
+  id: string;
+  user_id: string;
+  title: string;
+  color: string | null;
+  archived: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type HabitEntry = {
+  id: string;
+  habit_id: string;
+  user_id: string;
+  date: string;
+  completed: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MoodOption =
+  | 'Calm'
+  | 'Focused'
+  | 'Scattered'
+  | 'Tired'
+  | 'Stressed'
+  | 'Good';
+
+export type DayCheckin = {
+  id: string;
+  user_id: string;
+  date: string;
+  energy: number | null;
+  mood: MoodOption | null;
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type QuickCaptureDestination =
+  | 'today'
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday'
+  | 'sunday'
+  | 'backlog';
+
+export type FocusColumnId = string | 'backlog' | null;
