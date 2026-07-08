@@ -8,6 +8,7 @@ import WeekGrid from './components/WeekGrid'
 import ReviewScreen from './components/ReviewScreen'
 import QuickCaptureDialog from './components/QuickCaptureDialog'
 import KeyboardShortcutsDialog from './components/KeyboardShortcutsDialog'
+import HabitTracker from './components/HabitTracker'
 import AuthScreen from './components/AuthScreen'
 import { supabase } from './lib/supabase'
 import { useStore } from './store'
@@ -42,6 +43,8 @@ export default function App() {
   const loadEvents = useStore(s => s.loadEvents)
   const loadReviews = useStore(s => s.loadReviews)
   const loadDayCheckinsForWeek = useStore(s => s.loadDayCheckinsForWeek)
+  const loadHabitsForWeek = useStore(s => s.loadHabitsForWeek)
+  const loadHabitEntriesForWeek = useStore(s => s.loadHabitEntriesForWeek)
   const currentWeekStart = useStore(s => s.currentWeekStart)
   const isLoading = useStore(s => s.isLoading)
   const tasks = useStore(s => s.tasks)
@@ -74,6 +77,12 @@ export default function App() {
     if (!session) return
     loadDayCheckinsForWeek(currentWeekStart)
   }, [session, currentWeekStart, loadDayCheckinsForWeek])
+
+  useEffect(() => {
+    if (!session) return
+    loadHabitsForWeek(currentWeekStart)
+    loadHabitEntriesForWeek(currentWeekStart)
+  }, [session, currentWeekStart, loadHabitEntriesForWeek, loadHabitsForWeek])
 
   useEffect(() => {
     if (!session || isLoading) return
@@ -150,6 +159,7 @@ export default function App() {
             <WeekHeader
               onShowReview={() => setShowReview(true)}
             />
+            <HabitTracker />
             <WeekGrid />
             <FloatingNav
               onShowAbout={() => setShowAbout(true)}

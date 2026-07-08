@@ -9,6 +9,8 @@ import { playChime } from './lib/sound'
 import type {
   DayCheckin,
   FocusColumnId,
+  Habit,
+  HabitEntry,
   QuickCaptureDestination,
   Task,
   TaskEvent,
@@ -60,6 +62,8 @@ type State = {
   events: TaskEvent[]
   reviews: WeekReview[]
   dayCheckins: DayCheckin[]
+  habits: Habit[]
+  habitEntries: HabitEntry[]
   currentWeekStart: Date
   isLoading: boolean
   hideDone: boolean
@@ -77,6 +81,8 @@ type Actions = {
   loadEvents: () => Promise<void>
   loadReviews: () => Promise<void>
   loadDayCheckinsForWeek: (weekStart: Date) => Promise<void>
+  loadHabitsForWeek: (weekStart: Date) => Promise<void>
+  loadHabitEntriesForWeek: (weekStart: Date) => Promise<void>
   addTask: (title: string, date: string | null, options?: AddTaskOptions) => Promise<Task | null>
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>
   toggleDone: (id: string) => Promise<void>
@@ -102,6 +108,9 @@ type Actions = {
   closeKeyboardHelp: () => void
   toggleTodayFocus: () => void
   upsertDayCheckin: (date: string, updates: Partial<Pick<DayCheckin, 'energy' | 'mood' | 'note'>>) => Promise<void>
+  createHabit: (title: string, color?: string | null) => Promise<Habit | null>
+  archiveHabit: (habitId: string) => Promise<void>
+  toggleHabitEntry: (habitId: string, date: string) => Promise<void>
   createTaskFromQuickCapture: (input: {
     title: string;
     destination: QuickCaptureDestination;
@@ -116,6 +125,8 @@ export const useStore = create<State & Actions>((set, get) => ({
   events: [],
   reviews: [],
   dayCheckins: [],
+  habits: [],
+  habitEntries: [],
   currentWeekStart: getWeekStart(new Date()),
   isLoading: true,
   hideDone: readHideDone(),
@@ -174,6 +185,36 @@ export const useStore = create<State & Actions>((set, get) => ({
     }
 
     set({ dayCheckins: (data as DayCheckin[]) ?? [] })
+  },
+
+  loadHabitsForWeek: async () => {
+    const { data, error } = await supabase
+      .from('habits')
+      .select('*')
+      .order('created_at', { ascending: true })
+
+    if (error) {
+      console.error('loadHabitsForWeek failed', error)
+      return
+    }
+
+    set({ habits: (data as Habit[]) ?? [] })
+  },
+
+  loadHabitEntriesForWeek: async (weekStart) => {
+    const days = getWeekDays(weekStart).map(formatDate)
+    const { data, error } = await supabase
+      .from('habit_entries')
+      .select('*')
+      .gte('date', days[0])
+      .lte('date', days[6])
+
+    if (error) {
+      console.error('loadHabitEntriesForWeek failed', error)
+      return
+    }
+
+    set({ habitEntries: (data as HabitEntry[]) ?? [] })
   },
 
   addTask: async (title, date, options = {}) => {
@@ -546,7 +587,87 @@ export const useStore = create<State & Actions>((set, get) => ({
     set({
       dayCheckins: get().dayCheckins
         .filter(checkin => checkin.date !== date)
-        .concat(data as DayCheckin),
+      .concat(data as DayCheckin),
+    })
+  },
+
+  createHabit: async (title, color = null) => {
+    const trimmed = title.trim()
+    if (!trimmed) return null
+
+    const { data, error } = await supabase
+      .from('habits')
+      .insert({ title: trimmed, color })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('createHabit failed', error)
+      return null
+    }
+
+    const habit = data as Habit
+    set({ habits: get().habits.concat(habit) })
+    return habit
+  },
+
+  archiveHabit: async (habitId) => {
+    const prev = get().habits
+    set({ habits: prev.map(habit => habit.id === habitId ? { ...habit, archived: true } : habit) })
+
+    const { error } = await supabase
+      .from('habits')
+      .update({ archived: true })
+      .eq('id', habitId)
+
+    if (error) {
+      console.error('archiveHabit failed', error)
+      set({ habits: prev })
+    }
+  },
+
+  toggleHabitEntry: async (habitId, date) => {
+    const prev = get().habitEntries
+    const existing = prev.find(entry => entry.habit_id === habitId && entry.date === date)
+    const nextCompleted = !existing?.completed
+    const now = new Date().toISOString()
+    const optimistic = existing
+      ? { ...existing, completed: nextCompleted, updated_at: now }
+      : {
+          id: `pending-${habitId}-${date}`,
+          habit_id: habitId,
+          user_id: '',
+          date,
+          completed: true,
+          created_at: now,
+          updated_at: now,
+        }
+
+    set({
+      habitEntries: prev
+        .filter(entry => !(entry.habit_id === habitId && entry.date === date))
+        .concat(optimistic as HabitEntry),
+    })
+
+    const { data, error } = await supabase
+      .from('habit_entries')
+      .upsert(
+        { habit_id: habitId, date, completed: nextCompleted },
+        { onConflict: 'habit_id,date' },
+      )
+      .select()
+      .single()
+
+    if (error) {
+      console.error('toggleHabitEntry failed', error)
+      set({ habitEntries: prev })
+      return
+    }
+
+    set({
+      habitEntries: get().habitEntries
+        .filter(entry => !(entry.habit_id === habitId && entry.date === date))
+        .concat(data as HabitEntry),
     })
   },
 
