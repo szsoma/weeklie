@@ -37,4 +37,6 @@ test("quick capture dialog exposes required fields and keyboard behavior", () =>
 test("quick capture is available from app shell and floating nav", () => {
   assert.match(app, /<QuickCaptureDialog/);
   assert.match(nav, /aria-label="Open quick capture"/);
+  assert.match(nav, /right-\[calc\(env\(safe-area-inset-right,0px\)\+16px\)\]/);
+  assert.match(nav, /bottom-\[calc\(env\(safe-area-inset-bottom,0px\)\+16px\)\]/);
 });

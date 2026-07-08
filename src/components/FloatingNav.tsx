@@ -156,7 +156,7 @@ export default function FloatingNav({
 
       {/* Floating pill bar */}
       <div
-        className={`fixed z-50 bottom-[calc(env(safe-area-inset-bottom,0px)+16px)] left-1/2 -translate-x-1/2 w-[min(24rem,calc(100%-2rem))] bg-ink text-bg rounded-full shadow-xl border border-ink/5 transition-all duration-300 ${
+        className={`fixed z-50 bottom-[calc(env(safe-area-inset-bottom,0px)+16px)] left-4 w-[calc(100%-6rem)] sm:left-1/2 sm:-translate-x-1/2 sm:w-[min(24rem,calc(100%-7rem))] bg-ink text-bg rounded-full shadow-xl border border-ink/5 transition-all duration-300 ${
           hidden
             ? "translate-y-[150%] opacity-0 pointer-events-none"
             : "opacity-100"
@@ -172,15 +172,6 @@ export default function FloatingNav({
             <span className="opacity-50">_</span>Weeklie
           </a>
 
-          <button
-            type="button"
-            onClick={onOpenQuickCapture}
-            aria-label="Open quick capture"
-            className="grid h-10 w-10 place-items-center rounded-full text-bg transition hover:bg-bg/10 active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bg/20 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
-          >
-            <span className="text-[24px] leading-none">+</span>
-          </button>
-
           {/* Burger button */}
           <button
             type="button"
@@ -193,6 +184,19 @@ export default function FloatingNav({
           </button>
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={onOpenQuickCapture}
+        aria-label="Open quick capture"
+        className={`fixed z-[60] right-[calc(env(safe-area-inset-right,0px)+16px)] bottom-[calc(env(safe-area-inset-bottom,0px)+16px)] grid h-14 w-14 place-items-center rounded-full bg-ink text-bg shadow-xl border border-ink/5 transition-all duration-300 hover:bg-ink/90 active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20 focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${
+          hidden
+            ? "translate-y-[150%] opacity-0 pointer-events-none"
+            : "opacity-100"
+        }`}
+      >
+        <span className="text-[30px] leading-none">+</span>
+      </button>
     </>
   );
 }
