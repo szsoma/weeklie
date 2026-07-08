@@ -76,6 +76,9 @@ export default function TaskRow({ task }: Props) {
   const toggleDone = useStore((s) => s.toggleDone);
   const updateTask = useStore((s) => s.updateTask);
   const deleteTask = useStore((s) => s.deleteTask);
+  const setFocusedTask = useStore((s) => s.setFocusedTask);
+  const setFocusedColumn = useStore((s) => s.setFocusedColumn);
+  const moveFocusedTask = useStore((s) => s.moveFocusedTask);
 
   useEffect(() => {
     if (isEditing) inputRef.current?.focus();
@@ -183,6 +186,65 @@ export default function TaskRow({ task }: Props) {
       style={rowStyle}
       {...listeners}
       {...attributes}
+      data-task-id={task.id}
+      data-task-column={task.date ?? "backlog"}
+      tabIndex={0}
+      onFocus={() => {
+        setFocusedTask(task.id);
+        setFocusedColumn(task.date ?? "backlog");
+      }}
+      onKeyDown={(event) => {
+        if (isEditing || isEditingNote) return;
+        if (event.target !== event.currentTarget) return;
+
+        if (event.key === "Enter") {
+          event.preventDefault();
+          setEditTitle(task.title);
+          setIsEditing(true);
+        }
+
+        if (event.key === " ") {
+          event.preventDefault();
+          toggleDone(task.id);
+        }
+
+        if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && !task.done) {
+          event.preventDefault();
+          toggleDone(task.id);
+        }
+
+        if (event.key === "Backspace") {
+          event.preventDefault();
+          if (window.confirm("Delete this task?")) deleteTask(task.id);
+        }
+
+        if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+          event.preventDefault();
+          const rows = Array.from(document.querySelectorAll<HTMLElement>("[data-task-id]"));
+          const currentIndex = rows.findIndex((row) => row.dataset.taskId === task.id);
+          const next = rows[currentIndex + (event.key === "ArrowDown" ? 1 : -1)];
+          next?.focus();
+        }
+
+        if (!event.shiftKey && (event.key === "ArrowLeft" || event.key === "ArrowRight")) {
+          event.preventDefault();
+          const columns = Array.from(document.querySelectorAll<HTMLElement>("[data-column-id]"));
+          const currentColumnId = task.date ?? "backlog";
+          const currentIndex = columns.findIndex((column) => column.dataset.columnId === currentColumnId);
+          const next = columns[currentIndex + (event.key === "ArrowRight" ? 1 : -1)];
+          next?.focus();
+        }
+
+        if (event.shiftKey && event.key === "ArrowLeft") {
+          event.preventDefault();
+          moveFocusedTask(-1);
+        }
+
+        if (event.shiftKey && event.key === "ArrowRight") {
+          event.preventDefault();
+          moveFocusedTask(1);
+        }
+      }}
       className={`group relative grid grid-cols-[1rem_minmax(0,1fr)_auto_auto_auto] items-center m-1 gap-x-2 px-2 min-h-10 text-sm leading-snug rounded-full transition-colors ${
         isDragging
           ? "opacity-40 cursor-grabbing"

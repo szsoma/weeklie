@@ -10,17 +10,19 @@ type Props = {
 };
 
 export default function DayColumn({ date }: Props) {
+  const dateKey = formatDate(date);
   const tasks = useStore(
     useShallow((s) =>
       s.tasks
-        .filter((t) => t.date === formatDate(date) && !(s.hideDone && t.done))
+        .filter((t) => t.date === dateKey && !(s.hideDone && t.done))
         .sort((a, b) => a.order - b.order),
     ),
   );
+  const setFocusedColumn = useStore((s) => s.setFocusedColumn);
 
   const { setNodeRef } = useDroppable({
-    id: `day-${formatDate(date)}`,
-    data: { date: formatDate(date) },
+    id: `day-${dateKey}`,
+    data: { date: dateKey },
   });
 
   const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
@@ -31,7 +33,31 @@ export default function DayColumn({ date }: Props) {
   return (
     <div
       ref={setNodeRef}
-      className={`relative flex flex-col min-h-0 md:h-full ${today ? "bg-today" : "bg-bg"}`}
+      data-column-id={dateKey}
+      tabIndex={0}
+      onFocus={() => setFocusedColumn(dateKey)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          document
+            .querySelector<HTMLInputElement>(`[data-new-task-column="${dateKey}"]`)
+            ?.focus();
+        }
+        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+          event.preventDefault();
+          const columns = Array.from(document.querySelectorAll<HTMLElement>("[data-column-id]"));
+          const currentIndex = columns.findIndex((column) => column.dataset.columnId === dateKey);
+          const next = columns[currentIndex + (event.key === "ArrowRight" ? 1 : -1)];
+          next?.focus();
+        }
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          document
+            .querySelector<HTMLElement>(`[data-task-column="${dateKey}"]`)
+            ?.focus();
+        }
+      }}
+      className={`relative flex flex-col min-h-0 md:h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-inset ${today ? "bg-today" : "bg-bg"}`}
     >
       <div
         className="sticky top-0 z-10 md:static px-2 min-h-[44px] flex items-center justify-between gap-2 border-b border-rule"
@@ -55,7 +81,7 @@ export default function DayColumn({ date }: Props) {
           <TaskRow key={task.id} task={task} />
         ))}
 
-        <NewTaskLine date={formatDate(date)} />
+        <NewTaskLine date={dateKey} />
       </div>
     </div>
   );

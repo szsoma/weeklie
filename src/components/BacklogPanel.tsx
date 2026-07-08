@@ -17,6 +17,8 @@ export default function BacklogPanel() {
         .sort((a, b) => a.order - b.order),
     ),
   );
+  const setFocusedColumn = useStore((s) => s.setFocusedColumn);
+  const setBacklogSearchFocused = useStore((s) => s.setBacklogSearchFocused);
   const [query, setQuery] = useState("");
   const normalizedQuery = query.trim().toLowerCase();
   const filteredTasks = useMemo(
@@ -30,7 +32,10 @@ export default function BacklogPanel() {
   return (
     <div
       ref={setNodeRef}
-      className="bg-bg flex flex-col min-h-[18rem] md:min-h-0 md:h-full"
+      data-column-id="backlog"
+      tabIndex={0}
+      onFocus={() => setFocusedColumn("backlog")}
+      className="bg-bg flex flex-col min-h-[18rem] md:min-h-0 md:h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-inset"
     >
       <div className="flex items-center gap-2 px-4 sm:px-6 md:px-2 min-h-[44px] border-b border-rule">
         <h2 className="font-mono font-semibold text-[18px] uppercase tracking-[-0.02em] text-muted">
@@ -43,6 +48,8 @@ export default function BacklogPanel() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => setBacklogSearchFocused(true)}
+            onBlur={() => setBacklogSearchFocused(false)}
             placeholder="Filter..."
             aria-label="Filter backlog tasks"
             name="backlog-filter"

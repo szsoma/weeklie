@@ -39,6 +39,7 @@ export default function NewTaskLine({ date }: Props) {
       <div className="w-4 h-4 rounded-[5px] flex-shrink-0 border border-dashed border-rule-strong/70" />
       <input
         ref={inputRef}
+        data-new-task-column={date ?? "backlog"}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         onFocus={() => setIsFocused(true)}

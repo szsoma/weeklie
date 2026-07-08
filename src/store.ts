@@ -484,6 +484,7 @@ export const useStore = create<State & Actions>((set, get) => ({
     if (!task?.date) return
     const weekDays = getWeekDays(currentWeekStart).map(formatDate)
     const currentIndex = weekDays.indexOf(task.date)
+    if (currentIndex === -1) return
     const targetDate = weekDays[currentIndex + direction]
     if (!targetDate) return
     await get().moveTask(task.id, targetDate, getTopOrderForDate(tasks, targetDate))
