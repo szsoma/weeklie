@@ -14,10 +14,6 @@ const groups: FeatureGroup[] = [
     title: "Planning the week",
     items: [
       {
-        name: "Week intention",
-        desc: "A single italic line under the header (\"This week I want to…\") saved per week.",
-      },
-      {
         name: "Copy last week",
         desc: "Pull undone tasks from the previous week onto the matching weekdays (title, color, and note copied; recurrence and backlog items skipped).",
       },

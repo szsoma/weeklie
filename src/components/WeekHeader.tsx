@@ -7,7 +7,6 @@ import {
   nextWeek,
   prevWeek,
 } from "../dates";
-import WeekIntention from "./WeekIntention";
 
 function Chevron({ direction }: { direction: "left" | "right" }) {
   return (
@@ -157,8 +156,7 @@ export default function WeekHeader({ onShowReview, onShowShare }: Props) {
   };
 
   return (
-    <>
-      <header className="flex items-center justify-between px-4 sm:px-6 md:px-8 py-4 border-b-2 border-rule">
+    <header className="flex items-center justify-between px-4 sm:px-6 md:px-8 py-4 border-b-2 border-rule">
         <div className="flex flex-col min-w-0 items-start text-left md:w-[280px]">
           <span className="font-mono text-[11px] uppercase text-muted tracking-[0.08em] leading-none mb-1">
             Week
@@ -346,8 +344,6 @@ export default function WeekHeader({ onShowReview, onShowShare }: Props) {
             )}
           </div>
         </div>
-      </header>
-      <WeekIntention weekStart={currentWeekStart} />
-    </>
+    </header>
   );
 }

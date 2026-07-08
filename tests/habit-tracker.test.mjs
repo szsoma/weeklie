@@ -8,6 +8,7 @@ const tracker = readFileSync(new URL("../src/components/HabitTracker.tsx", impor
 const row = readFileSync(new URL("../src/components/HabitRow.tsx", import.meta.url), "utf8");
 const addInput = readFileSync(new URL("../src/components/HabitAddInput.tsx", import.meta.url), "utf8");
 const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+const weekHeader = readFileSync(new URL("../src/components/WeekHeader.tsx", import.meta.url), "utf8");
 
 test("store loads creates archives and toggles habits", () => {
   assert.match(store, /habits/);
@@ -42,8 +43,10 @@ test("habit UI supports creation toggling and archiving", () => {
   assert.match(addInput, /Add habit/);
 });
 
-test("habit tracker is placed below the week header and intention", () => {
+test("habit tracker is placed below the week header without the week intention bar", () => {
   assert.match(app, /<HabitTracker/);
+  assert.doesNotMatch(weekHeader, /<WeekIntention/);
+  assert.doesNotMatch(weekHeader, /This week I want to/);
 });
 
 const review = readFileSync(new URL("../src/components/ReviewScreen.tsx", import.meta.url), "utf8");
