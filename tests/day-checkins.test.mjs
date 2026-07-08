@@ -34,6 +34,11 @@ test("day check-in UI supports energy mood and note saves", () => {
   assert.match(button, /event\.key === "Escape"/);
 });
 
+test("day check-in popovers use per-instance ids", () => {
+  assert.match(button, /useId/);
+  assert.doesNotMatch(button, /const popoverId = `day-checkin-\$\{dateKey\}`/);
+});
+
 test("day columns render the day check-in control near the heading", () => {
   assert.match(dayColumn, /<DayCheckinButton/);
 });

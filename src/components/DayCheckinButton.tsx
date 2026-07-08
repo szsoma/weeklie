@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { formatDate } from "../dates";
 import { useStore } from "../store";
 import type { MoodOption } from "../types";
@@ -12,11 +12,12 @@ type Props = {
 
 export default function DayCheckinButton({ date }: Props) {
   const dateKey = formatDate(date);
+  const componentId = useId().replaceAll(":", "");
   const checkin = useStore((s) => s.dayCheckins.find((item) => item.date === dateKey));
   const upsertDayCheckin = useStore((s) => s.upsertDayCheckin);
   const [noteDraft, setNoteDraft] = useState<string | null>(null);
   const noteValue = noteDraft ?? checkin?.note ?? "";
-  const popoverId = `day-checkin-${dateKey}`;
+  const popoverId = `day-checkin-${dateKey}-${componentId}`;
 
   const saveNote = () => {
     const trimmed = noteValue.trim().slice(0, 160);
@@ -29,6 +30,7 @@ export default function DayCheckinButton({ date }: Props) {
       <button
         type="button"
         popoverTarget={popoverId}
+        aria-controls={popoverId}
         className="rounded-full px-2 py-1 font-mono text-[11px] text-faint transition hover:bg-ink/[0.05] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15"
       >
         {checkin?.energy ? `Energy ${checkin.energy}` : "Energy"}
