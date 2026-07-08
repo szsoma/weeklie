@@ -3,10 +3,12 @@ import {
   startOfISOWeek,
   endOfISOWeek,
   addWeeks,
+  addDays,
   subWeeks,
   eachDayOfInterval,
   isToday,
   isBefore,
+  parseISO,
   startOfDay,
   getISOWeek,
   getISOWeekYear,
@@ -53,6 +55,25 @@ export function toLocalDateKey(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
+}
+
+export function parseDateKey(dateKey: string): Date {
+  return parseISO(`${dateKey}T00:00:00`)
+}
+
+export function addDaysToDateKey(dateKey: string, days: number): string {
+  return formatDate(addDays(parseDateKey(dateKey), days))
+}
+
+export function addWeeksToDateKey(dateKey: string, weeks: number): string {
+  return formatDate(addWeeks(parseDateKey(dateKey), weeks))
+}
+
+export function isDateInWeek(dateKey: string, weekStart: Date): boolean {
+  const date = startOfDay(parseDateKey(dateKey))
+  const start = startOfDay(weekStart)
+  const end = startOfDay(endOfISOWeek(weekStart))
+  return date >= start && date <= end
 }
 
 export function getWeekId(date: Date): string {

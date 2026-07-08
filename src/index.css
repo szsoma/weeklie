@@ -18,14 +18,14 @@
 }
 
 :root {
-  --bg: #fbfad2; /* light yellowish paper */
-  --surface: #fbf8de; /* lifted card */
+  --bg: #fffdf3; /* near-white paper */
+  --surface: #fffaf0; /* lifted paper */
   --ink: #1a1a1a; /* primary text */
   --muted: #514b3f; /* readable secondary text */
   --faint: #6f6657; /* subtle labels / placeholders */
-  --rule: rgba(26, 26, 26, 0.14);
-  --rule-strong: rgba(26, 26, 26, 0.24);
-  --today: #f6f0c8;
+  --rule: rgba(26, 26, 26, 0.12);
+  --rule-strong: rgba(26, 26, 26, 0.22);
+  --today: #f8f2d8;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -41,6 +41,28 @@
   }
 }
 
+:root[data-theme="light"] {
+  --bg: #fffdf3;
+  --surface: #fffaf0;
+  --ink: #1a1a1a;
+  --muted: #514b3f;
+  --faint: #6f6657;
+  --rule: rgba(26, 26, 26, 0.12);
+  --rule-strong: rgba(26, 26, 26, 0.22);
+  --today: #f8f2d8;
+}
+
+:root[data-theme="dark"] {
+  --bg: #1a1a1a;
+  --surface: #21211f;
+  --ink: #e9e3d6;
+  --muted: #bcb4a4;
+  --faint: #a39a8a;
+  --rule: rgba(233, 227, 214, 0.16);
+  --rule-strong: rgba(233, 227, 214, 0.26);
+  --today: #27241e;
+}
+
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
@@ -52,12 +74,12 @@
   body {
     background-color: var(--bg);
     color: var(--ink);
-    /* Geist sans for body / task content — readable at length */
     font-family:
-      "Geist",
+      "Google Sans",
       system-ui,
       -apple-system,
       sans-serif;
+    font-weight: 400;
   }
 
   ::selection {
@@ -88,18 +110,69 @@
   }
 }
 
+@layer components {
+  .weeklie-focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
+  }
+
+  .task-settings-popover {
+    position: fixed;
+    inset: 50% auto auto 50%;
+    width: min(22rem, calc(100vw - 2rem));
+    max-height: min(42rem, calc(100vh - 2rem));
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    color: var(--ink);
+    border: 1px solid var(--rule-strong);
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.16),
+      0 2px 8px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.98);
+    transition:
+      opacity 140ms ease,
+      transform 140ms ease;
+  }
+
+  .task-settings-popover:popover-open {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .task-settings-popover::backdrop {
+    background: color-mix(in srgb, var(--ink) 9%, transparent);
+    backdrop-filter: blur(1px);
+    -webkit-backdrop-filter: blur(1px);
+  }
+
+  @media (max-width: 640px) {
+    .task-settings-popover {
+      inset: auto 1rem max(1rem, env(safe-area-inset-bottom)) 1rem;
+      width: auto;
+      max-height: min(36rem, calc(100vh - 2rem));
+      border-radius: 1rem;
+      transform: translateY(0.5rem) scale(1);
+    }
+
+    .task-settings-popover:popover-open {
+      transform: translateY(0) scale(1);
+    }
+  }
+}
+
 code,
 pre,
 .font-mono {
   font-family:
-    "Geist Mono",
-    ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    "Liberation Mono",
-    monospace;
+    "Google Sans",
+    system-ui,
+    -apple-system,
+    sans-serif;
   font-variant-numeric: tabular-nums;
 }
 

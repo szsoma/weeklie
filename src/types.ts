@@ -1,3 +1,5 @@
+export type TaskRecurrence = 'daily' | 'weekly';
+
 export type Task = {
   id: string;
   title: string;
@@ -5,6 +7,9 @@ export type Task = {
   done: boolean;
   done_at: string | null;
   color: string | null; // "red" | "orange" | "yellow" | "green" | "blue" | "purple"
+  recurrence: TaskRecurrence | null;
+  note: string | null;
+  due_time: string | null;
   order: number;
   created_at: string;
   updated_at: string;
@@ -38,6 +43,7 @@ export type WeekReview = {
   planned_count: number;
   rolled_over_count: number;
   reflection: string;
+  intention: string | null;
   viewed_at: string;
   streak: number;
   completed_task_ids: string[];
@@ -74,3 +80,55 @@ export type SharedWeekUnavailable = {
 };
 
 export type SharedWeekResponse = SharedWeekAvailable | SharedWeekUnavailable;
+
+export type Habit = {
+  id: string;
+  user_id: string;
+  title: string;
+  color: string | null;
+  archived: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type HabitEntry = {
+  id: string;
+  habit_id: string;
+  user_id: string;
+  date: string;
+  completed: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MoodOption =
+  | 'Calm'
+  | 'Focused'
+  | 'Scattered'
+  | 'Tired'
+  | 'Stressed'
+  | 'Good';
+
+export type DayCheckin = {
+  id: string;
+  user_id: string;
+  date: string;
+  energy: number | null;
+  mood: MoodOption | null;
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type QuickCaptureDestination =
+  | 'today'
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday'
+  | 'sunday'
+  | 'backlog';
+
+export type FocusColumnId = string | 'backlog' | null;

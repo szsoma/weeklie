@@ -9,11 +9,17 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
+      devOptions: {
+        enabled: true,
+      },
       manifest: {
         name: 'Weekly Planner',
         short_name: 'Weekly',
-        theme_color: '#f5f0e8',
-        background_color: '#f5f0e8',
+        theme_color: '#fffdf3',
+        background_color: '#fffdf3',
         display: 'standalone',
         icons: [
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },

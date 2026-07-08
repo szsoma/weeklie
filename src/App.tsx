@@ -1,19 +1,25 @@
 import { useEffect, useState } from 'react'
-import { DndContext, DragOverlay, PointerSensor, TouchSensor, useSensor, useSensors, useDndContext } from '@dnd-kit/core'
+import { DndContext, DragOverlay, PointerSensor, TouchSensor, useDndContext, useSensor, useSensors } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
 import type { Session } from '@supabase/supabase-js'
-import FloatingNav from './components/FloatingNav'
-import WeekHeader from './components/WeekHeader'
-import WeekGrid from './components/WeekGrid'
-import ReviewScreen from './components/ReviewScreen'
+import AboutScreen from './components/AboutScreen'
 import AuthScreen from './components/AuthScreen'
+import FeaturesScreen from './components/FeaturesScreen'
+import FloatingNav from './components/FloatingNav'
+import HabitTracker from './components/HabitTracker'
+import KeyboardShortcutsDialog from './components/KeyboardShortcutsDialog'
+import QuickCaptureDialog from './components/QuickCaptureDialog'
+import ReviewScreen from './components/ReviewScreen'
 import ShareWeekDialog from './components/ShareWeekDialog'
 import SharedWeekPage from './components/SharedWeekPage'
+import Toast from './components/Toast'
+import WeekGrid from './components/WeekGrid'
+import WeekHeader from './components/WeekHeader'
+import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
+import { useRollover } from './hooks/useRollover'
+import { startReminderScheduler } from './lib/reminders'
 import { supabase } from './lib/supabase'
 import { useStore } from './store'
-import { useRollover } from './hooks/useRollover'
-import Toast from './components/Toast'
-import AboutScreen from './components/AboutScreen'
 
 function decodeShareToken(token: string) {
   try {
@@ -55,23 +61,38 @@ function AuthenticatedApp() {
   const loadTasks = useStore(s => s.loadTasks)
   const loadEvents = useStore(s => s.loadEvents)
   const loadReviews = useStore(s => s.loadReviews)
-  const isLoading = useStore(s => s.isLoading)
+  const loadDayCheckinsForWeek = useStore(s => s.loadDayCheckinsForWeek)
+  const loadHabitsForWeek = useStore(s => s.loadHabitsForWeek)
+  const loadHabitEntriesForWeek = useStore(s => s.loadHabitEntriesForWeek)
   const currentWeekStart = useStore(s => s.currentWeekStart)
+  const isLoading = useStore(s => s.isLoading)
+  const tasks = useStore(s => s.tasks)
+  const toggleDone = useStore(s => s.toggleDone)
+  const openQuickCapture = useStore(s => s.openQuickCapture)
+  const clearSessionData = useStore(s => s.clearSessionData)
 
   const [session, setSession] = useState<Session | null>(null)
   const [authReady, setAuthReady] = useState(false)
+  const [showReview, setShowReview] = useState(false)
+  const [showAbout, setShowAbout] = useState(false)
+  const [showFeatures, setShowFeatures] = useState(false)
+  const [showShare, setShowShare] = useState(false)
+
+  useGlobalShortcuts()
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
+      if (!data.session) clearSessionData()
       setAuthReady(true)
     })
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s)
+      if (!s) clearSessionData()
       setAuthReady(true)
     })
     return () => sub.subscription.unsubscribe()
-  }, [])
+  }, [clearSessionData])
 
   useEffect(() => {
     if (!session) return
@@ -80,9 +101,34 @@ function AuthenticatedApp() {
     loadReviews()
   }, [session, loadTasks, loadEvents, loadReviews])
 
-  const [showReview, setShowReview] = useState(false)
-  const [showAbout, setShowAbout] = useState(false)
-  const [showShare, setShowShare] = useState(false)
+  useEffect(() => {
+    if (!session) return
+    loadDayCheckinsForWeek(currentWeekStart)
+  }, [session, currentWeekStart, loadDayCheckinsForWeek])
+
+  useEffect(() => {
+    if (!session) return
+    loadHabitsForWeek(currentWeekStart)
+    loadHabitEntriesForWeek(currentWeekStart)
+  }, [session, currentWeekStart, loadHabitEntriesForWeek, loadHabitsForWeek])
+
+  useEffect(() => {
+    if (!session || isLoading) return
+    return startReminderScheduler(() => useStore.getState().tasks)
+  }, [session, isLoading, tasks])
+
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type !== 'weeklie:mark-done') return
+      const taskId = event.data.taskId as string | undefined
+      if (!taskId) return
+      const task = useStore.getState().tasks.find((item) => item.id === taskId)
+      if (task && !task.done) toggleDone(taskId)
+    }
+    navigator.serviceWorker.addEventListener('message', handleMessage)
+    return () => navigator.serviceWorker.removeEventListener('message', handleMessage)
+  }, [toggleDone])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -100,9 +146,9 @@ function AuthenticatedApp() {
     if (targetDate === undefined) return
 
     if (targetOrder === undefined) {
-      const tasks = useStore.getState().tasks.filter(t => t.date === targetDate && t.id !== taskId)
-      targetOrder = tasks.length > 0
-        ? Math.max(...tasks.map(t => t.order)) + 1
+      const tasksForTarget = useStore.getState().tasks.filter(t => t.date === targetDate && t.id !== taskId)
+      targetOrder = tasksForTarget.length > 0
+        ? Math.max(...tasksForTarget.map(t => t.order)) + 1
         : 1
     }
 
@@ -112,7 +158,7 @@ function AuthenticatedApp() {
   if (!authReady) {
     return (
       <div className="h-[100dvh] grid place-items-center">
-        <span className="font-mono text-sm text-muted">Loading…</span>
+        <span className="font-mono text-sm text-muted">Loading...</span>
       </div>
     )
   }
@@ -129,7 +175,7 @@ function AuthenticatedApp() {
       <div className="h-[100dvh] flex flex-col overflow-hidden">
         {isLoading ? (
           <div className="h-[100dvh] grid place-items-center">
-            <span className="font-mono text-sm text-muted">Loading your week…</span>
+            <span className="font-mono text-sm text-muted">Loading your week...</span>
           </div>
         ) : (
           <>
@@ -137,8 +183,13 @@ function AuthenticatedApp() {
               onShowReview={() => setShowReview(true)}
               onShowShare={() => setShowShare(true)}
             />
+            <HabitTracker />
             <WeekGrid />
-            <FloatingNav onShowAbout={() => setShowAbout(true)} />
+            <FloatingNav
+              onShowAbout={() => setShowAbout(true)}
+              onShowFeatures={() => setShowFeatures(true)}
+              onOpenQuickCapture={openQuickCapture}
+            />
           </>
         )}
       </div>
@@ -149,7 +200,10 @@ function AuthenticatedApp() {
           onClose={() => setShowShare(false)}
         />
       )}
+      <QuickCaptureDialog />
+      <KeyboardShortcutsDialog />
       {showAbout && <AboutScreen onClose={() => setShowAbout(false)} />}
+      {showFeatures && <FeaturesScreen onClose={() => setShowFeatures(false)} />}
       {rolloverToast && (
         <Toast
           message={rolloverToast.message}

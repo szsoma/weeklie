@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useStore } from "../store";
-import { formatDate, getWeekDays, getWeekStart, getWeekId } from "../dates";
+import { formatDate, getWeekDays, getWeekId } from "../dates";
+import { summarizeDayCheckins, summarizeHabits } from "../lib/week-insights";
 import { endOfISOWeek } from "date-fns";
 import RingChart from "./RingChart";
+import WeekTrendBars from "./WeekTrendBars";
 import type { WeekReview } from "../types";
 
 type Props = {
@@ -13,14 +15,18 @@ export default function ReviewScreen({ onClose }: Props) {
   const tasks = useStore((s) => s.tasks);
   const events = useStore((s) => s.events);
   const reviews = useStore((s) => s.reviews);
+  const weekStart = useStore((s) => s.currentWeekStart);
+  const dayCheckins = useStore((s) => s.dayCheckins);
+  const habits = useStore((s) => s.habits);
+  const habitEntries = useStore((s) => s.habitEntries);
   const saveReview = useStore((s) => s.saveReview);
   const deleteTask = useStore((s) => s.deleteTask);
   const moveTask = useStore((s) => s.moveTask);
 
-  const weekStart = getWeekStart(new Date());
   const weekEnd = endOfISOWeek(weekStart);
   const weekDays = getWeekDays(weekStart);
   const weekId = getWeekId(weekStart);
+  const existingReview = reviews.find((review) => review.week_id === weekId);
 
   const weekTasks = tasks.filter(
     (t) => t.date !== null && weekDays.some((d) => formatDate(d) === t.date),
@@ -47,6 +53,10 @@ export default function ReviewScreen({ onClose }: Props) {
 
   const completed = tasks.filter((t) => completedTaskIds.includes(t.id));
   const rolledOver = tasks.filter((t) => rolledOverTaskIds.includes(t.id));
+  const dayCheckinSummary = summarizeDayCheckins(dayCheckins, weekTasks);
+  const habitIdsWithEntries = new Set(habitEntries.map((entry) => entry.habit_id));
+  const reviewHabits = habits.filter((habit) => !habit.archived || habitIdsWithEntries.has(habit.id));
+  const habitSummary = summarizeHabits(reviewHabits, habitEntries);
 
   const [reflection, setReflection] = useState("");
 
@@ -61,6 +71,7 @@ export default function ReviewScreen({ onClose }: Props) {
       planned_count: weekTasks.length,
       rolled_over_count: rolledOver.length,
       reflection,
+      intention: existingReview?.intention ?? null,
       viewed_at: now,
       streak,
       completed_task_ids: completedTaskIds,
@@ -109,6 +120,15 @@ export default function ReviewScreen({ onClose }: Props) {
           </div>
         </div>
 
+        <WeekTrendBars
+          reviews={reviews}
+          currentWeek={{
+            week_id: weekId,
+            completed_count: completed.length,
+            planned_count: weekTasks.length,
+          }}
+        />
+
         {/* Done list */}
         <div className="mb-6">
           <h3 className="font-mono text-[12px] uppercase text-faint mb-3">
@@ -130,39 +150,90 @@ export default function ReviewScreen({ onClose }: Props) {
             <h3 className="font-mono text-[12px] uppercase text-faint mb-3">
               Slipped
             </h3>
-            {rolledOver.map((task) => (
-              <div
-                key={task.id}
-                className="flex flex-wrap items-center gap-x-2 gap-y-2 py-1.5 border-b border-rule"
-              >
-                <span className="text-[16px] flex-1 min-w-[10rem]">{task.title}</span>
-                <span className="text-[11px] bg-ink/[0.06] px-2 py-0.5 rounded font-mono tabular-nums text-muted">
-                  moved {task.rolled_over_count}×
-                </span>
-                <button
-                  onClick={() =>
-                    moveTask(task.id, formatDate(weekDays[0]), task.order)
-                  }
-                  className="text-[11px] font-mono uppercase text-ink hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            {rolledOver.map((task) => {
+              const chronic = task.rolled_over_count >= 3;
+              return (
+                <div
+                  key={task.id}
+                  className="flex flex-wrap items-center gap-x-2 gap-y-2 py-1.5 border-b border-rule"
                 >
-                  Next wk
-                </button>
-                <button
-                  onClick={() => moveTask(task.id, null, task.order)}
-                  className="text-[11px] font-mono uppercase text-muted hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                >
-                  Backlog
-                </button>
-                <button
-                  onClick={() => deleteTask(task.id)}
-                  className="text-[11px] font-mono uppercase text-muted hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                >
-                  Delete
-                </button>
-              </div>
-            ))}
+                  <span className="text-[16px] flex-1 min-w-[10rem]">{task.title}</span>
+                  <span
+                    className={`text-[11px] px-2 py-0.5 rounded font-mono tabular-nums ${
+                      chronic
+                        ? "bg-red-500/10 text-red-600"
+                        : "bg-ink/[0.06] text-muted"
+                    }`}
+                  >
+                    moved {task.rolled_over_count}x
+                  </span>
+                  {chronic && (
+                    <span className="font-mono text-[11px] uppercase text-red-600/80">
+                      Still relevant?
+                    </span>
+                  )}
+                  <button
+                    onClick={() =>
+                      moveTask(task.id, formatDate(weekDays[0]), task.order)
+                    }
+                    className="text-[11px] font-mono uppercase text-ink hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  >
+                    Next wk
+                  </button>
+                  <button
+                    onClick={() => moveTask(task.id, null, task.order)}
+                    className="text-[11px] font-mono uppercase text-muted hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  >
+                    Backlog
+                  </button>
+                  <button
+                    onClick={() => deleteTask(task.id)}
+                    className="text-[11px] font-mono uppercase text-muted hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                  >
+                    Delete
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
+
+        <div className="mb-6">
+          <h3 className="mb-3 font-mono text-[12px] uppercase text-faint">
+            Daily rhythm
+          </h3>
+          <div className="space-y-2 rounded-xl bg-ink/[0.035] p-3 text-sm text-muted">
+            <div>Average energy: {dayCheckinSummary.averageEnergy ?? "No data"}</div>
+            <div>Most common mood: {dayCheckinSummary.mostCommonMood ?? "No data"}</div>
+            <div>Best energy day: {dayCheckinSummary.bestEnergyDay ?? "No data"}</div>
+            <div>Lowest energy day: {dayCheckinSummary.lowestEnergyDay ?? "No data"}</div>
+            {dayCheckinSummary.energyCompletionInsight && (
+              <div className="text-ink">{dayCheckinSummary.energyCompletionInsight}</div>
+            )}
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="mb-3 font-mono text-[12px] uppercase text-faint">
+            Habit rhythm
+          </h3>
+          <div className="space-y-2 rounded-xl bg-ink/[0.035] p-3 text-sm text-muted">
+            {habitSummary.rows.length === 0 ? (
+              <div>No habits tracked this week.</div>
+            ) : (
+              habitSummary.rows.map((row) => (
+                <div key={row.habit.id} className="flex justify-between gap-4">
+                  <span>{row.habit.title}</span>
+                  <span className="font-mono text-ink">{row.completed}/{row.total}</span>
+                </div>
+              ))
+            )}
+            {habitSummary.bestHabit && <div>Best habit: {habitSummary.bestHabit.title}</div>}
+            {habitSummary.lowestConsistencyHabit && (
+              <div>Lowest consistency: {habitSummary.lowestConsistencyHabit.title}</div>
+            )}
+          </div>
+        </div>
 
         {/* Reflection */}
         <div className="mb-6">
@@ -175,7 +246,7 @@ export default function ReviewScreen({ onClose }: Props) {
             placeholder="How was your week?"
             name="reflection"
             aria-label="Weekly reflection"
-            className="w-full bg-transparent border-b border-rule-strong outline-none py-2.5 text-[17px] placeholder:text-faint focus:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:bg-ink/[0.03] transition-colors"
+            className="w-full bg-transparent border-b border-rule-strong outline-none py-2.5 text-[17px] placeholder:text-faint focus-visible:outline-none focus-visible:bg-ink/[0.03] transition-colors"
           />
         </div>
 

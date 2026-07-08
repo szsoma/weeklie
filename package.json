@@ -7,6 +7,16 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test:weeklie-2-1-schema": "node --test tests/weeklie-2-1-schema.test.mjs",
+    "test:quick-capture": "node --test tests/quick-capture.test.mjs",
+    "test:keyboard-navigation": "node --test tests/keyboard-navigation.test.mjs",
+    "test:day-checkins": "node --test tests/day-checkins.test.mjs",
+    "test:habit-tracker": "node --test tests/habit-tracker.test.mjs",
+    "test:weeklie-2-1": "node --test tests/weeklie-2-1-schema.test.mjs tests/quick-capture.test.mjs tests/keyboard-navigation.test.mjs tests/day-checkins.test.mjs tests/habit-tracker.test.mjs",
+    "test:taskrow-note-menu": "node --test tests/taskrow-note-menu.test.mjs",
+    "test:taskrow-popover-menu": "node --test tests/taskrow-popover-menu.test.mjs",
+    "test:input-focus-style": "node --test tests/input-focus-style.test.mjs",
+    "test:theme-switcher": "node --test tests/theme-switcher.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

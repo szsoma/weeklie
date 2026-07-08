@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useHideOnScroll } from "../hooks/useHideOnScroll";
+import { useTheme, type ThemeMode } from "../hooks/useTheme";
 
 function Hamburger({ open }: { open: boolean }) {
   return (
@@ -45,22 +46,35 @@ function Checkmark() {
   );
 }
 
+const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
+  { value: "system", label: "System" },
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
+];
+
 type Props = {
   onShowAbout?: () => void;
+  onShowFeatures?: () => void;
+  onOpenQuickCapture?: () => void;
 };
 
-export default function FloatingNav({ onShowAbout }: Props) {
+export default function FloatingNav({
+  onShowAbout,
+  onShowFeatures,
+  onOpenQuickCapture,
+}: Props) {
   const [open, setOpen] = useState(false);
   const hidden = useHideOnScroll(".weekgrid");
+  const { theme, setTheme } = useTheme();
 
   const linkClass =
-    "block font-mono text-[13px] uppercase opacity-70 hover:opacity-100 py-3 transition focus-visible:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
+    "block text-left font-mono text-[13px] uppercase opacity-70 hover:opacity-100 py-3 transition focus-visible:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
 
   return (
     <>
       {/* Overlay backdrop */}
       <div
-        className={`fixed inset-0 z-40 bg-ink/20 backdrop-blur-[2px] transition-opacity duration-200 ${
+        className={`fixed inset-0 z-40 bg-ink/20 backdrop-blur-[4px] transition-opacity duration-200 ${
           open ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={() => setOpen(false)}
@@ -87,14 +101,54 @@ export default function FloatingNav({ onShowAbout }: Props) {
           >
             About
           </button>
-          <a href="#features" onClick={() => setOpen(false)} className={linkClass}>
+          <div className="flex items-center justify-between gap-3 py-3">
+            <span className="font-mono text-[13px] uppercase opacity-70">
+              Theme
+            </span>
+            <div
+              className="grid grid-cols-3 rounded-full bg-ink/[0.055] p-1"
+              aria-label="Theme mode"
+            >
+              {THEME_OPTIONS.map((option) => {
+                const active = theme === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setTheme(option.value)}
+                    aria-pressed={active}
+                    aria-label={`Set theme to ${option.label}`}
+                    className={`rounded-full px-2.5 py-1.5 font-mono text-[11px] uppercase transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 ${
+                      active
+                        ? "bg-ink text-bg shadow-sm"
+                        : "text-muted hover:bg-ink/[0.06] hover:text-ink"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              onShowFeatures?.();
+              setOpen(false);
+            }}
+            className={linkClass}
+          >
             Features
-          </a>
+          </button>
           <div className="h-px bg-rule my-1" />
           <a href="#login" onClick={() => setOpen(false)} className={linkClass}>
             Login
           </a>
-          <a href="#signup" onClick={() => setOpen(false)} className={linkClass}>
+          <a
+            href="#signup"
+            onClick={() => setOpen(false)}
+            className={linkClass}
+          >
             Sign up
           </a>
         </div>
@@ -117,6 +171,15 @@ export default function FloatingNav({ onShowAbout }: Props) {
             <Checkmark />
             <span className="opacity-50">_</span>Weeklie
           </a>
+
+          <button
+            type="button"
+            onClick={onOpenQuickCapture}
+            aria-label="Open quick capture"
+            className="grid h-10 w-10 place-items-center rounded-full text-bg transition hover:bg-bg/10 active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bg/20 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+          >
+            <span className="text-[24px] leading-none">+</span>
+          </button>
 
           {/* Burger button */}
           <button

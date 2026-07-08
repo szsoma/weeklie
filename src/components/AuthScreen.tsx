@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabase";
 type Mode = "password" | "code";
 
 const inputClass =
-  "w-full bg-transparent border-b border-rule-strong outline-none py-2.5 text-[17px] placeholder:text-faint focus:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-offset-2 focus-visible:ring-offset-bg focus-visible:bg-ink/[0.03] transition-colors";
+  "w-full bg-transparent border-b border-rule-strong outline-none py-2.5 text-[17px] placeholder:text-faint focus-visible:outline-none focus-visible:bg-ink/[0.03] transition-colors";
 const buttonClass =
   "w-full py-3.5 bg-ink text-bg rounded-md font-mono text-[14px] uppercase hover:opacity-80 active:scale-[0.99] transition disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg";
 
