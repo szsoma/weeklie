@@ -4,8 +4,9 @@ import { supabase } from './lib/supabase'
 import { createId } from './nanoid'
 import { formatDate, getWeekDays, getWeekId, getWeekStart } from './dates'
 import { getNextAvailableRecurringDate, getRecurringSeedsForWeek } from './lib/recurrence'
+import { getTopOrderForDate, resolveQuickCaptureDate } from './lib/quick-capture'
 import { playChime } from './lib/sound'
-import type { Task, TaskEvent, TaskEventType, WeekReview } from './types'
+import type { QuickCaptureDestination, Task, TaskEvent, TaskEventType, WeekReview } from './types'
 
 async function logEvent(
   taskId: string,
@@ -53,6 +54,10 @@ type State = {
   currentWeekStart: Date
   isLoading: boolean
   hideDone: boolean
+  quickCaptureOpen: boolean
+  quickCaptureNotice: string | null
+  backlogSearchFocused: boolean
+  todayFocusActive: boolean
 }
 
 type Actions = {
@@ -72,6 +77,18 @@ type Actions = {
   saveIntention: (input: SaveIntentionInput) => Promise<void>
   normalizeOrders: (date: string) => void
   setHideDone: (value: boolean) => void
+  openQuickCapture: () => void
+  closeQuickCapture: () => void
+  clearQuickCaptureNotice: () => void
+  setBacklogSearchFocused: (focused: boolean) => void
+  setTodayFocusActive: (active: boolean) => void
+  createTaskFromQuickCapture: (input: {
+    title: string;
+    destination: QuickCaptureDestination;
+    note: string;
+    due_time: string | null;
+    color: string | null;
+  }) => Promise<Task | null>
 }
 
 export const useStore = create<State & Actions>((set, get) => ({
@@ -81,6 +98,10 @@ export const useStore = create<State & Actions>((set, get) => ({
   currentWeekStart: getWeekStart(new Date()),
   isLoading: true,
   hideDone: readHideDone(),
+  quickCaptureOpen: false,
+  quickCaptureNotice: null,
+  backlogSearchFocused: false,
+  todayFocusActive: false,
 
   loadTasks: async () => {
     const { data, error } = await supabase
@@ -404,5 +425,42 @@ export const useStore = create<State & Actions>((set, get) => ({
       // ignore storage failures (private mode, etc.)
     }
     set({ hideDone: value })
+  },
+
+  openQuickCapture: () => set({ quickCaptureOpen: true }),
+
+  closeQuickCapture: () => set({ quickCaptureOpen: false }),
+
+  clearQuickCaptureNotice: () => set({ quickCaptureNotice: null }),
+
+  setBacklogSearchFocused: (focused) => set({ backlogSearchFocused: focused }),
+
+  setTodayFocusActive: (active) => set({ todayFocusActive: active }),
+
+  createTaskFromQuickCapture: async (input) => {
+    const title = input.title.trim()
+    if (!title) return null
+
+    const targetDate = resolveQuickCaptureDate(input.destination, get().currentWeekStart)
+    const task = await get().addTask(title, targetDate, {
+      note: input.note.trim() || null,
+      due_time: input.due_time,
+      color: input.color,
+      order: getTopOrderForDate(get().tasks, targetDate),
+    })
+
+    if (task) {
+      const label = targetDate === null
+        ? 'backlog'
+        : input.destination === 'today'
+          ? 'today'
+          : input.destination
+      set({
+        quickCaptureOpen: false,
+        quickCaptureNotice: `Added to ${label}`,
+      })
+    }
+
+    return task
   },
 }))

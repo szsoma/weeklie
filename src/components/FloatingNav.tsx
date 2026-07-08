@@ -55,11 +55,13 @@ const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
 type Props = {
   onShowAbout?: () => void;
   onShowFeatures?: () => void;
+  onOpenQuickCapture?: () => void;
 };
 
 export default function FloatingNav({
   onShowAbout,
   onShowFeatures,
+  onOpenQuickCapture,
 }: Props) {
   const [open, setOpen] = useState(false);
   const hidden = useHideOnScroll(".weekgrid");
@@ -169,6 +171,15 @@ export default function FloatingNav({
             <Checkmark />
             <span className="opacity-50">_</span>Weeklie
           </a>
+
+          <button
+            type="button"
+            onClick={onOpenQuickCapture}
+            aria-label="Open quick capture"
+            className="grid h-10 w-10 place-items-center rounded-full text-bg transition hover:bg-bg/10 active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bg/20 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+          >
+            <span className="text-[24px] leading-none">+</span>
+          </button>
 
           {/* Burger button */}
           <button

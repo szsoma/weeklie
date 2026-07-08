@@ -6,6 +6,7 @@ import FloatingNav from './components/FloatingNav'
 import WeekHeader from './components/WeekHeader'
 import WeekGrid from './components/WeekGrid'
 import ReviewScreen from './components/ReviewScreen'
+import QuickCaptureDialog from './components/QuickCaptureDialog'
 import AuthScreen from './components/AuthScreen'
 import { supabase } from './lib/supabase'
 import { useStore } from './store'
@@ -41,6 +42,7 @@ export default function App() {
   const isLoading = useStore(s => s.isLoading)
   const tasks = useStore(s => s.tasks)
   const toggleDone = useStore(s => s.toggleDone)
+  const openQuickCapture = useStore(s => s.openQuickCapture)
 
   const [session, setSession] = useState<Session | null>(null)
   const [authReady, setAuthReady] = useState(false)
@@ -142,11 +144,13 @@ export default function App() {
             <FloatingNav
               onShowAbout={() => setShowAbout(true)}
               onShowFeatures={() => setShowFeatures(true)}
+              onOpenQuickCapture={openQuickCapture}
             />
           </>
         )}
       </div>
       {showReview && <ReviewScreen onClose={() => setShowReview(false)} />}
+      <QuickCaptureDialog />
       {showAbout && <AboutScreen onClose={() => setShowAbout(false)} />}
       {showFeatures && <FeaturesScreen onClose={() => setShowFeatures(false)} />}
       {rolloverToast && (
