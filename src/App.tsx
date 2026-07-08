@@ -7,6 +7,7 @@ import WeekHeader from './components/WeekHeader'
 import WeekGrid from './components/WeekGrid'
 import ReviewScreen from './components/ReviewScreen'
 import QuickCaptureDialog from './components/QuickCaptureDialog'
+import KeyboardShortcutsDialog from './components/KeyboardShortcutsDialog'
 import AuthScreen from './components/AuthScreen'
 import { supabase } from './lib/supabase'
 import { useStore } from './store'
@@ -14,6 +15,7 @@ import { useRollover } from './hooks/useRollover'
 import Toast from './components/Toast'
 import AboutScreen from './components/AboutScreen'
 import FeaturesScreen from './components/FeaturesScreen'
+import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
 import { startReminderScheduler } from './lib/reminders'
 
 function TaskDragOverlay() {
@@ -87,6 +89,7 @@ export default function App() {
   const [showReview, setShowReview] = useState(false)
   const [showAbout, setShowAbout] = useState(false)
   const [showFeatures, setShowFeatures] = useState(false)
+  useGlobalShortcuts()
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -151,6 +154,7 @@ export default function App() {
       </div>
       {showReview && <ReviewScreen onClose={() => setShowReview(false)} />}
       <QuickCaptureDialog />
+      <KeyboardShortcutsDialog />
       {showAbout && <AboutScreen onClose={() => setShowAbout(false)} />}
       {showFeatures && <FeaturesScreen onClose={() => setShowFeatures(false)} />}
       {rolloverToast && (

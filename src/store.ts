@@ -6,7 +6,14 @@ import { formatDate, getWeekDays, getWeekId, getWeekStart } from './dates'
 import { getNextAvailableRecurringDate, getRecurringSeedsForWeek } from './lib/recurrence'
 import { getTopOrderForDate, resolveQuickCaptureDate } from './lib/quick-capture'
 import { playChime } from './lib/sound'
-import type { QuickCaptureDestination, Task, TaskEvent, TaskEventType, WeekReview } from './types'
+import type {
+  FocusColumnId,
+  QuickCaptureDestination,
+  Task,
+  TaskEvent,
+  TaskEventType,
+  WeekReview,
+} from './types'
 
 async function logEvent(
   taskId: string,
@@ -58,6 +65,9 @@ type State = {
   quickCaptureNotice: string | null
   backlogSearchFocused: boolean
   todayFocusActive: boolean
+  focusedColumnId: FocusColumnId
+  focusedTaskId: string | null
+  keyboardHelpOpen: boolean
 }
 
 type Actions = {
@@ -82,6 +92,12 @@ type Actions = {
   clearQuickCaptureNotice: () => void
   setBacklogSearchFocused: (focused: boolean) => void
   setTodayFocusActive: (active: boolean) => void
+  setFocusedColumn: (columnId: FocusColumnId) => void
+  setFocusedTask: (taskId: string | null) => void
+  moveFocusedTask: (direction: -1 | 1) => Promise<void>
+  openKeyboardHelp: () => void
+  closeKeyboardHelp: () => void
+  toggleTodayFocus: () => void
   createTaskFromQuickCapture: (input: {
     title: string;
     destination: QuickCaptureDestination;
@@ -102,6 +118,9 @@ export const useStore = create<State & Actions>((set, get) => ({
   quickCaptureNotice: null,
   backlogSearchFocused: false,
   todayFocusActive: false,
+  focusedColumnId: null,
+  focusedTaskId: null,
+  keyboardHelpOpen: false,
 
   loadTasks: async () => {
     const { data, error } = await supabase
@@ -286,7 +305,13 @@ export const useStore = create<State & Actions>((set, get) => ({
   },
 
   setCurrentWeekStart: async (date) => {
-    set({ currentWeekStart: date })
+    const weekDays = getWeekDays(date).map(formatDate)
+    set({
+      currentWeekStart: date,
+      todayFocusActive: weekDays.includes(formatDate(new Date()))
+        ? get().todayFocusActive
+        : false,
+    })
     await get().generateRecurringTasksForWeek(date)
   },
 
@@ -436,6 +461,34 @@ export const useStore = create<State & Actions>((set, get) => ({
   setBacklogSearchFocused: (focused) => set({ backlogSearchFocused: focused }),
 
   setTodayFocusActive: (active) => set({ todayFocusActive: active }),
+
+  setFocusedColumn: (columnId) => set({ focusedColumnId: columnId }),
+
+  setFocusedTask: (taskId) => set({ focusedTaskId: taskId }),
+
+  openKeyboardHelp: () => set({ keyboardHelpOpen: true }),
+
+  closeKeyboardHelp: () => set({ keyboardHelpOpen: false }),
+
+  toggleTodayFocus: () => {
+    const currentWeekDays = getWeekDays(get().currentWeekStart).map(formatDate)
+    const today = formatDate(new Date())
+    if (!currentWeekDays.includes(today)) return
+    set({ todayFocusActive: !get().todayFocusActive })
+  },
+
+  moveFocusedTask: async (direction) => {
+    const { focusedTaskId, tasks, currentWeekStart } = get()
+    if (!focusedTaskId) return
+    const task = tasks.find(item => item.id === focusedTaskId)
+    if (!task?.date) return
+    const weekDays = getWeekDays(currentWeekStart).map(formatDate)
+    const currentIndex = weekDays.indexOf(task.date)
+    const targetDate = weekDays[currentIndex + direction]
+    if (!targetDate) return
+    await get().moveTask(task.id, targetDate, getTopOrderForDate(tasks, targetDate))
+    set({ focusedColumnId: targetDate })
+  },
 
   createTaskFromQuickCapture: async (input) => {
     const title = input.title.trim()

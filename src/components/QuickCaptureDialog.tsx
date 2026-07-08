@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 import { getDefaultQuickCaptureDestination } from "../lib/quick-capture";
 import { useStore } from "../store";
 import type { QuickCaptureDestination } from "../types";
@@ -32,6 +33,7 @@ export default function QuickCaptureDialog() {
   const todayFocusActive = useStore((s) => s.todayFocusActive);
   const backlogSearchFocused = useStore((s) => s.backlogSearchFocused);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [title, setTitle] = useState("");
   const [selectedDestination, setSelectedDestination] = useState<QuickCaptureDestination | null>(null);
   const [note, setNote] = useState("");
@@ -44,6 +46,7 @@ export default function QuickCaptureDialog() {
   );
   const destination = selectedDestination ?? defaultDestination;
   const canSubmit = useMemo(() => title.trim().length > 0, [title]);
+  useFocusTrap(dialogRef, open);
 
   useEffect(() => {
     if (!open) return;
@@ -83,6 +86,7 @@ export default function QuickCaptureDialog() {
       onMouseDown={close}
     >
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label="Quick Capture"

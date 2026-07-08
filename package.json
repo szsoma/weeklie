@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "test:weeklie-2-1-schema": "node --test tests/weeklie-2-1-schema.test.mjs",
     "test:quick-capture": "node --test tests/quick-capture.test.mjs",
+    "test:keyboard-navigation": "node --test tests/keyboard-navigation.test.mjs",
     "test:taskrow-note-menu": "node --test tests/taskrow-note-menu.test.mjs",
     "test:taskrow-popover-menu": "node --test tests/taskrow-popover-menu.test.mjs",
     "test:input-focus-style": "node --test tests/input-focus-style.test.mjs",

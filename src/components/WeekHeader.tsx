@@ -108,6 +108,8 @@ export default function WeekHeader({ onShowReview }: Props) {
   const setCurrentWeekStart = useStore((s) => s.setCurrentWeekStart);
   const hideDone = useStore((s) => s.hideDone);
   const setHideDone = useStore((s) => s.setHideDone);
+  const todayFocusActive = useStore((s) => s.todayFocusActive);
+  const toggleTodayFocus = useStore((s) => s.toggleTodayFocus);
   const doneCount = useStore((s) => s.tasks.filter((t) => t.done).length);
   const tasks = useStore((s) => s.tasks);
   const copyLastWeekTasks = useStore((s) => s.copyLastWeekTasks);
@@ -115,6 +117,10 @@ export default function WeekHeader({ onShowReview }: Props) {
   const [isCopyingLastWeek, setIsCopyingLastWeek] = useState(false);
 
   const previousWeekStart = prevWeek(currentWeekStart);
+  const today = formatDate(new Date());
+  const visibleWeekIncludesToday = getWeekDays(currentWeekStart)
+    .map(formatDate)
+    .includes(today);
   const previousWeekDates = new Set(
     getWeekDays(previousWeekStart).map(formatDate),
   );
@@ -160,6 +166,20 @@ export default function WeekHeader({ onShowReview }: Props) {
           </button>
 
           <div className="hidden md:flex items-center gap-2">
+            <button
+              onClick={toggleTodayFocus}
+              disabled={!visibleWeekIncludesToday}
+              aria-pressed={todayFocusActive}
+              aria-label="Toggle today focus"
+              className={`relative h-8 font-mono text-[14px] uppercase rounded-md border transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 ${
+                todayFocusActive
+                  ? "bg-ink text-bg border-ink"
+                  : "border-rule-strong text-muted hover:text-ink hover:bg-ink/[0.06]"
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg`}
+            >
+              <span className="hidden md:inline px-4">Today</span>
+            </button>
+
             <button
               onClick={() => setHideDone(!hideDone)}
               aria-pressed={hideDone}
@@ -227,6 +247,19 @@ export default function WeekHeader({ onShowReview }: Props) {
 
             {menuOpen && (
               <div className="absolute right-0 top-full mt-1 z-[45] w-52 bg-surface border border-rule-strong rounded-xl shadow-lg overflow-hidden">
+                <button
+                  onClick={() => {
+                    toggleTodayFocus();
+                    setMenuOpen(false);
+                  }}
+                  disabled={!visibleWeekIncludesToday}
+                  aria-pressed={todayFocusActive}
+                  className="flex items-center gap-3 w-full px-4 py-3 font-mono text-[14px] text-ink hover:bg-ink/[0.06] disabled:opacity-40 disabled:cursor-not-allowed transition"
+                >
+                  <CalendarIcon />
+                  <span>Today</span>
+                </button>
+
                 <button
                   onClick={() => {
                     setHideDone(!hideDone);
