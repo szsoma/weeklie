@@ -4,6 +4,7 @@ import { useShallow } from "zustand/shallow";
 import { formatDate, isToday } from "../dates";
 import TaskRow from "./TaskRow";
 import NewTaskLine from "./NewTaskLine";
+import DayCheckinButton from "./DayCheckinButton";
 
 type Props = {
   date: Date;
@@ -71,9 +72,12 @@ export default function DayColumn({ date }: Props) {
             {monthName}
           </span>
         </div>
-        <span className="font-mono text-[18px] leading-none text-muted">
-          {dayName}
-        </span>
+        <div className="flex items-center gap-1">
+          <DayCheckinButton date={date} />
+          <span className="font-mono text-[18px] leading-none text-muted">
+            {dayName}
+          </span>
+        </div>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-5 md:pb-24">

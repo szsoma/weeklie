@@ -41,6 +41,8 @@ export default function App() {
   const loadTasks = useStore(s => s.loadTasks)
   const loadEvents = useStore(s => s.loadEvents)
   const loadReviews = useStore(s => s.loadReviews)
+  const loadDayCheckinsForWeek = useStore(s => s.loadDayCheckinsForWeek)
+  const currentWeekStart = useStore(s => s.currentWeekStart)
   const isLoading = useStore(s => s.isLoading)
   const tasks = useStore(s => s.tasks)
   const toggleDone = useStore(s => s.toggleDone)
@@ -67,6 +69,11 @@ export default function App() {
     loadEvents()
     loadReviews()
   }, [session, loadTasks, loadEvents, loadReviews])
+
+  useEffect(() => {
+    if (!session) return
+    loadDayCheckinsForWeek(currentWeekStart)
+  }, [session, currentWeekStart, loadDayCheckinsForWeek])
 
   useEffect(() => {
     if (!session || isLoading) return

@@ -7,6 +7,7 @@ import { getNextAvailableRecurringDate, getRecurringSeedsForWeek } from './lib/r
 import { getTopOrderForDate, resolveQuickCaptureDate } from './lib/quick-capture'
 import { playChime } from './lib/sound'
 import type {
+  DayCheckin,
   FocusColumnId,
   QuickCaptureDestination,
   Task,
@@ -58,6 +59,7 @@ type State = {
   tasks: Task[]
   events: TaskEvent[]
   reviews: WeekReview[]
+  dayCheckins: DayCheckin[]
   currentWeekStart: Date
   isLoading: boolean
   hideDone: boolean
@@ -74,6 +76,7 @@ type Actions = {
   loadTasks: () => Promise<void>
   loadEvents: () => Promise<void>
   loadReviews: () => Promise<void>
+  loadDayCheckinsForWeek: (weekStart: Date) => Promise<void>
   addTask: (title: string, date: string | null, options?: AddTaskOptions) => Promise<Task | null>
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>
   toggleDone: (id: string) => Promise<void>
@@ -98,6 +101,7 @@ type Actions = {
   openKeyboardHelp: () => void
   closeKeyboardHelp: () => void
   toggleTodayFocus: () => void
+  upsertDayCheckin: (date: string, updates: Partial<Pick<DayCheckin, 'energy' | 'mood' | 'note'>>) => Promise<void>
   createTaskFromQuickCapture: (input: {
     title: string;
     destination: QuickCaptureDestination;
@@ -111,6 +115,7 @@ export const useStore = create<State & Actions>((set, get) => ({
   tasks: [],
   events: [],
   reviews: [],
+  dayCheckins: [],
   currentWeekStart: getWeekStart(new Date()),
   isLoading: true,
   hideDone: readHideDone(),
@@ -153,6 +158,22 @@ export const useStore = create<State & Actions>((set, get) => ({
       return
     }
     set({ reviews: (data as WeekReview[]) ?? [] })
+  },
+
+  loadDayCheckinsForWeek: async (weekStart) => {
+    const days = getWeekDays(weekStart).map(formatDate)
+    const { data, error } = await supabase
+      .from('day_checkins')
+      .select('*')
+      .gte('date', days[0])
+      .lte('date', days[6])
+
+    if (error) {
+      console.error('loadDayCheckinsForWeek failed', error)
+      return
+    }
+
+    set({ dayCheckins: (data as DayCheckin[]) ?? [] })
   },
 
   addTask: async (title, date, options = {}) => {
@@ -489,6 +510,44 @@ export const useStore = create<State & Actions>((set, get) => ({
     if (!targetDate) return
     await get().moveTask(task.id, targetDate, getTopOrderForDate(tasks, targetDate))
     set({ focusedColumnId: targetDate })
+  },
+
+  upsertDayCheckin: async (date, updates) => {
+    const prev = get().dayCheckins
+    const existing = prev.find(checkin => checkin.date === date)
+    const now = new Date().toISOString()
+    const optimistic = existing
+      ? { ...existing, ...updates, updated_at: now }
+      : {
+          id: `pending-${date}`,
+          user_id: '',
+          date,
+          energy: updates.energy ?? null,
+          mood: updates.mood ?? null,
+          note: updates.note ?? null,
+          created_at: now,
+          updated_at: now,
+        }
+
+    set({ dayCheckins: prev.filter(checkin => checkin.date !== date).concat(optimistic as DayCheckin) })
+
+    const { data, error } = await supabase
+      .from('day_checkins')
+      .upsert({ date, ...updates }, { onConflict: 'user_id,date' })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('upsertDayCheckin failed', error)
+      set({ dayCheckins: prev })
+      return
+    }
+
+    set({
+      dayCheckins: get().dayCheckins
+        .filter(checkin => checkin.date !== date)
+        .concat(data as DayCheckin),
+    })
   },
 
   createTaskFromQuickCapture: async (input) => {
