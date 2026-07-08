@@ -38,6 +38,8 @@ export default function DayColumn({ date }: Props) {
       tabIndex={0}
       onFocus={() => setFocusedColumn(dateKey)}
       onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return;
+
         if (event.key === "Enter") {
           event.preventDefault();
           document

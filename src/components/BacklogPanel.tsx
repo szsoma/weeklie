@@ -35,6 +35,29 @@ export default function BacklogPanel() {
       data-column-id="backlog"
       tabIndex={0}
       onFocus={() => setFocusedColumn("backlog")}
+      onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return;
+
+        if (event.key === "Enter") {
+          event.preventDefault();
+          document
+            .querySelector<HTMLInputElement>('[data-new-task-column="backlog"]')
+            ?.focus();
+        }
+        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+          event.preventDefault();
+          const columns = Array.from(document.querySelectorAll<HTMLElement>("[data-column-id]"));
+          const currentIndex = columns.findIndex((column) => column.dataset.columnId === "backlog");
+          const next = columns[currentIndex + (event.key === "ArrowRight" ? 1 : -1)];
+          next?.focus();
+        }
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          document
+            .querySelector<HTMLElement>('[data-task-column="backlog"]')
+            ?.focus();
+        }
+      }}
       className="weeklie-focus-ring bg-bg flex flex-col min-h-[18rem] md:min-h-0 md:h-full"
     >
       <div className="flex items-center gap-2 px-4 sm:px-6 md:px-2 min-h-[44px] border-b border-rule">

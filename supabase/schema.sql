@@ -70,18 +70,20 @@ create table if not exists public.habits (
   color text,
   archived boolean not null default false,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  unique (id, user_id)
 );
 
 create table if not exists public.habit_entries (
   id uuid primary key default gen_random_uuid(),
-  habit_id uuid references public.habits(id) on delete cascade not null,
+  habit_id uuid not null,
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   date date not null,
   completed boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  unique (habit_id, date)
+  unique (habit_id, date),
+  foreign key (habit_id, user_id) references public.habits (id, user_id) on delete cascade
 );
 
 create table if not exists public.day_checkins (

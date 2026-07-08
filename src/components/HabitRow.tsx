@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { formatDate } from "../dates";
 import { useStore } from "../store";
 import type { Habit } from "../types";
@@ -10,7 +10,11 @@ type Props = {
 
 export default function HabitRow({ habit, days }: Props) {
   const [expanded, setExpanded] = useState(false);
-  const entries = useStore((s) => s.habitEntries.filter((entry) => entry.habit_id === habit.id));
+  const habitEntries = useStore((s) => s.habitEntries);
+  const entries = useMemo(
+    () => habitEntries.filter((entry) => entry.habit_id === habit.id),
+    [habit.id, habitEntries],
+  );
   const toggleHabitEntry = useStore((s) => s.toggleHabitEntry);
   const archiveHabit = useStore((s) => s.archiveHabit);
   const completedCount = entries.filter((entry) => entry.completed).length;

@@ -31,10 +31,14 @@ test("habit insights summarize completion and consistency", () => {
 test("habit UI supports creation toggling and archiving", () => {
   assert.match(tracker, /Habits/);
   assert.match(tracker, /<HabitAddInput/);
+  assert.match(tracker, /useMemo/);
+  assert.doesNotMatch(tracker, /useStore\(\(s\) => s\.habits\.filter/);
   assert.match(row, /toggleHabitEntry/);
   assert.match(row, /archiveHabit/);
   assert.match(row, /completedCount/);
   assert.match(row, /aria-expanded/);
+  assert.match(row, /useMemo/);
+  assert.doesNotMatch(row, /useStore\(\(s\) => s\.habitEntries\.filter/);
   assert.match(addInput, /Add habit/);
 });
 

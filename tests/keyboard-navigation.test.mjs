@@ -62,10 +62,13 @@ test("columns and new task inputs expose focus targets", () => {
   assert.match(dayColumn, /tabIndex=\{0\}/);
   assert.match(dayColumn, /data-column-id/);
   assert.match(dayColumn, /setFocusedColumn/);
+  assert.match(dayColumn, /event\.target !== event\.currentTarget/);
   assert.match(dayColumn, /event\.key === "ArrowLeft"/);
   assert.match(dayColumn, /event\.key === "ArrowRight"/);
   assert.match(dayColumn, /event\.key === "ArrowDown"/);
   assert.match(backlog, /setFocusedColumn\("backlog"\)/);
+  assert.match(backlog, /onKeyDown/);
+  assert.match(backlog, /data-new-task-column="backlog"/);
   assert.match(newTaskLine, /data-new-task-column/);
   assert.match(weekGrid, /todayFocusActive/);
 });
@@ -84,4 +87,5 @@ test("task rows expose keyboard task actions", () => {
   assert.match(taskRow, /event\.key === "ArrowRight"/);
   assert.match(taskRow, /event\.shiftKey && event\.key === "ArrowLeft"/);
   assert.match(taskRow, /event\.shiftKey && event\.key === "ArrowRight"/);
+  assert.match(taskRow, /event\.stopPropagation\(\)/);
 });

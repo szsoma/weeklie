@@ -9,6 +9,9 @@ test("Weeklie 2.1 schema defines persisted habit and check-in tables", () => {
   assert.match(schema, /create table if not exists public\.habits/);
   assert.match(schema, /create table if not exists public\.habit_entries/);
   assert.match(schema, /create table if not exists public\.day_checkins/);
+  assert.match(schema, /unique \(id, user_id\)/);
+  assert.match(schema, /foreign key \(habit_id, user_id\)/);
+  assert.match(schema, /references public\.habits \(id, user_id\)/);
   assert.match(schema, /unique \(habit_id, date\)/);
   assert.match(schema, /unique \(user_id, date\)/);
   assert.match(schema, /check \(energy is null or energy between 1 and 5\)/);

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { getWeekDays } from "../dates";
 import { useStore } from "../store";
 import HabitAddInput from "./HabitAddInput";
@@ -5,7 +6,11 @@ import HabitRow from "./HabitRow";
 
 export default function HabitTracker() {
   const currentWeekStart = useStore((s) => s.currentWeekStart);
-  const habits = useStore((s) => s.habits.filter((habit) => !habit.archived));
+  const allHabits = useStore((s) => s.habits);
+  const habits = useMemo(
+    () => allHabits.filter((habit) => !habit.archived),
+    [allHabits],
+  );
   const days = getWeekDays(currentWeekStart);
 
   return (

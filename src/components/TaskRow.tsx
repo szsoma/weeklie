@@ -199,27 +199,32 @@ export default function TaskRow({ task }: Props) {
 
         if (event.key === "Enter") {
           event.preventDefault();
+          event.stopPropagation();
           setEditTitle(task.title);
           setIsEditing(true);
         }
 
         if (event.key === " ") {
           event.preventDefault();
+          event.stopPropagation();
           toggleDone(task.id);
         }
 
         if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && !task.done) {
           event.preventDefault();
+          event.stopPropagation();
           toggleDone(task.id);
         }
 
         if (event.key === "Backspace") {
           event.preventDefault();
+          event.stopPropagation();
           if (window.confirm("Delete this task?")) deleteTask(task.id);
         }
 
         if (event.key === "ArrowUp" || event.key === "ArrowDown") {
           event.preventDefault();
+          event.stopPropagation();
           const rows = Array.from(document.querySelectorAll<HTMLElement>("[data-task-id]"));
           const currentIndex = rows.findIndex((row) => row.dataset.taskId === task.id);
           const next = rows[currentIndex + (event.key === "ArrowDown" ? 1 : -1)];
@@ -228,6 +233,7 @@ export default function TaskRow({ task }: Props) {
 
         if (!event.shiftKey && (event.key === "ArrowLeft" || event.key === "ArrowRight")) {
           event.preventDefault();
+          event.stopPropagation();
           const columns = Array.from(document.querySelectorAll<HTMLElement>("[data-column-id]"));
           const currentColumnId = task.date ?? "backlog";
           const currentIndex = columns.findIndex((column) => column.dataset.columnId === currentColumnId);
@@ -237,11 +243,13 @@ export default function TaskRow({ task }: Props) {
 
         if (event.shiftKey && event.key === "ArrowLeft") {
           event.preventDefault();
+          event.stopPropagation();
           moveFocusedTask(-1);
         }
 
         if (event.shiftKey && event.key === "ArrowRight") {
           event.preventDefault();
+          event.stopPropagation();
           moveFocusedTask(1);
         }
       }}
