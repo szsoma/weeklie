@@ -83,6 +83,7 @@ type Actions = {
   loadDayCheckinsForWeek: (weekStart: Date) => Promise<void>
   loadHabitsForWeek: (weekStart: Date) => Promise<void>
   loadHabitEntriesForWeek: (weekStart: Date) => Promise<void>
+  clearSessionData: () => void
   addTask: (title: string, date: string | null, options?: AddTaskOptions) => Promise<Task | null>
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>
   toggleDone: (id: string) => Promise<void>
@@ -216,6 +217,23 @@ export const useStore = create<State & Actions>((set, get) => ({
 
     set({ habitEntries: (data as HabitEntry[]) ?? [] })
   },
+
+  clearSessionData: () => set({
+    tasks: [],
+    events: [],
+    reviews: [],
+    habits: [],
+    habitEntries: [],
+    dayCheckins: [],
+    quickCaptureOpen: false,
+    quickCaptureNotice: null,
+    backlogSearchFocused: false,
+    todayFocusActive: false,
+    focusedColumnId: null,
+    focusedTaskId: null,
+    keyboardHelpOpen: false,
+    isLoading: false,
+  }),
 
   addTask: async (title, date, options = {}) => {
     const tasks = get().tasks
@@ -587,7 +605,7 @@ export const useStore = create<State & Actions>((set, get) => ({
     set({
       dayCheckins: get().dayCheckins
         .filter(checkin => checkin.date !== date)
-      .concat(data as DayCheckin),
+        .concat(data as DayCheckin),
     })
   },
 

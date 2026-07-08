@@ -50,6 +50,7 @@ export default function App() {
   const tasks = useStore(s => s.tasks)
   const toggleDone = useStore(s => s.toggleDone)
   const openQuickCapture = useStore(s => s.openQuickCapture)
+  const clearSessionData = useStore(s => s.clearSessionData)
 
   const [session, setSession] = useState<Session | null>(null)
   const [authReady, setAuthReady] = useState(false)
@@ -57,14 +58,16 @@ export default function App() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
+      if (!data.session) clearSessionData()
       setAuthReady(true)
     })
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s)
+      if (!s) clearSessionData()
       setAuthReady(true)
     })
     return () => sub.subscription.unsubscribe()
-  }, [])
+  }, [clearSessionData])
 
   useEffect(() => {
     if (!session) return

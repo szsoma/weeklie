@@ -111,6 +111,10 @@
 }
 
 @layer components {
+  .weeklie-focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/15 focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
+  }
+
   .task-settings-popover {
     position: fixed;
     inset: 50% auto auto 50%;

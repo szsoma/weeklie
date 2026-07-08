@@ -58,7 +58,7 @@ export default function DayColumn({ date }: Props) {
             ?.focus();
         }
       }}
-      className={`relative flex flex-col min-h-0 md:h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-inset ${today ? "bg-today" : "bg-bg"}`}
+      className={`weeklie-focus-ring relative flex flex-col min-h-0 md:h-full ${today ? "bg-today" : "bg-bg"}`}
     >
       <div
         className="sticky top-0 z-10 md:static px-2 min-h-[44px] flex items-center justify-between gap-2 border-b border-rule"

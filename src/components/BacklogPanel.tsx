@@ -35,7 +35,7 @@ export default function BacklogPanel() {
       data-column-id="backlog"
       tabIndex={0}
       onFocus={() => setFocusedColumn("backlog")}
-      className="bg-bg flex flex-col min-h-[18rem] md:min-h-0 md:h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/10 focus-visible:ring-inset"
+      className="weeklie-focus-ring bg-bg flex flex-col min-h-[18rem] md:min-h-0 md:h-full"
     >
       <div className="flex items-center gap-2 px-4 sm:px-6 md:px-2 min-h-[44px] border-b border-rule">
         <h2 className="font-mono font-semibold text-[18px] uppercase tracking-[-0.02em] text-muted">
