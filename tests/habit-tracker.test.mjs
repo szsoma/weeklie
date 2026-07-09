@@ -90,3 +90,12 @@ test("HabitRepeatPopover renders preset and custom controls", () => {
   assert.match(popover, /target_per_period/);
   assert.match(popover, /upsertHabitTemplate/);
 });
+
+const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+
+test("App loads habits and starts scheduler", () => {
+  assert.match(app, /loadHabitTemplates/);
+  assert.match(app, /loadHabitInstancesForWeek/);
+  assert.match(app, /generateHabitInstancesForWeek/);
+  assert.match(app, /startWeeklyHabitScheduler/);
+});

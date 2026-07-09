@@ -17,6 +17,7 @@ import WeekHeader from './components/WeekHeader'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
 import { useRollover } from './hooks/useRollover'
 import { startReminderScheduler } from './lib/reminders'
+import { startWeeklyHabitScheduler } from './lib/scheduler'
 import { supabase } from './lib/supabase'
 import { useStore } from './store'
 
@@ -61,6 +62,9 @@ function AuthenticatedApp() {
   const loadEvents = useStore(s => s.loadEvents)
   const loadReviews = useStore(s => s.loadReviews)
   const loadDayCheckinsForWeek = useStore(s => s.loadDayCheckinsForWeek)
+  const loadHabitTemplates = useStore(s => s.loadHabitTemplates)
+  const loadHabitInstancesForWeek = useStore(s => s.loadHabitInstancesForWeek)
+  const generateHabitInstancesForWeek = useStore(s => s.generateHabitInstancesForWeek)
   const currentWeekStart = useStore(s => s.currentWeekStart)
   const isLoading = useStore(s => s.isLoading)
   const tasks = useStore(s => s.tasks)
@@ -107,6 +111,23 @@ function AuthenticatedApp() {
     if (!session || isLoading) return
     return startReminderScheduler(() => useStore.getState().tasks)
   }, [session, isLoading, tasks])
+
+  useEffect(() => {
+    if (!session) return
+    const run = async () => {
+      await loadHabitTemplates()
+      await loadHabitInstancesForWeek(currentWeekStart)
+      await generateHabitInstancesForWeek(currentWeekStart)
+    }
+    run()
+  }, [session, currentWeekStart, loadHabitTemplates, loadHabitInstancesForWeek, generateHabitInstancesForWeek])
+
+  useEffect(() => {
+    if (!session) return
+    return startWeeklyHabitScheduler((weekStart) => {
+      generateHabitInstancesForWeek(weekStart)
+    })
+  }, [session, generateHabitInstancesForWeek])
 
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return
