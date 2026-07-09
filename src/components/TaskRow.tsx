@@ -2,7 +2,10 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useDraggable } from "@dnd-kit/core";
 import { REMINDER_PRESET_TIMES, requestReminderPermission } from "../lib/reminders";
+import { getWeekStart } from "../dates";
+import { formatRecurrenceSummary } from "../lib/habits";
 import { useStore } from "../store";
+import HabitRepeatPopover from "./HabitRepeatPopover";
 import type { Task } from "../types";
 import type { ReactNode } from "react";
 
@@ -13,12 +16,6 @@ const COLOR_MAP: Record<string, string> = {
   yellow: "#eab308",
   green: "#22c55e",
 };
-
-const RECURRENCE_OPTIONS = [
-  { value: null, label: "None" },
-  { value: "daily", label: "Daily" },
-  { value: "weekly", label: "Weekly" },
-] as const;
 
 type ColorToken = (typeof COLOR_TOKENS)[number];
 
@@ -140,6 +137,11 @@ function ClockIcon() {
   );
 }
 
+function getHabitPopoverBaseDate(task: Task): Date {
+  if (task.date) return new Date(`${task.date}T00:00:00`)
+  return getWeekStart(new Date())
+}
+
 export default function TaskRow({ task }: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
@@ -158,6 +160,8 @@ export default function TaskRow({ task }: Props) {
   const setFocusedTask = useStore((s) => s.setFocusedTask);
   const setFocusedColumn = useStore((s) => s.setFocusedColumn);
   const moveFocusedTask = useStore((s) => s.moveFocusedTask);
+  const habitTemplates = useStore((s) => s.habitTemplates);
+  const template = habitTemplates.find((t) => t.task_id === task.id && t.active);
 
   useEffect(() => {
     if (isEditing) inputRef.current?.focus();
@@ -219,13 +223,6 @@ export default function TaskRow({ task }: Props) {
       }
     },
     [task.color, task.id, updateTask],
-  );
-
-  const selectRecurrence = useCallback(
-    (recurrence: Task["recurrence"]) => {
-      updateTask(task.id, { recurrence });
-    },
-    [task.id, updateTask],
   );
 
   const selectDueTime = useCallback(
@@ -561,23 +558,17 @@ export default function TaskRow({ task }: Props) {
             </section>
 
             <SettingsSection label="Repeat">
-              <div className="grid grid-cols-3 gap-2">
-                {RECURRENCE_OPTIONS.map((option) => (
-                  <button
-                    key={option.label}
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      selectRecurrence(option.value);
-                    }}
-                    className={getSettingsChoiceClassName(
-                      task.recurrence === option.value,
-                      "px-3 py-2 text-xs",
-                    )}
-                  >
-                    <span>{option.label}</span>
-                  </button>
-                ))}
+              <div className="rounded-xl border border-rule bg-bg/40 p-3">
+                <div className="mb-3 text-sm text-muted">
+                  {template
+                    ? formatRecurrenceSummary(template.recurrence)
+                    : "Never"}
+                </div>
+                <HabitRepeatPopover
+                  taskId={task.id}
+                  baseDate={getHabitPopoverBaseDate(task)}
+                  periodStart={task.date ? getWeekStart(getHabitPopoverBaseDate(task)) : getWeekStart(new Date())}
+                />
               </div>
             </SettingsSection>
 
