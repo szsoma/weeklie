@@ -16,7 +16,15 @@ function Hamburger() {
   );
 }
 
-export default function SiteHeader() {
+type Props = {
+  isAuthenticated?: boolean;
+  onLogout?: () => void;
+};
+
+export default function SiteHeader({
+  isAuthenticated = false,
+  onLogout,
+}: Props) {
   const [open, setOpen] = useState(false);
 
   const linkClass =
@@ -53,18 +61,32 @@ export default function SiteHeader() {
           <a href="#features" className={linkClass}>
             Features
           </a>
-          <a
-            href="#login"
-            className="font-mono text-[13px] uppercase hover:opacity-80 transition"
-          >
-            Login
-          </a>
-          <a
-            href="#signup"
-            className="font-mono text-[13px] uppercase h-9 px-4 inline-flex items-center bg-bg text-ink rounded-md hover:opacity-80 active:scale-[0.98] transition"
-          >
-            Sign up
-          </a>
+          {isAuthenticated ? (
+            <button
+              type="button"
+              onClick={() => onLogout?.()}
+              className="font-mono text-[13px] uppercase hover:opacity-80 transition"
+            >
+              Logout
+            </button>
+          ) : (
+            <>
+              <a
+                href="#login"
+                className="font-mono text-[13px] uppercase hover:opacity-80 transition"
+              >
+                Login
+              </a>
+              {!isAuthenticated && (
+                <a
+                  href="#signup"
+                  className="font-mono text-[13px] uppercase h-9 px-4 inline-flex items-center bg-bg text-ink rounded-md hover:opacity-80 active:scale-[0.98] transition"
+                >
+                  Sign up
+                </a>
+              )}
+            </>
+          )}
         </nav>
 
         {/* Mobile hamburger */}
@@ -107,20 +129,37 @@ export default function SiteHeader() {
           <div className="h-px bg-bg/10 my-2" />
 
           <div className="flex items-center gap-3">
-            <a
-              href="#login"
-              onClick={() => setOpen(false)}
-              className="flex-1 font-mono text-[13px] uppercase h-10 px-4 inline-flex items-center justify-center rounded-md border border-bg/20 hover:bg-bg/10 active:scale-[0.98] transition"
-            >
-              Login
-            </a>
-            <a
-              href="#signup"
-              onClick={() => setOpen(false)}
-              className="flex-1 font-mono text-[13px] uppercase h-10 px-4 inline-flex items-center justify-center bg-bg text-ink rounded-md hover:opacity-80 active:scale-[0.98] transition"
-            >
-              Sign up
-            </a>
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={() => {
+                  onLogout?.();
+                  setOpen(false);
+                }}
+                className="flex-1 font-mono text-[13px] uppercase h-10 px-4 inline-flex items-center justify-center rounded-md border border-bg/20 hover:bg-bg/10 active:scale-[0.98] transition"
+              >
+                Logout
+              </button>
+            ) : (
+              <>
+                <a
+                  href="#login"
+                  onClick={() => setOpen(false)}
+                  className="flex-1 font-mono text-[13px] uppercase h-10 px-4 inline-flex items-center justify-center rounded-md border border-bg/20 hover:bg-bg/10 active:scale-[0.98] transition"
+                >
+                  Login
+                </a>
+                {!isAuthenticated && (
+                  <a
+                    href="#signup"
+                    onClick={() => setOpen(false)}
+                    className="flex-1 font-mono text-[13px] uppercase h-10 px-4 inline-flex items-center justify-center bg-bg text-ink rounded-md hover:opacity-80 active:scale-[0.98] transition"
+                  >
+                    Sign up
+                  </a>
+                )}
+              </>
+            )}
           </div>
         </div>
       </nav>

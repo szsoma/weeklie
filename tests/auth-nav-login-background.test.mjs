@@ -27,7 +27,7 @@ test("FloatingNav swaps login and signup for logout when authenticated", () => {
   assert.match(floatingNavSource, /isAuthenticated\?: boolean/);
   assert.match(floatingNavSource, /onLogout\?: \(\) => void/);
   assert.match(floatingNavSource, /isAuthenticated \? \(/);
-  assert.match(floatingNavSource, />Logout</);
+  assert.match(floatingNavSource, />\s*Logout\s*</);
   assert.match(floatingNavSource, /onLogout\?\.\(\)/);
   assert.match(floatingNavSource, /!\s*isAuthenticated && \(/);
 });
@@ -36,7 +36,7 @@ test("SiteHeader supports the same authenticated auth actions", () => {
   assert.match(siteHeaderSource, /isAuthenticated\?: boolean/);
   assert.match(siteHeaderSource, /onLogout\?: \(\) => void/);
   assert.match(siteHeaderSource, /isAuthenticated \? \(/);
-  assert.match(siteHeaderSource, />Logout</);
+  assert.match(siteHeaderSource, />\s*Logout\s*</);
   assert.match(siteHeaderSource, /onLogout\?\.\(\)/);
   assert.match(siteHeaderSource, /!\s*isAuthenticated && \(/);
 });

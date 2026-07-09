@@ -146,6 +146,13 @@ function AuthenticatedApp() {
     moveTask(taskId, targetDate, targetOrder)
   }
 
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      console.error('Failed to sign out', error)
+    }
+  }
+
   if (!authReady) {
     return (
       <div className="h-[100dvh] grid place-items-center">
@@ -176,6 +183,8 @@ function AuthenticatedApp() {
             />
             <WeekGrid />
             <FloatingNav
+              isAuthenticated={Boolean(session)}
+              onLogout={handleLogout}
               onShowAbout={() => setShowAbout(true)}
               onShowFeatures={() => setShowFeatures(true)}
               onOpenQuickCapture={openQuickCapture}
