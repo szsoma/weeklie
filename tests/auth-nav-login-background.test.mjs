@@ -26,19 +26,23 @@ test("App owns logout and passes authenticated nav props", () => {
 test("FloatingNav swaps login and signup for logout when authenticated", () => {
   assert.match(floatingNavSource, /isAuthenticated\?: boolean/);
   assert.match(floatingNavSource, /onLogout\?: \(\) => void/);
-  assert.match(floatingNavSource, /isAuthenticated \? \(/);
-  assert.match(floatingNavSource, />\s*Logout\s*</);
+  assert.match(
+    floatingNavSource,
+    /isAuthenticated \? \([\s\S]*>\s*Logout\s*<[\s\S]*\) : \([\s\S]*href="#login"[\s\S]*href="#signup"/,
+  );
   assert.match(floatingNavSource, /onLogout\?\.\(\)/);
-  assert.match(floatingNavSource, /!\s*isAuthenticated && \(/);
+  assert.doesNotMatch(floatingNavSource, /!\s*isAuthenticated && \(/);
 });
 
 test("SiteHeader supports the same authenticated auth actions", () => {
   assert.match(siteHeaderSource, /isAuthenticated\?: boolean/);
   assert.match(siteHeaderSource, /onLogout\?: \(\) => void/);
-  assert.match(siteHeaderSource, /isAuthenticated \? \(/);
-  assert.match(siteHeaderSource, />\s*Logout\s*</);
+  assert.match(
+    siteHeaderSource,
+    /isAuthenticated \? \([\s\S]*>\s*Logout\s*<[\s\S]*\) : \([\s\S]*href="#login"[\s\S]*href="#signup"/,
+  );
   assert.match(siteHeaderSource, /onLogout\?\.\(\)/);
-  assert.match(siteHeaderSource, /!\s*isAuthenticated && \(/);
+  assert.doesNotMatch(siteHeaderSource, /!\s*isAuthenticated && \(/);
 });
 
 test("AuthScreen uses the supplied full-screen image and blurred white panel", () => {

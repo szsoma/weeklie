@@ -165,15 +165,13 @@ export default function FloatingNav({
               >
                 Login
               </a>
-              {!isAuthenticated && (
-                <a
-                  href="#signup"
-                  onClick={() => setOpen(false)}
-                  className={linkClass}
-                >
-                  Sign up
-                </a>
-              )}
+              <a
+                href="#signup"
+                onClick={() => setOpen(false)}
+                className={linkClass}
+              >
+                Sign up
+              </a>
             </>
           )}
         </div>

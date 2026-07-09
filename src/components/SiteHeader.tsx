@@ -77,14 +77,12 @@ export default function SiteHeader({
               >
                 Login
               </a>
-              {!isAuthenticated && (
-                <a
-                  href="#signup"
-                  className="font-mono text-[13px] uppercase h-9 px-4 inline-flex items-center bg-bg text-ink rounded-md hover:opacity-80 active:scale-[0.98] transition"
-                >
-                  Sign up
-                </a>
-              )}
+              <a
+                href="#signup"
+                className="font-mono text-[13px] uppercase h-9 px-4 inline-flex items-center bg-bg text-ink rounded-md hover:opacity-80 active:scale-[0.98] transition"
+              >
+                Sign up
+              </a>
             </>
           )}
         </nav>
@@ -149,15 +147,13 @@ export default function SiteHeader({
                 >
                   Login
                 </a>
-                {!isAuthenticated && (
-                  <a
-                    href="#signup"
-                    onClick={() => setOpen(false)}
-                    className="flex-1 font-mono text-[13px] uppercase h-10 px-4 inline-flex items-center justify-center bg-bg text-ink rounded-md hover:opacity-80 active:scale-[0.98] transition"
-                  >
-                    Sign up
-                  </a>
-                )}
+                <a
+                  href="#signup"
+                  onClick={() => setOpen(false)}
+                  className="flex-1 font-mono text-[13px] uppercase h-10 px-4 inline-flex items-center justify-center bg-bg text-ink rounded-md hover:opacity-80 active:scale-[0.98] transition"
+                >
+                  Sign up
+                </a>
               </>
             )}
           </div>
