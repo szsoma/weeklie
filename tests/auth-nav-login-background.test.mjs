@@ -52,3 +52,14 @@ test("AuthScreen uses the supplied full-screen image and blurred white panel", (
   assert.match(authScreenSource, /bg-white\/80/);
   assert.match(authScreenSource, /backdrop-blur/);
 });
+
+test("AuthScreen pins light theme tokens on the white login panel", () => {
+  assert.match(authScreenSource, /"--bg": "#fffdfc"/);
+  assert.match(authScreenSource, /"--surface": "#fff"/);
+  assert.match(authScreenSource, /"--ink": "#1a1a1a"/);
+  assert.match(authScreenSource, /"--muted": "#514b3f"/);
+  assert.match(authScreenSource, /"--faint": "#6f6657"/);
+  assert.match(authScreenSource, /"--rule": "rgba\(26, 26, 26, 0\.12\)"/);
+  assert.match(authScreenSource, /"--rule-strong": "rgba\(26, 26, 26, 0\.22\)"/);
+  assert.match(authScreenSource, /as React\.CSSProperties/);
+});

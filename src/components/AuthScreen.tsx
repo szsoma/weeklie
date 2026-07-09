@@ -206,7 +206,18 @@ export default function AuthScreen() {
       className="min-h-[100dvh] flex items-center justify-center bg-cover bg-center px-4 py-8 sm:px-6"
       style={{ backgroundImage: "url('/hero-bg-p-2600.jpg')" }}
     >
-      <div className="w-full max-w-sm rounded-2xl border border-white/60 bg-white/80 p-6 text-ink shadow-[0_24px_80px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:p-8">
+      <div
+        className="w-full max-w-sm rounded-2xl border border-white/60 bg-white/80 p-6 text-ink shadow-[0_24px_80px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:p-8"
+        style={{
+          "--bg": "#fffdfc",
+          "--surface": "#fff",
+          "--ink": "#1a1a1a",
+          "--muted": "#514b3f",
+          "--faint": "#6f6657",
+          "--rule": "rgba(26, 26, 26, 0.12)",
+          "--rule-strong": "rgba(26, 26, 26, 0.22)",
+        } as React.CSSProperties}
+      >
         <h1 className="mb-2">
           <img
             src="/weekly-logo.svg"
