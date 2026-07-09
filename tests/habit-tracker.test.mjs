@@ -77,3 +77,16 @@ test("generateHabitInstancesForWeek skips past dates", () => {
   assert.match(store, /dateKey < todayKey/);
   assert.match(store, /continue/);
 });
+
+const popover = readFileSync(new URL("../src/components/HabitRepeatPopover.tsx", import.meta.url), "utf8");
+
+test("HabitRepeatPopover renders preset and custom controls", () => {
+  assert.match(popover, /Never/);
+  assert.match(popover, /Daily/);
+  assert.match(popover, /Weekly/);
+  assert.match(popover, /Biweekly/);
+  assert.match(popover, /Custom/);
+  assert.match(popover, /byWeekdays/);
+  assert.match(popover, /target_per_period/);
+  assert.match(popover, /upsertHabitTemplate/);
+});
