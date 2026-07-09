@@ -234,7 +234,6 @@ export type RecurrencePreset =
   | 'weekdays'
   | 'weekends'
   | 'weekly'
-  | 'biweekly'
   | 'monthly'
   | 'yearly'
   | 'custom';
@@ -355,10 +354,6 @@ export function presetToRule(
 
   if (preset === 'weekly') {
     return { freq: 'weekly', interval: 1, byWeekdays: [baseDate.getDay()] }
-  }
-
-  if (preset === 'biweekly') {
-    return { freq: 'weekly', interval: 2, byWeekdays: [baseDate.getDay()] }
   }
 
   if (preset === 'monthly') {
@@ -930,7 +925,6 @@ const PRESETS: { value: RecurrencePreset; label: string }[] = [
   { value: "weekdays", label: "Weekdays" },
   { value: "weekends", label: "Weekends" },
   { value: "weekly", label: "Weekly" },
-  { value: "biweekly", label: "Biweekly" },
   { value: "monthly", label: "Monthly" },
   { value: "yearly", label: "Yearly" },
   { value: "custom", label: "Custom..." },

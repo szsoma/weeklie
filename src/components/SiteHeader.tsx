@@ -33,24 +33,17 @@ export default function SiteHeader({
   return (
     <header className="bg-ink text-bg">
       <div className="flex items-center justify-between px-4 md:px-10 py-4">
-        {/* Wordmark — checkmark glyph + terminal-style underscore cursor */}
+        {/* Wordmark */}
         <a
           href="#"
-          className="inline-flex items-center gap-1 font-mono font-semibold text-[16px] md:text-[16px] tracking-tight text-bg whitespace-nowrap shrink-0 hover:opacity-80 transition"
+          className="inline-flex items-center shrink-0 hover:opacity-80 transition"
+          aria-label="Weekly"
         >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-[16px] h-[16px] md:w-[18px] md:h-[18px]"
-            aria-hidden
-          >
-            <path d="M5 12.5l4.5 4.5L19 7" />
-          </svg>
-          <span className="opacity-50">_</span>Weekly
+          <img
+            src="/weekly-logo.svg"
+            alt="Weekly"
+            className="h-[20px] md:h-[22px] w-auto"
+          />
         </a>
 
         {/* Desktop nav — section anchors + auth actions */}

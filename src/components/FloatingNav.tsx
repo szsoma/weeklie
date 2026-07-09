@@ -29,23 +29,6 @@ function Hamburger({ open }: { open: boolean }) {
   );
 }
 
-function Checkmark() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-[18px] h-[18px] shrink-0"
-      aria-hidden
-    >
-      <path d="M5 12.5l4.5 4.5L19 7" />
-    </svg>
-  );
-}
-
 const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
   { value: "system", label: "System" },
   { value: "light", label: "Light" },
@@ -189,10 +172,14 @@ export default function FloatingNav({
           {/* Wordmark */}
           <a
             href="#"
-            className="inline-flex items-center gap-1 font-mono font-semibold text-[16px] tracking-tight text-bg whitespace-nowrap shrink-0 hover:opacity-80 transition"
+            className="inline-flex items-center shrink-0 hover:opacity-80 transition"
+            aria-label="Weekly"
           >
-            <Checkmark />
-            <span className="opacity-50">_</span>Weekly
+            <img
+              src="/weekly-logo.svg"
+              alt="Weekly"
+              className="h-[20px] w-auto"
+            />
           </a>
 
           {/* Burger button */}

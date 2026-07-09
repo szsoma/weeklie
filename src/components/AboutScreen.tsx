@@ -26,8 +26,12 @@ export default function AboutScreen({ onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-mono font-semibold text-[20px] tracking-tight">
-            <span className="opacity-50">_</span>Weekly
+          <h2 className="tracking-tight">
+            <img
+              src="/weekly-logo.svg"
+              alt="Weekly"
+              className="h-[24px] w-auto"
+            />
           </h2>
           <button
             type="button"

@@ -220,7 +220,7 @@ export default function AuthScreen() {
       >
         <h1 className="mb-2">
           <img
-            src="/weekly-logo.svg"
+            src="/weekly-logo-light.svg"
             alt="Weekly"
             className="h-8 w-auto"
           />
