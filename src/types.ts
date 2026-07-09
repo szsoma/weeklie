@@ -112,3 +112,43 @@ export type QuickCaptureDestination =
   | 'backlog';
 
 export type FocusColumnId = string | 'backlog' | null;
+
+export type RecurrencePreset =
+  | 'never'
+  | 'daily'
+  | 'weekdays'
+  | 'weekends'
+  | 'weekly'
+  | 'biweekly'
+  | 'monthly'
+  | 'yearly'
+  | 'custom';
+
+export type RecurrenceRule = {
+  freq: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  interval: number;
+  byWeekdays: number[]; // 0 = Sunday, 6 = Saturday
+  startDayOfMonth?: number;
+  startMonth?: number;
+};
+
+export type HabitTemplate = {
+  id: string;
+  user_id: string;
+  task_id: string;
+  recurrence: RecurrenceRule;
+  target_per_period: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type HabitInstance = {
+  id: string;
+  habit_template_id: string;
+  user_id: string;
+  task_id: string;
+  for_date: string;
+  period_start: string;
+  created_at: string;
+};

@@ -32,3 +32,12 @@ test("schema references habit tables", () => {
   assert.match(schema, /habit_templates/);
   assert.match(schema, /habit_instances/);
 });
+
+const types = readFileSync(new URL("../src/types.ts", import.meta.url), "utf8");
+
+test("TypeScript exports habit types", () => {
+  assert.match(types, /export type RecurrencePreset =/);
+  assert.match(types, /export type RecurrenceRule =/);
+  assert.match(types, /export type HabitTemplate =/);
+  assert.match(types, /export type HabitInstance =/);
+});
