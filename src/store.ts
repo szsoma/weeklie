@@ -6,10 +6,14 @@ import { formatDate, getWeekDays, getWeekId, getWeekStart } from './dates'
 import { getNextAvailableRecurringDate, getRecurringSeedsForWeek } from './lib/recurrence'
 import { getTopOrderForDate, resolveQuickCaptureDate } from './lib/quick-capture'
 import { playChime } from './lib/sound'
+import { getDueDatesForWeek } from './lib/habits'
 import type {
   DayCheckin,
   FocusColumnId,
+  HabitInstance,
+  HabitTemplate,
   QuickCaptureDestination,
+  RecurrenceRule,
   Task,
   TaskEvent,
   TaskEventType,
@@ -82,6 +86,8 @@ type State = {
   focusedColumnId: FocusColumnId
   focusedTaskId: string | null
   keyboardHelpOpen: boolean
+  habitTemplates: HabitTemplate[]
+  habitInstances: HabitInstance[]
 }
 
 type Actions = {
@@ -122,6 +128,12 @@ type Actions = {
     due_time: string | null;
     color: string | null;
   }) => Promise<Task | null>
+  loadHabitTemplates: () => Promise<void>
+  loadHabitInstancesForWeek: (weekStart: Date) => Promise<void>
+  generateHabitInstancesForWeek: (weekStart: Date) => Promise<void>
+  upsertHabitTemplate: (taskId: string, rule: RecurrenceRule | null, targetPerPeriod?: number) => Promise<void>
+  archiveHabitTemplate: (templateId: string) => Promise<void>
+  deleteHabitTemplateForTask: (taskId: string) => Promise<void>
 }
 
 function getTaskCarryoverOptions(
@@ -196,6 +208,8 @@ export const useStore = create<State & Actions>((set, get) => ({
   focusedColumnId: null,
   focusedTaskId: null,
   keyboardHelpOpen: false,
+  habitTemplates: [],
+  habitInstances: [],
 
   loadTasks: async () => {
     const { data, error } = await supabase
@@ -258,6 +272,8 @@ export const useStore = create<State & Actions>((set, get) => ({
     focusedColumnId: null,
     focusedTaskId: null,
     keyboardHelpOpen: false,
+    habitTemplates: [],
+    habitInstances: [],
     isLoading: false,
   }),
 
@@ -619,5 +635,225 @@ export const useStore = create<State & Actions>((set, get) => ({
     }
 
     return task
+  },
+
+  loadHabitTemplates: async () => {
+    const { data, error } = await supabase
+      .from('habit_templates')
+      .select('*')
+      .order('created_at', { ascending: true })
+
+    if (error) {
+      console.error('loadHabitTemplates failed', error)
+      return
+    }
+
+    set({ habitTemplates: (data as HabitTemplate[]) ?? [] })
+  },
+
+  loadHabitInstancesForWeek: async (weekStart) => {
+    const days = getWeekDays(weekStart).map(formatDate)
+    const { data, error } = await supabase
+      .from('habit_instances')
+      .select('*')
+      .gte('for_date', days[0])
+      .lte('for_date', days[6])
+
+    if (error) {
+      console.error('loadHabitInstancesForWeek failed', error)
+      return
+    }
+
+    set({ habitInstances: (data as HabitInstance[]) ?? [] })
+  },
+
+  generateHabitInstancesForWeek: async (weekStart) => {
+    const { tasks, habitTemplates, habitInstances, addTask } = get()
+    const periodStartKey = formatDate(weekStart)
+    const todayKey = formatDate(new Date())
+
+    for (const template of habitTemplates.filter((t) => t.active)) {
+      const baseTask = tasks.find((t) => t.id === template.task_id)
+      if (!baseTask) continue
+
+      const dueDates = getDueDatesForWeek(template.recurrence, weekStart)
+
+      for (const dueDate of dueDates) {
+        const dateKey = formatDate(dueDate)
+        if (dateKey < todayKey) continue
+
+        const alreadyExists = habitInstances.some(
+          (inst) => inst.habit_template_id === template.id && inst.for_date === dateKey,
+        )
+        if (alreadyExists) continue
+
+        const task = await addTask(baseTask.title, dateKey, {
+          color: baseTask.color,
+          note: baseTask.note,
+          due_time: baseTask.due_time,
+          silent: true,
+        })
+
+        if (!task) continue
+
+        const instance: HabitInstance = {
+          id: createId(),
+          habit_template_id: template.id,
+          user_id: '',
+          task_id: task.id,
+          for_date: dateKey,
+          period_start: periodStartKey,
+          created_at: new Date().toISOString(),
+        }
+
+        set({ habitInstances: [...get().habitInstances, instance] })
+
+        const { error } = await supabase.from('habit_instances').insert({
+          id: instance.id,
+          habit_template_id: instance.habit_template_id,
+          task_id: instance.task_id,
+          for_date: instance.for_date,
+          period_start: instance.period_start,
+        })
+        if (error) {
+          console.error('insert habit_instance failed', error)
+          set({ habitInstances: get().habitInstances.filter((i) => i.id !== instance.id) })
+        }
+      }
+    }
+  },
+
+  upsertHabitTemplate: async (taskId, rule, targetPerPeriod = 1) => {
+    if (!rule) {
+      await get().deleteHabitTemplateForTask(taskId)
+      return
+    }
+
+    const { habitTemplates } = get()
+    const existing = habitTemplates.find((t) => t.task_id === taskId)
+    const now = new Date().toISOString()
+
+    if (existing) {
+      const updated: HabitTemplate = {
+        ...existing,
+        recurrence: rule,
+        target_per_period: targetPerPeriod,
+        updated_at: now,
+      }
+      set({
+        habitTemplates: habitTemplates.map((t) =>
+          t.id === existing.id ? updated : t,
+        ),
+      })
+
+      const { error } = await supabase
+        .from('habit_templates')
+        .update({
+          recurrence: rule,
+          target_per_period: targetPerPeriod,
+          updated_at: now,
+        })
+        .eq('id', existing.id)
+
+      if (error) {
+        console.error('upsertHabitTemplate update failed', error)
+        set({ habitTemplates })
+      }
+      return
+    }
+
+    const template: HabitTemplate = {
+      id: createId(),
+      user_id: '',
+      task_id: taskId,
+      recurrence: rule,
+      target_per_period: targetPerPeriod,
+      active: true,
+      created_at: now,
+      updated_at: now,
+    }
+
+    set({ habitTemplates: [...habitTemplates, template] })
+
+    const { data, error } = await supabase
+      .from('habit_templates')
+      .insert({
+        id: template.id,
+        task_id: template.task_id,
+        recurrence: template.recurrence,
+        target_per_period: template.target_per_period,
+        active: template.active,
+        created_at: template.created_at,
+        updated_at: template.updated_at,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('upsertHabitTemplate insert failed', error)
+      set({ habitTemplates })
+      return
+    }
+
+    set({
+      habitTemplates: get().habitTemplates.map((t) =>
+        t.id === template.id ? (data as HabitTemplate) : t,
+      ),
+    })
+
+    await get().generateHabitInstancesForWeek(get().currentWeekStart)
+  },
+
+  archiveHabitTemplate: async (templateId) => {
+    const prev = get().habitTemplates
+    set({
+      habitTemplates: prev.map((t) =>
+        t.id === templateId ? { ...t, active: false } : t,
+      ),
+    })
+
+    const { error } = await supabase
+      .from('habit_templates')
+      .update({ active: false })
+      .eq('id', templateId)
+
+    if (error) {
+      console.error('archiveHabitTemplate failed', error)
+      set({ habitTemplates: prev })
+    }
+  },
+
+  deleteHabitTemplateForTask: async (taskId) => {
+    const prevTemplates = get().habitTemplates
+    const prevInstances = get().habitInstances
+    const template = prevTemplates.find((t) => t.task_id === taskId)
+    if (!template) return
+
+    const today = formatDate(new Date())
+    const futureInstances = prevInstances.filter(
+      (inst) => inst.habit_template_id === template.id && inst.for_date >= today,
+    )
+
+    set({
+      habitTemplates: prevTemplates.filter((t) => t.id !== template.id),
+      habitInstances: prevInstances.filter(
+        (inst) => inst.habit_template_id !== template.id,
+      ),
+    })
+
+    const { error } = await supabase
+      .from('habit_templates')
+      .delete()
+      .eq('id', template.id)
+
+    if (error) {
+      console.error('deleteHabitTemplateForTask failed', error)
+      set({ habitTemplates: prevTemplates, habitInstances: prevInstances })
+      return
+    }
+
+    for (const inst of futureInstances) {
+      await get().deleteTask(inst.task_id)
+    }
   },
 }))

@@ -59,3 +59,21 @@ test("scheduler helper exports weekly timeout", () => {
   assert.match(scheduler, /setTimeout/);
   assert.match(scheduler, /getNextMondayMidnight/);
 });
+
+const store = readFileSync(new URL("../src/store.ts", import.meta.url), "utf8");
+
+test("store manages habit state and actions", () => {
+  assert.match(store, /habitTemplates/);
+  assert.match(store, /habitInstances/);
+  assert.match(store, /loadHabitTemplates/);
+  assert.match(store, /loadHabitInstancesForWeek/);
+  assert.match(store, /generateHabitInstancesForWeek/);
+  assert.match(store, /upsertHabitTemplate/);
+  assert.match(store, /archiveHabitTemplate/);
+  assert.match(store, /deleteHabitTemplateForTask/);
+});
+
+test("generateHabitInstancesForWeek skips past dates", () => {
+  assert.match(store, /dateKey < todayKey/);
+  assert.match(store, /continue/);
+});
