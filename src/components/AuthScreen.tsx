@@ -202,10 +202,17 @@ export default function AuthScreen() {
   }
 
   return (
-    <div className="h-[100dvh] flex items-center justify-center px-4 sm:px-6">
-      <div className="w-full max-w-sm">
-        <h1 className="font-mono font-semibold text-2xl tracking-tight mb-1">
-          weekly
+    <div
+      className="min-h-[100dvh] flex items-center justify-center bg-cover bg-center px-4 py-8 sm:px-6"
+      style={{ backgroundImage: "url('/hero-bg-p-2600.jpg')" }}
+    >
+      <div className="w-full max-w-sm rounded-2xl border border-white/60 bg-white/80 p-6 text-ink shadow-[0_24px_80px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:p-8">
+        <h1 className="mb-2">
+          <img
+            src="/weekly-logo.svg"
+            alt="Weekly"
+            className="h-8 w-auto"
+          />
         </h1>
         <p className="text-sm text-muted mb-6">Sign in to sync your week.</p>
 
