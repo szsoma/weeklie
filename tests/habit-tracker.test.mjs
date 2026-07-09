@@ -51,3 +51,11 @@ test("habit helpers export required functions", () => {
   assert.match(habitsSource, /export function getNextMondayMidnight/);
   assert.match(habitsSource, /export function presetToRule/);
 });
+
+const scheduler = readFileSync(new URL("../src/lib/scheduler.ts", import.meta.url), "utf8");
+
+test("scheduler helper exports weekly timeout", () => {
+  assert.match(scheduler, /export function startWeeklyHabitScheduler/);
+  assert.match(scheduler, /setTimeout/);
+  assert.match(scheduler, /getNextMondayMidnight/);
+});
