@@ -62,6 +62,8 @@ export type RecurrenceRule = {
   freq: 'daily' | 'weekly' | 'monthly' | 'yearly';
   interval: number;
   byWeekdays: number[]; // 0 = Sunday, 6 = Saturday
+  startDayOfMonth?: number;
+  startMonth?: number;
 };
 
 export type HabitTemplate = {
