@@ -15,6 +15,13 @@ const PRESETS: { value: RecurrencePreset; label: string }[] = [
   { value: "custom", label: "Custom..." },
 ];
 
+const FREQ_LABELS: Record<RecurrenceRule["freq"], string> = {
+  daily: "days",
+  weekly: "weeks",
+  monthly: "months",
+  yearly: "years",
+};
+
 const WEEKDAY_INDEXES = [0, 1, 2, 3, 4, 5, 6] as const;
 
 const SETTINGS_SECTION_CLASS = "space-y-2";
@@ -78,6 +85,7 @@ export default function HabitRepeatPopover({ taskId, baseDate, periodStart }: Pr
   );
 
   const [target, setTarget] = useState(() => template?.target_per_period ?? 1);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
   const handlePreset = (value: RecurrencePreset) => {
     setPreset(value);
@@ -107,8 +115,15 @@ export default function HabitRepeatPopover({ taskId, baseDate, periodStart }: Pr
     setRule({ ...rule, interval: Math.max(1, interval) });
   };
 
-  const save = () => {
-    upsertHabitTemplate(taskId, rule, Math.max(1, target));
+  const save = async () => {
+    setSaveState("saving");
+    try {
+      await upsertHabitTemplate(taskId, rule, Math.max(1, target));
+      setSaveState("saved");
+      window.setTimeout(() => setSaveState("idle"), 1500);
+    } catch {
+      setSaveState("error");
+    }
   };
 
   const summary = rule ? formatRecurrenceSummary(rule) : "Never";
@@ -170,7 +185,7 @@ export default function HabitRepeatPopover({ taskId, baseDate, periodStart }: Pr
                 onChange={(e) => updateInterval(parseInt(e.target.value, 10) || 1)}
                 className="w-16 rounded-xl border border-rule bg-bg/40 px-3 py-2 text-center text-sm outline-none focus:ring-2 focus:ring-ink/15"
               />
-              <span className="text-sm text-muted">{rule.freq}s</span>
+              <span className="text-sm text-muted">{FREQ_LABELS[rule.freq]}</span>
             </div>
           </section>
 
@@ -219,13 +234,14 @@ export default function HabitRepeatPopover({ taskId, baseDate, periodStart }: Pr
 
       <button
         type="button"
+        disabled={saveState === "saving"}
         onClick={(e) => {
           e.stopPropagation();
           save();
         }}
-        className="w-full rounded-md bg-ink px-4 py-2 font-mono text-[13px] uppercase text-bg"
+        className="w-full rounded-md bg-ink px-4 py-2 font-mono text-[13px] uppercase text-bg disabled:opacity-60"
       >
-        Save
+        {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved" : saveState === "error" ? "Failed" : "Save"}
       </button>
     </div>
   );
