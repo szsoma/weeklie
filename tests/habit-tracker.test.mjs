@@ -41,3 +41,13 @@ test("TypeScript exports habit types", () => {
   assert.match(types, /export type HabitTemplate =/);
   assert.match(types, /export type HabitInstance =/);
 });
+
+const habitsSource = readFileSync(new URL("../src/lib/habits.ts", import.meta.url), "utf8");
+
+test("habit helpers export required functions", () => {
+  assert.match(habitsSource, /export function getDueDatesForWeek/);
+  assert.match(habitsSource, /export function formatRecurrenceSummary/);
+  assert.match(habitsSource, /export function getHabitProgress/);
+  assert.match(habitsSource, /export function getNextMondayMidnight/);
+  assert.match(habitsSource, /export function presetToRule/);
+});
