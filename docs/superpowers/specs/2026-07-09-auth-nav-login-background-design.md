@@ -108,4 +108,3 @@ Manual verification:
 4. Sign in.
 5. Open the floating nav and confirm `Logout` is visible and `Sign up` is absent.
 6. Click `Logout` and confirm the app returns to the login screen.
-
