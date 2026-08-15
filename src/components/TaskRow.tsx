@@ -4,20 +4,12 @@ import { useDraggable } from "@dnd-kit/core";
 import { REMINDER_PRESET_TIMES, requestReminderPermission } from "../lib/reminders";
 import { getWeekStart } from "../dates";
 import { formatRecurrenceSummary } from "../lib/habits";
+import { TASK_COLOR_TOKENS, TASK_COLOR_HEX, getTaskColorHex } from "../lib/task-colors";
+import type { TaskColorToken } from "../lib/task-colors";
 import { useStore } from "../store";
 import HabitRepeatPopover from "./HabitRepeatPopover";
 import type { Task } from "../types";
 import type { ReactNode } from "react";
-
-const COLOR_TOKENS = ["red", "orange", "yellow", "green"] as const;
-const COLOR_MAP: Record<string, string> = {
-  red: "#e74c3c",
-  orange: "#e67e22",
-  yellow: "#eab308",
-  green: "#22c55e",
-};
-
-type ColorToken = (typeof COLOR_TOKENS)[number];
 
 const TASK_ROW_BASE_CLASS =
   "group relative grid grid-cols-[1rem_minmax(0,1fr)_auto_auto_auto] items-center m-1 gap-x-2 px-2 min-h-10 text-sm leading-snug rounded-full transition-colors";
@@ -47,11 +39,6 @@ type SettingsSectionProps = {
   action?: ReactNode;
   children: ReactNode;
 };
-
-function getTaskColor(color: string | null): string | null {
-  if (!color || !(color in COLOR_MAP)) return null;
-  return COLOR_MAP[color];
-}
 
 function getTaskRowClassName(isDragging: boolean, isEditingTask: boolean): string {
   let stateClass = TASK_ROW_IDLE_CLASS;
@@ -215,7 +202,7 @@ export default function TaskRow({ task }: Props) {
   }, []);
 
   const selectColor = useCallback(
-    (color: ColorToken) => {
+    (color: TaskColorToken) => {
       if (task.color === color) {
         updateTask(task.id, { color: null });
       } else {
@@ -251,7 +238,7 @@ export default function TaskRow({ task }: Props) {
     ? { transform: `translate(${transform.x}px, ${transform.y}px)` }
     : undefined;
 
-  const taskColor = getTaskColor(task.color);
+  const taskColor = getTaskColorHex(task.color);
   const colorBg = taskColor ? { backgroundColor: `${taskColor}18` } : undefined;
 
   return (
@@ -517,7 +504,7 @@ export default function TaskRow({ task }: Props) {
               }
             >
               <div className="grid grid-cols-4 gap-2">
-                {COLOR_TOKENS.map((color) => (
+                {TASK_COLOR_TOKENS.map((color) => (
                   <button
                     key={color}
                     type="button"
@@ -530,7 +517,7 @@ export default function TaskRow({ task }: Props) {
                   >
                     <span
                       className="h-5 w-5 rounded-full"
-                      style={{ backgroundColor: COLOR_MAP[color] }}
+                      style={{ backgroundColor: TASK_COLOR_HEX[color] }}
                     />
                   </button>
                 ))}

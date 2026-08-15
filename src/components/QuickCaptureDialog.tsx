@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { getDefaultQuickCaptureDestination } from "../lib/quick-capture";
+import { TASK_COLOR_TOKENS, TASK_COLOR_HEX } from "../lib/task-colors";
 import { useStore } from "../store";
 import type { QuickCaptureDestination } from "../types";
 
@@ -15,15 +16,6 @@ const DESTINATIONS: { value: QuickCaptureDestination; label: string }[] = [
   { value: "sunday", label: "Sunday" },
   { value: "backlog", label: "Backlog" },
 ];
-
-const COLORS = ["red", "orange", "yellow", "green"] as const;
-
-const COLOR_CLASS: Record<(typeof COLORS)[number], string> = {
-  red: "bg-red",
-  orange: "bg-orange",
-  yellow: "bg-yellow",
-  green: "bg-green",
-};
 
 export default function QuickCaptureDialog() {
   const open = useStore((s) => s.quickCaptureOpen);
@@ -157,14 +149,16 @@ export default function QuickCaptureDialog() {
           <div>
             <span className="mb-1 block font-mono text-[11px] uppercase text-faint">Color</span>
             <div className="flex gap-1">
-              {COLORS.map((token) => (
+              {TASK_COLOR_TOKENS.map((token) => (
                 <button
                   key={token}
                   type="button"
                   aria-label={`Set color ${token}`}
+                  aria-pressed={color === token}
                   onClick={() => setColor(color === token ? null : token)}
-                  className={`h-9 w-9 rounded-full border ${COLOR_CLASS[token]} ${
-                    color === token ? "border-ink" : "border-rule"
+                  style={{ backgroundColor: TASK_COLOR_HEX[token] }}
+                  className={`h-9 w-9 rounded-full border transition ${
+                    color === token ? "border-ink scale-110" : "border-rule"
                   }`}
                 />
               ))}
