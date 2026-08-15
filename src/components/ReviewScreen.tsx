@@ -59,7 +59,7 @@ export default function ReviewScreen({ onClose }: Props) {
   const rolledOver = tasks.filter((t) => rolledOverTaskIdSet.has(t.id));
   const dayCheckinSummary = summarizeDayCheckins(dayCheckins, weekTasks);
 
-  const [reflection, setReflection] = useState("");
+  const [reflection, setReflection] = useState(existingReview?.reflection ?? "");
 
   const streak = calculateReviewStreak(
     reviews.map((review) => review.week_id),
@@ -79,7 +79,7 @@ export default function ReviewScreen({ onClose }: Props) {
       streak,
       completed_task_ids: completedTaskIds,
       rolled_over_task_ids: rolledOverTaskIds,
-      created_at: now,
+      created_at: existingReview?.created_at ?? now,
       updated_at: now,
     };
     saveReview(review);
