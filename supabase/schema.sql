@@ -13,7 +13,7 @@ create table if not exists public.tasks (
   done boolean not null default false,
   done_at timestamptz,
   color text,
-  "order" integer not null default 0,
+  "order" double precision not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   deleted_at timestamptz,
