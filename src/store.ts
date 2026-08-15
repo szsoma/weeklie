@@ -107,7 +107,7 @@ type Actions = {
   rolloverTasks: () => Promise<number>
   saveReview: (review: WeekReview) => Promise<void>
   saveIntention: (input: SaveIntentionInput) => Promise<void>
-  normalizeOrders: (date: string) => void
+  normalizeOrders: (date: string | null) => void
   setHideDone: (value: boolean) => void
   openQuickCapture: () => void
   closeQuickCapture: () => void
@@ -379,7 +379,7 @@ export const useStore = create<State & Actions>((set, get) => ({
 
     const needsNormalization = dayTasks.some(o => Math.abs(o - newOrder) < 0.001)
     if (needsNormalization) {
-      setTimeout(() => get().normalizeOrders(newDate!), 0)
+      setTimeout(() => get().normalizeOrders(newDate), 0)
     }
   },
 

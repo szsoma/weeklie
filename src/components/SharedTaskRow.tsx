@@ -1,11 +1,5 @@
+import { getTaskColorHex } from "../lib/task-colors";
 import type { SharedWeekTask } from '../types'
-
-const COLOR_MAP: Record<string, string> = {
-  red: '#e74c3c',
-  orange: '#e67e22',
-  yellow: '#eab308',
-  green: '#22c55e',
-}
 
 type Props = {
   task: SharedWeekTask;
@@ -13,9 +7,10 @@ type Props = {
 
 export default function SharedTaskRow({ task }: Props) {
   const statusLabel = task.done ? 'Completed' : 'Incomplete'
-  const hasColor = task.color !== null && task.color in COLOR_MAP
+  const taskColor = getTaskColorHex(task.color)
+  const hasColor = taskColor !== null
   const colorBg = hasColor
-    ? { backgroundColor: `${COLOR_MAP[task.color!]}18` }
+    ? { backgroundColor: `${taskColor}18` }
     : undefined
 
   return (

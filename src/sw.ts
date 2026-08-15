@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 
 import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching'
+import { MARK_DONE_MESSAGE_TYPE } from './lib/notifications'
 
 declare const self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: Array<unknown>;
@@ -21,7 +22,7 @@ self.addEventListener('notificationclick', (event) => {
 
     for (const client of clientsList) {
       client.postMessage({
-        type: 'weeklie:mark-done',
+        type: MARK_DONE_MESSAGE_TYPE,
         taskId,
         action: event.action,
       })

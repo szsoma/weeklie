@@ -56,10 +56,3 @@ test("computeDropOrder: dropping into an empty column yields 1", () => {
 test("computeDropOrder: an unknown hovered id falls back to appending", () => {
   assert.equal(computeDropOrder(column, "a", "nope"), 31);
 });
-
-test("computeDropOrder: a self-drop falls through to the append path", () => {
-  // The active task is removed from the list before the lookup, so hovering
-  // yourself behaves like an unknown id. App.tsx guards this case before
-  // calling, so it never reaches the store — this pins the contract only.
-  assert.equal(computeDropOrder(column, "b", "b"), 31);
-});

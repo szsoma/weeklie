@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { useStore } from "../store";
 import { useShallow } from "zustand/shallow";
 import TaskRow from "./TaskRow";
@@ -96,7 +96,7 @@ export default function BacklogPanel() {
           <SortableContext
             id="backlog"
             items={filteredTasks.map((task) => task.id)}
-            strategy={verticalListSortingStrategy}
+            strategy={rectSortingStrategy}
           >
             {filteredTasks.map((task) => (
               <TaskRow key={task.id} task={task} />

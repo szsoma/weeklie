@@ -28,8 +28,17 @@ test("no token maps to a bare Tailwind class name", () => {
   }
 });
 
+test("pins the exact hex values so colours cannot drift silently", () => {
+  assert.deepEqual(TASK_COLOR_HEX, {
+    red: "#e74c3c",
+    orange: "#e67e22",
+    yellow: "#eab308",
+    green: "#22c55e",
+  });
+});
+
 test("getTaskColorHex resolves known tokens and rejects everything else", () => {
-  assert.equal(getTaskColorHex("green"), TASK_COLOR_HEX.green);
+  assert.equal(getTaskColorHex("green"), "#22c55e");
   assert.equal(getTaskColorHex(null), null);
   assert.equal(getTaskColorHex("purple"), null);
   assert.equal(getTaskColorHex(""), null);

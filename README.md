@@ -63,7 +63,9 @@ src/
 ├── hooks/           # React hooks (useRollover, useTheme, useHideOnScroll,
 │                    #              useFocusTrap, useGlobalShortcuts)
 ├── lib/             # Pure helpers (supabase client, sound, fractional-index,
-│                    #     recurrence, reminders)
+│                    #     reorder, recurrence, reminders, notifications,
+│                    #     habits, task-colors, quick-capture, scheduler,
+│                    #     streak, keyboard, week-insights, week-share)
 ├── store.ts         # Zustand store: tasks, events, reviews, actions
 ├── dates.ts         # Date/week helpers
 ├── sw.ts            # Service worker — precaching + notification-click bridge
@@ -72,6 +74,8 @@ src/
 ```
 
 `supabase/schema.sql` is the reference schema. Weekly 2.0 adds nullable `recurrence`, `note`, and `due_time` columns on `tasks` and an `intention` column on `week_reviews`; apply the same `alter table … add column if not exists` statements to your Supabase project before deploying.
+
+**Required before deploying this frontend:** apply `supabase/migrations/20260816000000_widen_task_order.sql` (`alter table public.tasks alter column "order" type double precision`) to your Supabase project. Drag-to-reorder now persists fractional order values (e.g. `1.5`) between existing rows. If the column is still `integer` when the new frontend ships, PostgREST rejects those writes with a 400 on any mid-column drop and the optimistic reorder silently reverts.
 
 ## Notes
 

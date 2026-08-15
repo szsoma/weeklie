@@ -1,4 +1,5 @@
 import { toLocalDateKey } from '../dates'
+import { MARK_DONE_ACTION } from './notifications'
 import type { Task } from '../types'
 
 const PRESET_TIMES = ['07:00', '09:00', '12:00', '15:00', '17:00', '20:00'] as const
@@ -28,7 +29,7 @@ async function showReminder(task: Task) {
     tag: `weeklie-task-${task.id}`,
     data: { taskId: task.id },
     requireInteraction: false,
-    actions: [{ action: 'mark-done', title: 'Mark done' }],
+    actions: [{ action: MARK_DONE_ACTION, title: 'Mark done' }],
   }
 
   if (registration?.showNotification) {
