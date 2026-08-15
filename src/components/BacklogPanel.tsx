@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useStore } from "../store";
 import { useShallow } from "zustand/shallow";
 import TaskRow from "./TaskRow";
@@ -92,9 +93,15 @@ export default function BacklogPanel() {
       </div>
       <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 md:px-2 py-3 md:pb-24">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8">
-          {filteredTasks.map((task) => (
-            <TaskRow key={task.id} task={task} />
-          ))}
+          <SortableContext
+            id="backlog"
+            items={filteredTasks.map((task) => task.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {filteredTasks.map((task) => (
+              <TaskRow key={task.id} task={task} />
+            ))}
+          </SortableContext>
           {normalizedQuery && filteredTasks.length === 0 && (
             <div className="col-span-full px-2 py-3 font-mono text-[12px] text-faint">
               No backlog tasks matching "{query.trim()}".

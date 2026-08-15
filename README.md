@@ -60,7 +60,8 @@ src/
 ├── components/      # UI: WeekGrid, DayColumn, TaskRow, BacklogPanel,
 │                    #     WeekHeader, WeekIntention, WeekTrendBars,
 │                    #     TodayFocusButton, FloatingNav, dialogs
-├── hooks/           # React hooks (useTodayFocus, useRollover, useHideOnScroll)
+├── hooks/           # React hooks (useRollover, useTheme, useHideOnScroll,
+│                    #              useFocusTrap, useGlobalShortcuts)
 ├── lib/             # Pure helpers (supabase client, sound, fractional-index,
 │                    #     recurrence, reminders)
 ├── store.ts         # Zustand store: tasks, events, reviews, actions

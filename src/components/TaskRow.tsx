@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { useDraggable } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { REMINDER_PRESET_TIMES, requestReminderPermission } from "../lib/reminders";
 import { getWeekStart } from "../dates";
 import { formatRecurrenceSummary } from "../lib/habits";
@@ -228,15 +229,16 @@ export default function TaskRow({ task }: Props) {
     closeSettingsPopover();
   }, [closeSettingsPopover, deleteTask, task.id]);
 
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({
       id: task.id,
-      data: { date: task.date, order: task.order },
+      data: { type: "task", date: task.date, order: task.order },
     });
 
-  const rowStyle = transform
-    ? { transform: `translate(${transform.x}px, ${transform.y}px)` }
-    : undefined;
+  const rowStyle = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+  };
 
   const taskColor = getTaskColorHex(task.color);
   const colorBg = taskColor ? { backgroundColor: `${taskColor}18` } : undefined;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { DndContext, DragOverlay, PointerSensor, TouchSensor, useDndContext, useSensor, useSensors } from '@dnd-kit/core'
+import { closestCenter, DndContext, DragOverlay, PointerSensor, TouchSensor, useDndContext, useSensor, useSensors } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core'
 import type { Session } from '@supabase/supabase-js'
 import AboutScreen from './components/AboutScreen'
@@ -18,6 +18,7 @@ import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
 import { useRollover } from './hooks/useRollover'
 import { getTaskIdToComplete } from './lib/notifications'
 import { startReminderScheduler } from './lib/reminders'
+import { computeDropOrder } from './lib/reorder'
 import { startWeeklyHabitScheduler } from './lib/scheduler'
 import { supabase } from './lib/supabase'
 import { useStore } from './store'
@@ -149,22 +150,32 @@ function AuthenticatedApp() {
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
-    if (!over || active.id === over.id) return
+    if (!over) return
 
     const taskId = active.id as string
-    const targetDate = over.data.current?.date as string | null
-    let targetOrder = over.data.current?.order as number | undefined
+    const tasks = useStore.getState().tasks
+    const activeTask = tasks.find((t) => t.id === taskId)
+    if (!activeTask) return
 
+    const overData = over.data.current
+    const overIsTask = overData?.type === 'task'
+
+    // Both a sortable row and a column droppable carry `date` in their data,
+    // so this resolves the destination column either way.
+    const targetDate = overData?.date as string | null | undefined
     if (targetDate === undefined) return
 
-    if (targetOrder === undefined) {
-      const tasksForTarget = useStore.getState().tasks.filter(t => t.date === targetDate && t.id !== taskId)
-      targetOrder = tasksForTarget.length > 0
-        ? Math.max(...tasksForTarget.map(t => t.order)) + 1
-        : 1
-    }
+    const overTaskId = overIsTask ? (over.id as string) : null
+    if (overTaskId === taskId && activeTask.date === targetDate) return
 
-    moveTask(taskId, targetDate, targetOrder)
+    const targetColumnTasks = tasks
+      .filter((t) => t.date === targetDate)
+      .sort((a, b) => a.order - b.order)
+
+    const newOrder = computeDropOrder(targetColumnTasks, taskId, overTaskId)
+    if (activeTask.date === targetDate && activeTask.order === newOrder) return
+
+    moveTask(taskId, targetDate, newOrder)
   }
 
   const handleLogout = async () => {
@@ -189,6 +200,7 @@ function AuthenticatedApp() {
   return (
     <DndContext
       sensors={sensors}
+      collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
     >
       <div className="h-[100dvh] flex flex-col overflow-hidden">

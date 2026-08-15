@@ -1,4 +1,5 @@
 import { useDroppable } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useStore } from "../store";
 import { useShallow } from "zustand/shallow";
 import { formatDate, isToday } from "../dates";
@@ -83,9 +84,15 @@ export default function DayColumn({ date }: Props) {
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-5 md:pb-24">
-        {tasks.map((task) => (
-          <TaskRow key={task.id} task={task} />
-        ))}
+        <SortableContext
+          id={`day-${dateKey}`}
+          items={tasks.map((task) => task.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {tasks.map((task) => (
+            <TaskRow key={task.id} task={task} />
+          ))}
+        </SortableContext>
 
         <NewTaskLine date={dateKey} />
       </div>
