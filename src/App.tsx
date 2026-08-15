@@ -16,6 +16,7 @@ import WeekGrid from './components/WeekGrid'
 import WeekHeader from './components/WeekHeader'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
 import { useRollover } from './hooks/useRollover'
+import { getTaskIdToComplete } from './lib/notifications'
 import { startReminderScheduler } from './lib/reminders'
 import { startWeeklyHabitScheduler } from './lib/scheduler'
 import { supabase } from './lib/supabase'
@@ -132,8 +133,7 @@ function AuthenticatedApp() {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return
     const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type !== 'weeklie:mark-done') return
-      const taskId = event.data.taskId as string | undefined
+      const taskId = getTaskIdToComplete(event.data)
       if (!taskId) return
       const task = useStore.getState().tasks.find((item) => item.id === taskId)
       if (task && !task.done) toggleDone(taskId)
