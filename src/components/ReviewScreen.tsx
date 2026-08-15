@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useStore } from "../store";
 import { formatDate, getWeekDays, getWeekId } from "../dates";
 import { summarizeDayCheckins } from "../lib/week-insights";
+import { calculateReviewStreak } from "../lib/streak";
 import { endOfISOWeek } from "date-fns";
 import RingChart from "./RingChart";
 import WeekTrendBars from "./WeekTrendBars";
@@ -60,8 +61,10 @@ export default function ReviewScreen({ onClose }: Props) {
 
   const [reflection, setReflection] = useState("");
 
-  const streak =
-    reviews.length > 0 ? reviews[reviews.length - 1].streak + 1 : 1;
+  const streak = calculateReviewStreak(
+    reviews.map((review) => review.week_id),
+    weekStart,
+  );
 
   const handleSave = () => {
     const now = new Date().toISOString();

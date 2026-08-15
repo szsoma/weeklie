@@ -236,7 +236,10 @@ export const useStore = create<State & Actions>((set, get) => ({
   },
 
   loadReviews: async () => {
-    const { data, error } = await supabase.from('week_reviews').select('*')
+    const { data, error } = await supabase
+      .from('week_reviews')
+      .select('*')
+      .order('week_id', { ascending: true })
     if (error) {
       console.error('loadReviews failed', error)
       return
