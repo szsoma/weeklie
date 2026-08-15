@@ -29,7 +29,7 @@ test("FloatingNav exposes System, Light, and Dark theme options", () => {
 test("theme CSS supports explicit light and dark overrides", () => {
   assert.match(cssSource, /:root\[data-theme="light"\]/);
   assert.match(cssSource, /:root\[data-theme="dark"\]/);
-  assert.match(cssSource, /--bg: #fffdf3/);
+  assert.match(cssSource, /--bg: #fffdfc/);
   assert.match(cssSource, /--bg: #1a1a1a/);
 });
 
