@@ -1,4 +1,4 @@
-import { formatDate, getWeekDays } from '../dates'
+import { formatDate, getWeekDays } from '../dates.ts'
 import type { HabitInstance, HabitTemplate, RecurrencePreset, RecurrenceRule, Task } from '../types'
 
 export const JS_WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -11,6 +11,13 @@ export const FULL_WEEKDAY_LABELS = [
   'Friday',
   'Saturday',
 ]
+
+export function getHabitAnchorDate(
+  task: Pick<Task, 'planned_date' | 'date' | 'created_at'>,
+): Date {
+  const date = task.planned_date ?? task.date
+  return date ? new Date(`${date}T00:00:00`) : new Date(task.created_at)
+}
 
 export function presetToRule(
   preset: RecurrencePreset,
@@ -49,33 +56,50 @@ export function presetToRule(
 export function getDueDatesForWeek(
   rule: RecurrenceRule,
   weekStart: Date,
+  anchorDate: Date,
 ): Date[] {
   const days = getWeekDays(weekStart)
+  const interval = Math.max(1, Math.trunc(rule.interval || 1))
+  const dayNumber = (date: Date) =>
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86_400_000
+  const anchorDay = dayNumber(anchorDate)
+
+  const isOnOrAfterAnchor = (day: Date) => dayNumber(day) >= anchorDay
 
   if (rule.freq === 'daily') {
-    return days
+    return days.filter((day) =>
+      isOnOrAfterAnchor(day) && (dayNumber(day) - anchorDay) % interval === 0,
+    )
   }
 
   if (rule.freq === 'weekly') {
-    if (rule.byWeekdays.length > 0) {
-      return days.filter((day) => rule.byWeekdays.includes(day.getDay()))
-    }
-    return [weekStart]
+    const anchorWeek = anchorDay - (anchorDate.getDay() + 6) % 7
+    const weekdays = rule.byWeekdays.length > 0 ? rule.byWeekdays : [anchorDate.getDay()]
+    return days.filter((day) => {
+      const week = dayNumber(day) - (day.getDay() + 6) % 7
+      const weeksSinceAnchor = (week - anchorWeek) / 7
+      return isOnOrAfterAnchor(day) && weekdays.includes(day.getDay()) && weeksSinceAnchor % interval === 0
+    })
   }
 
   if (rule.freq === 'monthly') {
-    const day = rule.startDayOfMonth ?? weekStart.getDate()
-    const match = days.find((d) => d.getDate() === day)
-    return match ? [match] : []
+    const dayOfMonth = rule.startDayOfMonth ?? anchorDate.getDate()
+    return days.filter((day) => {
+      const monthsSinceAnchor = (day.getFullYear() - anchorDate.getFullYear()) * 12
+        + day.getMonth() - anchorDate.getMonth()
+      return isOnOrAfterAnchor(day) && day.getDate() === dayOfMonth
+        && monthsSinceAnchor % interval === 0
+    })
   }
 
   if (rule.freq === 'yearly') {
-    const day = rule.startDayOfMonth ?? weekStart.getDate()
-    const month = rule.startMonth ?? weekStart.getMonth() + 1
-    const match = days.find(
-      (d) => d.getDate() === day && d.getMonth() + 1 === month,
+    const dayOfMonth = rule.startDayOfMonth ?? anchorDate.getDate()
+    const month = rule.startMonth ?? anchorDate.getMonth() + 1
+    return days.filter((day) =>
+      isOnOrAfterAnchor(day) && day.getDate() === dayOfMonth
+        && day.getMonth() + 1 === month
+        && (day.getFullYear() - anchorDate.getFullYear()) % interval === 0,
     )
-    return match ? [match] : []
   }
 
   return []

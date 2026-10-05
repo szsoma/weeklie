@@ -6,7 +6,7 @@ import { formatDate, getWeekDays, getWeekId, getWeekStart } from './dates'
 import { getNextAvailableRecurringDate, getRecurringSeedsForWeek } from './lib/recurrence'
 import { getTopOrderForDate, resolveQuickCaptureDate } from './lib/quick-capture'
 import { playChime } from './lib/sound'
-import { getDueDatesForWeek } from './lib/habits'
+import { getDueDatesForWeek, getHabitAnchorDate } from './lib/habits'
 import type {
   DayCheckin,
   FocusColumnId,
@@ -679,7 +679,7 @@ export const useStore = create<State & Actions>((set, get) => ({
       const baseTask = tasks.find((t) => t.id === template.task_id)
       if (!baseTask) continue
 
-      const dueDates = getDueDatesForWeek(template.recurrence, weekStart)
+      const dueDates = getDueDatesForWeek(template.recurrence, weekStart, getHabitAnchorDate(baseTask))
 
       for (const dueDate of dueDates) {
         const dateKey = formatDate(dueDate)
