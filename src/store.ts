@@ -5,6 +5,7 @@ import { createId } from './nanoid'
 import { formatDate, getWeekDays, getWeekId, getWeekStart } from './dates'
 import { getNextAvailableRecurringDate, getRecurringSeedsForWeek } from './lib/recurrence'
 import { getTopOrderForDate, resolveQuickCaptureDate } from './lib/quick-capture'
+import { fetchAllPages } from './lib/pagination'
 import { playChime } from './lib/sound'
 import { getDueDatesForWeek, getHabitAnchorDate } from './lib/habits'
 import type {
@@ -212,40 +213,48 @@ export const useStore = create<State & Actions>((set, get) => ({
   habitInstances: [],
 
   loadTasks: async () => {
-    const { data, error } = await supabase
-      .from('tasks')
-      .select('*')
-      .is('deleted_at', null)
-    if (error) {
+    try {
+      const data = await fetchAllPages<Task>((from, to) => supabase
+        .from('tasks')
+        .select('*')
+        .is('deleted_at', null)
+        .order('id', { ascending: true })
+        .range(from, to))
+      const tasks = data.slice().sort((a, b) => a.order - b.order)
+      set({ tasks, isLoading: false })
+      await get().generateRecurringTasksForWeek(get().currentWeekStart)
+      return true
+    } catch (error) {
       console.error('loadTasks failed', error)
       set({ isLoading: false })
       return false
     }
-    const tasks = ((data as Task[]) ?? []).slice().sort((a, b) => a.order - b.order)
-    set({ tasks, isLoading: false })
-    await get().generateRecurringTasksForWeek(get().currentWeekStart)
-    return true
   },
 
   loadEvents: async () => {
-    const { data, error } = await supabase.from('task_events').select('*')
-    if (error) {
+    try {
+      const events = await fetchAllPages<TaskEvent>((from, to) => supabase
+        .from('task_events')
+        .select('*')
+        .order('id', { ascending: true })
+        .range(from, to))
+      set({ events })
+    } catch (error) {
       console.error('loadEvents failed', error)
-      return
     }
-    set({ events: (data as TaskEvent[]) ?? [] })
   },
 
   loadReviews: async () => {
-    const { data, error } = await supabase
-      .from('week_reviews')
-      .select('*')
-      .order('week_id', { ascending: true })
-    if (error) {
+    try {
+      const reviews = await fetchAllPages<WeekReview>((from, to) => supabase
+        .from('week_reviews')
+        .select('*')
+        .order('week_id', { ascending: true })
+        .range(from, to))
+      set({ reviews })
+    } catch (error) {
       console.error('loadReviews failed', error)
-      return
     }
-    set({ reviews: (data as WeekReview[]) ?? [] })
   },
 
   loadDayCheckinsForWeek: async (weekStart) => {
