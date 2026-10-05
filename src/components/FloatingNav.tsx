@@ -36,16 +36,14 @@ const THEME_OPTIONS: { value: ThemeMode; label: string }[] = [
 ];
 
 type Props = {
-  isAuthenticated?: boolean;
-  onLogout?: () => void;
+  onForgetDevice?: () => void;
   onShowAbout?: () => void;
   onShowFeatures?: () => void;
   onOpenQuickCapture?: () => void;
 };
 
 export default function FloatingNav({
-  isAuthenticated = false,
-  onLogout,
+  onForgetDevice,
   onShowAbout,
   onShowFeatures,
   onOpenQuickCapture,
@@ -128,35 +126,16 @@ export default function FloatingNav({
             Features
           </button>
           <div className="h-px bg-rule my-1" />
-          {isAuthenticated ? (
-            <button
-              type="button"
-              onClick={() => {
-                onLogout?.();
-                setOpen(false);
-              }}
-              className={linkClass}
-            >
-              Logout
-            </button>
-          ) : (
-            <>
-              <a
-                href="#login"
-                onClick={() => setOpen(false)}
-                className={linkClass}
-              >
-                Login
-              </a>
-              <a
-                href="#signup"
-                onClick={() => setOpen(false)}
-                className={linkClass}
-              >
-                Sign up
-              </a>
-            </>
-          )}
+          <button
+            type="button"
+            onClick={() => {
+              onForgetDevice?.();
+              setOpen(false);
+            }}
+            className={linkClass}
+          >
+            Forget this device
+          </button>
         </div>
       </nav>
 

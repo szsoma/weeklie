@@ -187,10 +187,10 @@ function AuthenticatedApp() {
     moveTask(taskId, targetDate, newOrder)
   }
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut()
+  const handleForgetDevice = async () => {
+    const { error } = await supabase.auth.signOut({ scope: 'local' })
     if (error) {
-      console.error('Failed to sign out', error)
+      console.error('Failed to forget this device', error)
     }
   }
 
@@ -229,8 +229,7 @@ function AuthenticatedApp() {
             />
             <WeekGrid />
             <FloatingNav
-              isAuthenticated={Boolean(session)}
-              onLogout={handleLogout}
+              onForgetDevice={handleForgetDevice}
               onShowAbout={() => setShowAbout(true)}
               onShowFeatures={() => setShowFeatures(true)}
               onOpenQuickCapture={openQuickCapture}

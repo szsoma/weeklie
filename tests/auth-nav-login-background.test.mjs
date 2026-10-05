@@ -16,33 +16,22 @@ const authScreenSource = readFileSync(
   "utf8",
 );
 
-test("App owns logout and passes authenticated nav props", () => {
-  assert.match(appSource, /const handleLogout = async \(\) => \{/);
-  assert.match(appSource, /supabase\.auth\.signOut\(\)/);
-  assert.match(appSource, /isAuthenticated=\{Boolean\(session\)\}/);
-  assert.match(appSource, /onLogout=\{handleLogout\}/);
+test("App lets this device forget its Supabase session", () => {
+  assert.match(appSource, /const handleForgetDevice = async \(\) => \{/);
+  assert.match(appSource, /supabase\.auth\.signOut\(\{ scope: 'local' \}\)/);
+  assert.match(appSource, /onForgetDevice=\{handleForgetDevice\}/);
+  assert.doesNotMatch(appSource, /onLogout|isAuthenticated=/);
 });
 
-test("FloatingNav swaps login and signup for logout when authenticated", () => {
-  assert.match(floatingNavSource, /isAuthenticated\?: boolean/);
-  assert.match(floatingNavSource, /onLogout\?: \(\) => void/);
-  assert.match(
-    floatingNavSource,
-    /isAuthenticated \? \([\s\S]*>\s*Logout\s*<[\s\S]*\) : \([\s\S]*href="#login"[\s\S]*href="#signup"/,
-  );
-  assert.match(floatingNavSource, /onLogout\?\.\(\)/);
-  assert.doesNotMatch(floatingNavSource, /!\s*isAuthenticated && \(/);
+test("FloatingNav offers a local device forget action without account links", () => {
+  assert.match(floatingNavSource, /onForgetDevice\?: \(\) => void/);
+  assert.match(floatingNavSource, /onForgetDevice\?\.\(\)/);
+  assert.match(floatingNavSource, />\s*Forget this device\s*</);
+  assert.doesNotMatch(floatingNavSource, /href="#login"|href="#signup"|>\s*Logout\s*</);
 });
 
-test("SiteHeader supports the same authenticated auth actions", () => {
-  assert.match(siteHeaderSource, /isAuthenticated\?: boolean/);
-  assert.match(siteHeaderSource, /onLogout\?: \(\) => void/);
-  assert.match(
-    siteHeaderSource,
-    /isAuthenticated \? \([\s\S]*>\s*Logout\s*<[\s\S]*\) : \([\s\S]*href="#login"[\s\S]*href="#signup"/,
-  );
-  assert.match(siteHeaderSource, /onLogout\?\.\(\)/);
-  assert.doesNotMatch(siteHeaderSource, /!\s*isAuthenticated && \(/);
+test("SiteHeader has no account links", () => {
+  assert.doesNotMatch(siteHeaderSource, /href="#login"|href="#signup"|>\s*Logout\s*</);
 });
 
 test("AuthScreen uses the supplied full-screen image and blurred white panel", () => {
@@ -53,7 +42,7 @@ test("AuthScreen uses the supplied full-screen image and blurred white panel", (
   assert.match(authScreenSource, /backdrop-blur/);
 });
 
-test("AuthScreen pins light theme tokens on the white login panel", () => {
+test("AuthScreen pins light theme tokens on the white unlock panel", () => {
   assert.match(authScreenSource, /"--bg": "#fffdfc"/);
   assert.match(authScreenSource, /"--surface": "#fff"/);
   assert.match(authScreenSource, /"--ink": "#1a1a1a"/);

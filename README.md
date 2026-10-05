@@ -29,18 +29,19 @@ The light-mode background was also lightened toward near-white paper so task hig
 - **Tailwind CSS v4** (semantic tokens, light/dark via `prefers-color-scheme`)
 - **Zustand** for state
 - **@dnd-kit** for drag-and-drop reordering
-- **Supabase** for auth and persistence
+- **Supabase** for the existing owner account and planner data
 - **vite-plugin-pwa** (`injectManifest`) for installable PWA support and a custom service worker that bridges notification taps
 - Web Audio API for subtle interaction chimes; Notifications API for due-time reminders
 
 ## Getting started
 
 ```bash
+cp .env.example .env
 npm install
 npm run dev
 ```
 
-Open the printed local URL in your browser. Sign in via Supabase to load tasks.
+Set the Supabase URL, publishable key, and `VITE_OWNER_EMAIL` in `.env` before starting the app. Use the email of the existing Supabase account that owns the planner data. Open the printed local URL and enter that account's password to unlock the device. The email is included in the frontend build; keep the password out of `.env` and enter it only in the unlock screen. Each device remembers its own Supabase session. Use **Forget this device** to clear only that device's session.
 
 ## Scripts
 
@@ -79,7 +80,7 @@ src/
 
 ## Notes
 
-- Auth-gated: sign in via Supabase before tasks load.
+- Planner data loads only for the configured existing Supabase account. Public read-only week links remain available without unlocking.
 - Unfinished past tasks roll over to today automatically.
 - Recurring instances are generated on app load and when navigating into a week whose next occurrence is missing.
 - Reminders fire reliably while the app (or installed PWA) is open; background delivery depends on the platform keeping the service worker active.
