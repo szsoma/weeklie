@@ -78,6 +78,8 @@ src/
 
 **Required before deploying this frontend:** apply `supabase/migrations/20260816000000_widen_task_order.sql` (`alter table public.tasks alter column "order" type double precision`) to your Supabase project. Drag-to-reorder now persists fractional order values (e.g. `1.5`) between existing rows. If the column is still `integer` when the new frontend ships, PostgREST rejects those writes with a 400 on any mid-column drop and the optimistic reorder silently reverts.
 
+**Also required before deploying the habit integrity changes:** apply `supabase/migrations/20261005000000_habit_integrity.sql` to the same Supabase project. It adds authenticated database functions that atomically create generated tasks and habit instances, and remove a habit with its future generated tasks. The frontend calls these functions; habit generation and removal will fail until the migration is applied. The migration preserves existing rows.
+
 ## Notes
 
 - Planner data loads only for the configured existing Supabase account. Public read-only week links remain available without unlocking.

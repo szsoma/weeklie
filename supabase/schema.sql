@@ -401,7 +401,8 @@ begin
   if auth.uid() is null then
     raise exception 'Authentication required' using errcode = '42501';
   end if;
-  if p_for_date <> to_char(p_for_date::date, 'YYYY-MM-DD')
+  if p_for_date is null or p_period_start is null
+    or p_for_date <> to_char(p_for_date::date, 'YYYY-MM-DD')
     or p_period_start <> to_char(p_period_start::date, 'YYYY-MM-DD') then
     raise exception 'Habit dates must use YYYY-MM-DD' using errcode = '22007';
   end if;
@@ -461,7 +462,10 @@ $$;
 revoke all on function public.create_habit_occurrence(text, text, text, text, text, text) from public;
 grant execute on function public.create_habit_occurrence(text, text, text, text, text, text) to authenticated;
 
-create or replace function public.remove_habit_template_for_task(p_task_id text)
+create or replace function public.remove_habit_template_for_task(
+  p_task_id text,
+  p_from_date text
+)
 returns jsonb
 language plpgsql
 security invoker
@@ -474,6 +478,9 @@ declare
 begin
   if auth.uid() is null then
     raise exception 'Authentication required' using errcode = '42501';
+  end if;
+  if p_from_date is null or p_from_date <> to_char(p_from_date::date, 'YYYY-MM-DD') then
+    raise exception 'Habit dates must use YYYY-MM-DD' using errcode = '22007';
   end if;
 
   select * into template_record
@@ -492,7 +499,7 @@ begin
         and id in (
           select task_id from public.habit_instances
           where habit_template_id = template_record.id
-            and for_date >= current_date::text
+            and for_date >= p_from_date
         )
       returning *
   loop
@@ -507,5 +514,5 @@ begin
 end;
 $$;
 
-revoke all on function public.remove_habit_template_for_task(text) from public;
-grant execute on function public.remove_habit_template_for_task(text) to authenticated;
+revoke all on function public.remove_habit_template_for_task(text, text) from public;
+grant execute on function public.remove_habit_template_for_task(text, text) to authenticated;

@@ -27,19 +27,20 @@ test('habit RPCs create atomically, deduplicate, enforce ownership, and remove f
     const create = (task, instance, date, user = owner) => run(
       `select public.create_habit_occurrence('template','${task}','${instance}','event-${task}','${date}','${date}')`, user,
     )
-    assert.match(create('future-one', 'instance-one', '2099-10-05'), /future-one/)
-    assert.equal(create('duplicate', 'instance-duplicate', '2099-10-05'), '')
+    assert.match(create('future-one', 'instance-one', '2099-10-12'), /future-one/)
+    assert.equal(create('duplicate', 'instance-duplicate', '2099-10-12'), '')
     assert.equal(admin("select count(*) from public.tasks where id = 'duplicate'"), '0')
 
     admin(`create function public.fail_instance() returns trigger language plpgsql as $$begin if new.id = 'instance-fail' then raise exception 'forced instance failure'; end if; return new; end$$; create trigger fail_instance before insert on public.habit_instances for each row execute function public.fail_instance()`)
-    assert.throws(() => create('failed-task', 'instance-fail', '2099-10-06'), /forced instance failure/)
+    assert.throws(() => create('failed-task', 'instance-fail', '2099-10-13'), /forced instance failure/)
     assert.equal(admin("select count(*) from public.tasks where id = 'failed-task'"), '0')
 
-    assert.throws(() => create('other-task', 'other-instance', '2099-10-07', other), /Habit template unavailable/)
-    assert.match(create('future-two', 'instance-two', '2099-10-12'), /future-two/)
-    assert.match(create('past', 'instance-past', '2000-01-01'), /past/)
+    assert.throws(() => create('other-task', 'other-instance', '2099-10-14', other), /Habit template unavailable/)
+    assert.match(create('future-two', 'instance-two', '2099-10-19'), /future-two/)
+    assert.match(create('past', 'instance-past', '2099-10-05'), /past/)
 
-    assert.match(run("select public.remove_habit_template_for_task('base')"), /future-one/)
+    assert.throws(() => run("begin; select public.remove_habit_template_for_task('base', null); rollback"), /Habit dates must use YYYY-MM-DD/)
+    assert.match(run("select public.remove_habit_template_for_task('base', '2099-10-10')"), /future-one/)
     assert.equal(admin("select count(*) from public.habit_templates where id = 'template'"), '0')
     assert.equal(admin("select count(*) from public.habit_instances where habit_template_id = 'template'"), '0')
     assert.equal(admin("select count(*) from public.tasks where id in ('future-one','future-two') and deleted_at is not null"), '2')

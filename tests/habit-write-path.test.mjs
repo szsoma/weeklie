@@ -17,3 +17,8 @@ test('template write failures propagate to the popover instead of claiming Saved
   assert.match(store, /throw new Error\(`Failed to remove habit repeat/)
   assert.match(popover, /setSaveState\("error"\)/)
 })
+
+test('editing an existing repeat attempts current-week generation before reporting success', () => {
+  const updateBranch = store.split('if (existing) {').at(-1).split('return')[0]
+  assert.match(updateBranch, /await get\(\)\.generateHabitInstancesForWeek\(get\(\)\.currentWeekStart\)/)
+})

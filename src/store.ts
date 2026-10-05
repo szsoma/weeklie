@@ -757,6 +757,7 @@ export const useStore = create<State & Actions>((set, get) => ({
           template.id === existing.id ? data as HabitTemplate : template,
         ),
       }))
+      await get().generateHabitInstancesForWeek(get().currentWeekStart)
       return
     }
 
@@ -819,6 +820,7 @@ export const useStore = create<State & Actions>((set, get) => ({
 
     const { data, error } = await supabase.rpc('remove_habit_template_for_task', {
       p_task_id: taskId,
+      p_from_date: formatDate(new Date()),
     })
 
     if (error) {
