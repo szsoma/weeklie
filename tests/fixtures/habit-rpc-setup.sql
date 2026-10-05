@@ -53,6 +53,8 @@ create table public.habit_instances (
 );
 
 grant usage on schema auth, public to authenticated;
+grant usage on schema public to anon;
+alter default privileges in schema public grant execute on functions to anon;
 grant select, insert, update, delete on all tables in schema public to authenticated;
 
 alter table public.tasks enable row level security;

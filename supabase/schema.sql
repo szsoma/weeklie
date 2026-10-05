@@ -516,3 +516,7 @@ $$;
 
 revoke all on function public.remove_habit_template_for_task(text, text) from public;
 grant execute on function public.remove_habit_template_for_task(text, text) to authenticated;
+
+-- Supabase default privileges grant anon EXECUTE directly on new functions.
+revoke execute on function public.create_habit_occurrence(text, text, text, text, text, text) from anon;
+revoke execute on function public.remove_habit_template_for_task(text, text) from anon;

@@ -80,6 +80,8 @@ src/
 
 **Also required before deploying the habit integrity changes:** apply `supabase/migrations/20261005000000_habit_integrity.sql` to the same Supabase project. It adds authenticated database functions that atomically create generated tasks and habit instances, and remove a habit with its future generated tasks. The frontend calls these functions; habit generation and removal will fail until the migration is applied. The migration preserves existing rows.
 
+Apply `supabase/migrations/20261005010000_harden_habit_rpc_execute.sql` immediately afterward to remove Supabase's default anonymous execute grants on those functions.
+
 ## Notes
 
 - Planner data loads only for the configured existing Supabase account. Public read-only week links remain available without unlocking.

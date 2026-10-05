@@ -5,6 +5,7 @@ import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 const migration = fileURLToPath(new URL('../supabase/migrations/20261005000000_habit_integrity.sql', import.meta.url))
+const hardening = fileURLToPath(new URL('../supabase/migrations/20261005010000_harden_habit_rpc_execute.sql', import.meta.url))
 const setup = fileURLToPath(new URL('./fixtures/habit-rpc-setup.sql', import.meta.url))
 const owner = '00000000-0000-0000-0000-000000000001'
 const other = '00000000-0000-0000-0000-000000000002'
@@ -23,6 +24,9 @@ test('habit RPCs create atomically, deduplicate, enforce ownership, and remove f
   try {
     execFileSync('psql', ['-X', '-v', 'ON_ERROR_STOP=1', '-d', db, '-f', setup], { stdio: 'ignore' })
     execFileSync('psql', ['-X', '-v', 'ON_ERROR_STOP=1', '-d', db, '-f', migration], { stdio: 'ignore' })
+    execFileSync('psql', ['-X', '-v', 'ON_ERROR_STOP=1', '-d', db, '-f', hardening], { stdio: 'ignore' })
+    assert.equal(admin("select has_function_privilege('anon', 'public.create_habit_occurrence(text,text,text,text,text,text)', 'EXECUTE')"), 'f')
+    assert.equal(admin("select has_function_privilege('anon', 'public.remove_habit_template_for_task(text,text)', 'EXECUTE')"), 'f')
 
     const create = (task, instance, date, user = owner) => run(
       `select public.create_habit_occurrence('template','${task}','${instance}','event-${task}','${date}','${date}')`, user,
