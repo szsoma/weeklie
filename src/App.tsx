@@ -17,6 +17,7 @@ import WeekHeader from './components/WeekHeader'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
 import { useRollover } from './hooks/useRollover'
 import { getTaskIdToComplete } from './lib/notifications'
+import { loadHabitBase, loadHabitWeek } from './lib/habit-startup'
 import { startReminderScheduler } from './lib/reminders'
 import { computeDropOrder } from './lib/reorder'
 import { startWeeklyHabitScheduler } from './lib/scheduler'
@@ -82,18 +83,26 @@ function AuthenticatedApp() {
   const [showFeatures, setShowFeatures] = useState(false)
   const [showShare, setShowShare] = useState(false)
   const ownerSession = isOwnerSession(session, ownerEmail) ? session : null
+  const ownerId = ownerSession?.user.id ?? null
+  const [habitBaseReadyFor, setHabitBaseReadyFor] = useState<string | null>(null)
 
   useGlobalShortcuts()
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
-      if (!isOwnerSession(data.session, ownerEmail)) clearSessionData()
+      if (!isOwnerSession(data.session, ownerEmail)) {
+        clearSessionData()
+        setHabitBaseReadyFor(null)
+      }
       setAuthReady(true)
     })
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s)
-      if (!isOwnerSession(s, ownerEmail)) clearSessionData()
+      if (!isOwnerSession(s, ownerEmail)) {
+        clearSessionData()
+        setHabitBaseReadyFor(null)
+      }
       setAuthReady(true)
     })
     return () => sub.subscription.unsubscribe()
@@ -107,11 +116,15 @@ function AuthenticatedApp() {
   }, [authReady, session])
 
   useEffect(() => {
-    if (!ownerSession) return
-    loadTasks()
-    loadEvents()
-    loadReviews()
-  }, [ownerSession, loadTasks, loadEvents, loadReviews])
+    if (!ownerId) return
+    let cancelled = false
+    void loadHabitBase({ loadTasks, loadTemplates: loadHabitTemplates }).then((ready) => {
+      if (!cancelled && ready) setHabitBaseReadyFor(ownerId)
+    })
+    void loadEvents()
+    void loadReviews()
+    return () => { cancelled = true }
+  }, [ownerId, loadTasks, loadEvents, loadReviews, loadHabitTemplates])
 
   useEffect(() => {
     if (!ownerSession) return
@@ -124,14 +137,17 @@ function AuthenticatedApp() {
   }, [ownerSession, isLoading, tasks])
 
   useEffect(() => {
-    if (!ownerSession) return
-    const run = async () => {
-      await loadHabitTemplates()
-      await loadHabitInstancesForWeek(currentWeekStart)
-      await generateHabitInstancesForWeek(currentWeekStart)
-    }
-    run()
-  }, [ownerSession, currentWeekStart, loadHabitTemplates, loadHabitInstancesForWeek, generateHabitInstancesForWeek])
+    if (!ownerId || habitBaseReadyFor !== ownerId) return
+    let cancelled = false
+    void loadHabitWeek(currentWeekStart, {
+      loadInstances: async (weekStart) => {
+        const loaded = await loadHabitInstancesForWeek(weekStart)
+        return loaded && !cancelled
+      },
+      generate: generateHabitInstancesForWeek,
+    })
+    return () => { cancelled = true }
+  }, [ownerId, habitBaseReadyFor, currentWeekStart, loadHabitInstancesForWeek, generateHabitInstancesForWeek])
 
   useEffect(() => {
     if (!ownerSession) return

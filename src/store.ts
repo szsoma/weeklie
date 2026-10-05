@@ -91,7 +91,7 @@ type State = {
 }
 
 type Actions = {
-  loadTasks: () => Promise<void>
+  loadTasks: () => Promise<boolean>
   loadEvents: () => Promise<void>
   loadReviews: () => Promise<void>
   loadDayCheckinsForWeek: (weekStart: Date) => Promise<void>
@@ -128,8 +128,8 @@ type Actions = {
     due_time: string | null;
     color: string | null;
   }) => Promise<Task | null>
-  loadHabitTemplates: () => Promise<void>
-  loadHabitInstancesForWeek: (weekStart: Date) => Promise<void>
+  loadHabitTemplates: () => Promise<boolean>
+  loadHabitInstancesForWeek: (weekStart: Date) => Promise<boolean>
   generateHabitInstancesForWeek: (weekStart: Date) => Promise<void>
   upsertHabitTemplate: (taskId: string, rule: RecurrenceRule | null, targetPerPeriod?: number) => Promise<void>
   archiveHabitTemplate: (templateId: string) => Promise<void>
@@ -219,11 +219,12 @@ export const useStore = create<State & Actions>((set, get) => ({
     if (error) {
       console.error('loadTasks failed', error)
       set({ isLoading: false })
-      return
+      return false
     }
     const tasks = ((data as Task[]) ?? []).slice().sort((a, b) => a.order - b.order)
     set({ tasks, isLoading: false })
     await get().generateRecurringTasksForWeek(get().currentWeekStart)
+    return true
   },
 
   loadEvents: async () => {
@@ -648,10 +649,11 @@ export const useStore = create<State & Actions>((set, get) => ({
 
     if (error) {
       console.error('loadHabitTemplates failed', error)
-      return
+      return false
     }
 
     set({ habitTemplates: (data as HabitTemplate[]) ?? [] })
+    return true
   },
 
   loadHabitInstancesForWeek: async (weekStart) => {
@@ -664,10 +666,11 @@ export const useStore = create<State & Actions>((set, get) => ({
 
     if (error) {
       console.error('loadHabitInstancesForWeek failed', error)
-      return
+      return false
     }
 
     set({ habitInstances: (data as HabitInstance[]) ?? [] })
+    return true
   },
 
   generateHabitInstancesForWeek: async (weekStart) => {
