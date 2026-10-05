@@ -20,7 +20,8 @@ import { getTaskIdToComplete } from './lib/notifications'
 import { startReminderScheduler } from './lib/reminders'
 import { computeDropOrder } from './lib/reorder'
 import { startWeeklyHabitScheduler } from './lib/scheduler'
-import { supabase } from './lib/supabase'
+import { isOwnerSession } from './lib/owner-access'
+import { ownerEmail, supabase } from './lib/supabase'
 import { useStore } from './store'
 
 function decodeShareToken(token: string) {
@@ -80,56 +81,64 @@ function AuthenticatedApp() {
   const [showAbout, setShowAbout] = useState(false)
   const [showFeatures, setShowFeatures] = useState(false)
   const [showShare, setShowShare] = useState(false)
+  const ownerSession = isOwnerSession(session, ownerEmail) ? session : null
 
   useGlobalShortcuts()
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
-      if (!data.session) clearSessionData()
+      if (!isOwnerSession(data.session, ownerEmail)) clearSessionData()
       setAuthReady(true)
     })
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s)
-      if (!s) clearSessionData()
+      if (!isOwnerSession(s, ownerEmail)) clearSessionData()
       setAuthReady(true)
     })
     return () => sub.subscription.unsubscribe()
   }, [clearSessionData])
 
   useEffect(() => {
-    if (!session) return
+    if (!authReady || !session || isOwnerSession(session, ownerEmail)) return
+    void supabase.auth.signOut({ scope: 'local' }).then(({ error }) => {
+      if (error) console.error('Failed to clear another account from this device', error)
+    })
+  }, [authReady, session])
+
+  useEffect(() => {
+    if (!ownerSession) return
     loadTasks()
     loadEvents()
     loadReviews()
-  }, [session, loadTasks, loadEvents, loadReviews])
+  }, [ownerSession, loadTasks, loadEvents, loadReviews])
 
   useEffect(() => {
-    if (!session) return
+    if (!ownerSession) return
     loadDayCheckinsForWeek(currentWeekStart)
-  }, [session, currentWeekStart, loadDayCheckinsForWeek])
+  }, [ownerSession, currentWeekStart, loadDayCheckinsForWeek])
 
   useEffect(() => {
-    if (!session || isLoading) return
+    if (!ownerSession || isLoading) return
     return startReminderScheduler(() => useStore.getState().tasks)
-  }, [session, isLoading, tasks])
+  }, [ownerSession, isLoading, tasks])
 
   useEffect(() => {
-    if (!session) return
+    if (!ownerSession) return
     const run = async () => {
       await loadHabitTemplates()
       await loadHabitInstancesForWeek(currentWeekStart)
       await generateHabitInstancesForWeek(currentWeekStart)
     }
     run()
-  }, [session, currentWeekStart, loadHabitTemplates, loadHabitInstancesForWeek, generateHabitInstancesForWeek])
+  }, [ownerSession, currentWeekStart, loadHabitTemplates, loadHabitInstancesForWeek, generateHabitInstancesForWeek])
 
   useEffect(() => {
-    if (!session) return
+    if (!ownerSession) return
     return startWeeklyHabitScheduler((weekStart) => {
       generateHabitInstancesForWeek(weekStart)
     })
-  }, [session, generateHabitInstancesForWeek])
+  }, [ownerSession, generateHabitInstancesForWeek])
 
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return
@@ -193,7 +202,11 @@ function AuthenticatedApp() {
     )
   }
 
-  if (!session) {
+  if (!ownerEmail) {
+    return <div role="alert" className="min-h-[100dvh] grid place-items-center px-6 text-center text-muted">Set VITE_OWNER_EMAIL to the existing Supabase account email.</div>
+  }
+
+  if (!ownerSession) {
     return <AuthScreen />
   }
 
