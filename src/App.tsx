@@ -145,14 +145,15 @@ function AuthenticatedApp() {
         return loaded && !cancelled
       },
       generate: generateHabitInstancesForWeek,
-    })
+    }).catch((error) => console.error('Habit initialization failed', error))
     return () => { cancelled = true }
   }, [ownerId, habitBaseReadyFor, currentWeekStart, loadHabitInstancesForWeek, generateHabitInstancesForWeek])
 
   useEffect(() => {
     if (!ownerSession) return
     return startWeeklyHabitScheduler((weekStart) => {
-      generateHabitInstancesForWeek(weekStart)
+      void generateHabitInstancesForWeek(weekStart)
+        .catch((error) => console.error('Weekly habit generation failed', error))
     })
   }, [ownerSession, generateHabitInstancesForWeek])
 

@@ -674,7 +674,7 @@ export const useStore = create<State & Actions>((set, get) => ({
   },
 
   generateHabitInstancesForWeek: async (weekStart) => {
-    const { tasks, habitTemplates, habitInstances, addTask } = get()
+    const { tasks, habitTemplates, habitInstances } = get()
     const periodStartKey = formatDate(weekStart)
     const todayKey = formatDate(new Date())
 
@@ -693,38 +693,28 @@ export const useStore = create<State & Actions>((set, get) => ({
         )
         if (alreadyExists) continue
 
-        const task = await addTask(baseTask.title, dateKey, {
-          color: baseTask.color,
-          note: baseTask.note,
-          due_time: baseTask.due_time,
-          silent: true,
-        })
-
-        if (!task) continue
-
-        const instance: HabitInstance = {
-          id: createId(),
-          habit_template_id: template.id,
-          user_id: '',
-          task_id: task.id,
-          for_date: dateKey,
-          period_start: periodStartKey,
-          created_at: new Date().toISOString(),
-        }
-
-        set({ habitInstances: [...get().habitInstances, instance] })
-
-        const { error } = await supabase.from('habit_instances').insert({
-          id: instance.id,
-          habit_template_id: instance.habit_template_id,
-          task_id: instance.task_id,
-          for_date: instance.for_date,
-          period_start: instance.period_start,
+        const { data, error } = await supabase.rpc('create_habit_occurrence', {
+          p_template_id: template.id,
+          p_task_id: createId(),
+          p_instance_id: createId(),
+          p_event_id: createId(),
+          p_for_date: dateKey,
+          p_period_start: periodStartKey,
         })
         if (error) {
-          console.error('insert habit_instance failed', error)
-          set({ habitInstances: get().habitInstances.filter((i) => i.id !== instance.id) })
+          throw new Error(`Failed to schedule habit: ${error.message}`)
         }
+        if (!data) continue
+
+        const result = data as { task: Task; instance: HabitInstance; event: TaskEvent }
+        set((state) => ({
+          tasks: state.tasks.some((task) => task.id === result.task.id)
+            ? state.tasks : [...state.tasks, result.task],
+          habitInstances: state.habitInstances.some((instance) => instance.id === result.instance.id)
+            ? state.habitInstances : [...state.habitInstances, result.instance],
+          events: state.events.some((event) => event.id === result.event.id)
+            ? state.events : [...state.events, result.event],
+        }))
       }
     }
   },
@@ -735,24 +725,11 @@ export const useStore = create<State & Actions>((set, get) => ({
       return
     }
 
-    const { habitTemplates } = get()
-    const existing = habitTemplates.find((t) => t.task_id === taskId)
+    const existing = get().habitTemplates.find((t) => t.task_id === taskId)
     const now = new Date().toISOString()
 
     if (existing) {
-      const updated: HabitTemplate = {
-        ...existing,
-        recurrence: rule,
-        target_per_period: targetPerPeriod,
-        updated_at: now,
-      }
-      set({
-        habitTemplates: habitTemplates.map((t) =>
-          t.id === existing.id ? updated : t,
-        ),
-      })
-
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('habit_templates')
         .update({
           recurrence: rule,
@@ -760,11 +737,17 @@ export const useStore = create<State & Actions>((set, get) => ({
           updated_at: now,
         })
         .eq('id', existing.id)
+        .select('*')
+        .single()
 
       if (error) {
-        console.error('upsertHabitTemplate update failed', error)
-        set({ habitTemplates })
+        throw new Error(`Failed to save habit repeat: ${error.message}`)
       }
+      set((state) => ({
+        habitTemplates: state.habitTemplates.map((template) =>
+          template.id === existing.id ? data as HabitTemplate : template,
+        ),
+      }))
       return
     }
 
@@ -778,8 +761,6 @@ export const useStore = create<State & Actions>((set, get) => ({
       created_at: now,
       updated_at: now,
     }
-
-    set({ habitTemplates: [...habitTemplates, template] })
 
     const { data, error } = await supabase
       .from('habit_templates')
@@ -796,16 +777,10 @@ export const useStore = create<State & Actions>((set, get) => ({
       .single()
 
     if (error) {
-      console.error('upsertHabitTemplate insert failed', error)
-      set({ habitTemplates })
-      return
+      throw new Error(`Failed to save habit repeat: ${error.message}`)
     }
 
-    set({
-      habitTemplates: get().habitTemplates.map((t) =>
-        t.id === template.id ? (data as HabitTemplate) : t,
-      ),
-    })
+    set((state) => ({ habitTemplates: [...state.habitTemplates, data as HabitTemplate] }))
 
     await get().generateHabitInstancesForWeek(get().currentWeekStart)
   },
@@ -830,36 +805,22 @@ export const useStore = create<State & Actions>((set, get) => ({
   },
 
   deleteHabitTemplateForTask: async (taskId) => {
-    const prevTemplates = get().habitTemplates
-    const prevInstances = get().habitInstances
-    const template = prevTemplates.find((t) => t.task_id === taskId)
+    const template = get().habitTemplates.find((t) => t.task_id === taskId)
     if (!template) return
 
-    const today = formatDate(new Date())
-    const futureInstances = prevInstances.filter(
-      (inst) => inst.habit_template_id === template.id && inst.for_date >= today,
-    )
-
-    set({
-      habitTemplates: prevTemplates.filter((t) => t.id !== template.id),
-      habitInstances: prevInstances.filter(
-        (inst) => inst.habit_template_id !== template.id,
-      ),
+    const { data, error } = await supabase.rpc('remove_habit_template_for_task', {
+      p_task_id: taskId,
     })
 
-    const { error } = await supabase
-      .from('habit_templates')
-      .delete()
-      .eq('id', template.id)
-
     if (error) {
-      console.error('deleteHabitTemplateForTask failed', error)
-      set({ habitTemplates: prevTemplates, habitInstances: prevInstances })
-      return
+      throw new Error(`Failed to remove habit repeat: ${error.message}`)
     }
 
-    for (const inst of futureInstances) {
-      await get().deleteTask(inst.task_id)
-    }
+    const removedTaskIds = new Set((data as { deleted_task_ids: string[] }).deleted_task_ids)
+    set((state) => ({
+      habitTemplates: state.habitTemplates.filter((item) => item.id !== template.id),
+      habitInstances: state.habitInstances.filter((item) => item.habit_template_id !== template.id),
+      tasks: state.tasks.filter((task) => !removedTaskIds.has(task.id)),
+    }))
   },
 }))
