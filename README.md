@@ -41,7 +41,7 @@ npm install
 npm run dev
 ```
 
-Set the Supabase URL, publishable key, and `VITE_OWNER_EMAIL` in `.env` before starting the app. Use the email of the existing Supabase account that owns the planner data. Open the printed local URL and enter that account's password to unlock the device. The email is included in the frontend build; keep the password out of `.env` and enter it only in the unlock screen. Each device remembers its own Supabase session. Use **Forget this device** to clear only that device's session.
+Set the Supabase URL, publishable key, and `VITE_OWNER_EMAIL` in `.env` before starting the app. Use the email of the existing Supabase account that owns the planner data. Open the printed local URL and enter that account's PIN code to unlock the device — the PIN is the account's password, a memorable 6+ digit numeric code. The email is included in the frontend build; keep the PIN out of `.env` and enter it only in the unlock screen. Each device remembers its own Supabase session. Use **Forget this device** to clear only that device's session.
 
 ## Scripts
 

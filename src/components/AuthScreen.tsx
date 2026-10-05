@@ -22,7 +22,13 @@ export default function AuthScreen() {
         email: ownerEmail,
         password,
       });
-      if (error) setError(error.message);
+      if (error) {
+        setError(
+          /invalid login credentials/i.test(error.message)
+            ? "Incorrect PIN code."
+            : error.message,
+        );
+      }
     } catch {
       setError("Could not connect. Please try again.");
     } finally {
@@ -52,7 +58,7 @@ export default function AuthScreen() {
           <img src="/weekly-logo-light.svg" alt="Weekly" className="h-8 w-auto" />
         </h1>
         <p className="text-sm text-muted mb-6">
-          Enter your password to unlock this device.
+          Enter your PIN code to unlock this device.
         </p>
 
         {ownerEmail ? (
@@ -61,12 +67,13 @@ export default function AuthScreen() {
               type="password"
               required
               autoFocus
+              inputMode="numeric"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="Password"
+              placeholder="PIN code"
               name="password"
               autoComplete="current-password"
-              aria-label="Password"
+              aria-label="PIN code"
               className={inputClass}
             />
             <button type="submit" disabled={busy} className={buttonClass}>

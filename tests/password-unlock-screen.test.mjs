@@ -4,11 +4,13 @@ import test from 'node:test'
 
 const source = readFileSync(new URL('../src/components/AuthScreen.tsx', import.meta.url), 'utf8')
 
-test('device unlock only asks for a password and uses the configured owner email', () => {
+test('device unlock asks for a pin code and uses the configured owner email', () => {
   assert.match(source, /type="password"/)
+  assert.match(source, /inputMode="numeric"/)
   assert.match(source, /autoComplete="current-password"/)
   assert.match(source, /signInWithPassword\(\{\s*email: ownerEmail,\s*password,?\s*\}\)/)
   assert.match(source, />\s*Unlock\s*</)
+  assert.match(source, /Incorrect PIN code\./)
   assert.doesNotMatch(source, /type="email"|signInWithOtp|verifyOtp|Email code|Sign up/)
 })
 
